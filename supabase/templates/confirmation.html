@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>Confirme ton adresse e-mail | Notio</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f7f6f3; color:#1b1d22; font-family:Arial,Helvetica,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f7f6f3;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px; background-color:#ffffff; border:1px solid #e4e2dc;">
+            <tr>
+              <td style="padding:28px 32px; border-bottom:1px solid #e4e2dc;">
+                <p style="margin:0; color:#1d3557; font-size:22px; font-weight:800; letter-spacing:0;">notio<span style="color:#6b8f71;">.</span></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px 40px;">
+                <p style="margin:0 0 10px; color:#6b6f76; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Création de compte</p>
+                <h1 style="margin:0; color:#1b1d22; font-size:26px; line-height:1.25;">Confirme ton adresse e-mail</h1>
+                <p style="margin:18px 0 0; color:#52565d; font-size:15px; line-height:1.6;">Merci d’avoir créé un compte Notio. Confirme ton adresse pour activer ton compte et commencer tes révisions.</p>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;">
+                  <tr>
+                    <td align="center" style="border-radius:4px; background-color:#1d3557;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 22px; color:#ffffff; font-size:14px; font-weight:700; text-decoration:none;">Confirmer mon adresse</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:24px 0 0; color:#6b6f76; font-size:12px; line-height:1.6;">Si le bouton ne fonctionne pas, copie ce lien dans ton navigateur :</p>
+                <p style="margin:8px 0 0; font-size:12px; line-height:1.6; overflow-wrap:anywhere;"><a href="{{ .ConfirmationURL }}" style="color:#1d3557;">{{ .ConfirmationURL }}</a></p>
+                <p style="margin:28px 0 0; padding-top:20px; border-top:1px solid #e4e2dc; color:#6b6f76; font-size:12px; line-height:1.6;">Si tu n’es pas à l’origine de cette demande, tu peux ignorer cet e-mail. Aucun compte ne sera activé sans confirmation.</p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:18px 0 0; color:#6b6f76; font-size:11px; line-height:1.5;">Notio · Ton espace de révision</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+
+[functions.insert-question]
+enabled = true
+verify_jwt = false
+import_map = "./functions/insert-question/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/insert-question/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/insert-question/*.html" ]
+
+[functions.generate-quiz-ia]
+enabled = true
+verify_jwt = false
+import_map = "./functions/generate-quiz-ia/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/generate-quiz-ia/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/generate-quiz-ia/*.html" ]
+
+[functions.submit-resultat]
+enabled = true
+verify_jwt = false
+import_map = "./functions/submit-resultat/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/submit-resultat/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/submit-resultat/*.html" ]
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.delete-account]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/delete-account/index.ts"
+
+[functions.register-referral]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/register-referral/index.ts"
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+
+[auth.email]
+enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "Confirme ton adresse e-mail | Notio"
+content_path = "./supabase/templates/confirmation.html"
