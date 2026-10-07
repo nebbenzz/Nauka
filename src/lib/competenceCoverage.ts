@@ -11,13 +11,15 @@ export interface QuestionProgression {
 }
 
 export interface ResultatProgression {
+  id: string;
   created_at: string | null;
   reponses_json: unknown;
 }
 
 export interface ActiviteNotion {
-  nombreReponsesTotal: number;
-  nombreReponsesRecentes: number;
+  nombreQuestionsDistinctesTotal: number;
+  nombreQuestionsDistinctesRecentes: number;
+  nombreSessionsRecentes: number;
   derniereReponse: string | null;
   scoreRecent: number | null;
 }
@@ -74,47 +76,82 @@ export function analyserActiviteNotions(
 ): Map<string, ActiviteNotion> {
   const activite = new Map<string, ActiviteNotion>(
     notions.map((notion) => [notion.id, {
-      nombreReponsesTotal: 0,
-      nombreReponsesRecentes: 0,
+      nombreQuestionsDistinctesTotal: 0,
+      nombreQuestionsDistinctesRecentes: 0,
+      nombreSessionsRecentes: 0,
       derniereReponse: null,
       scoreRecent: null,
     }]),
   );
   const questionsParId = new Map(questions.map((question) => [question.id, question]));
   const dateLimite = maintenant.getTime() - fenetreJours * 24 * 60 * 60 * 1000;
-  const pointsRecents = new Map<string, { obtenus: number; maximum: number }>();
+  const questionsTotalesParNotion = new Map<string, Set<string>>();
+  const sessionsRecentesParNotion = new Map<string, Set<string>>();
+  const dernieresReponsesRecentes = new Map<string, Map<string, { date: number; score: number; points: number }>>();
 
   for (const resultat of resultats) {
     if (!resultat.created_at) continue;
     const dateResultat = new Date(resultat.created_at);
     if (Number.isNaN(dateResultat.getTime()) || dateResultat > maintenant) continue;
+    const notionsReponduesDansSession = new Set<string>();
 
     for (const reponse of extraireReponses(resultat)) {
       const question = questionsParId.get(reponse.question_id);
       const mesure = question ? activite.get(question.notion_id) : null;
       if (!question || !mesure) continue;
 
-      mesure.nombreReponsesTotal += 1;
+      const questionsTotales = questionsTotalesParNotion.get(question.notion_id) ?? new Set<string>();
+      questionsTotales.add(question.id);
+      questionsTotalesParNotion.set(question.notion_id, questionsTotales);
       if (!mesure.derniereReponse || dateResultat.toISOString() > mesure.derniereReponse) {
         mesure.derniereReponse = dateResultat.toISOString();
       }
 
       if (dateResultat.getTime() < dateLimite) continue;
 
-      mesure.nombreReponsesRecentes += 1;
-      const score = scoreReponse(question, reponse);
-      const points = question.points > 0 ? question.points : 1;
-      const cumul = pointsRecents.get(question.notion_id) ?? { obtenus: 0, maximum: 0 };
-      cumul.obtenus += points * score;
-      cumul.maximum += points;
-      pointsRecents.set(question.notion_id, cumul);
+      notionsReponduesDansSession.add(question.notion_id);
+      const reponsesParQuestion = dernieresReponsesRecentes.get(question.notion_id) ?? new Map();
+      const precedente = reponsesParQuestion.get(question.id);
+      if (!precedente || dateResultat.getTime() >= precedente.date) {
+        reponsesParQuestion.set(question.id, {
+          date: dateResultat.getTime(),
+          score: scoreReponse(question, reponse),
+          points: question.points > 0 ? question.points : 1,
+        });
+      }
+      dernieresReponsesRecentes.set(question.notion_id, reponsesParQuestion);
+    }
+
+    for (const notionId of notionsReponduesDansSession) {
+      const sessions = sessionsRecentesParNotion.get(notionId) ?? new Set<string>();
+      sessions.add(resultat.id);
+      sessionsRecentesParNotion.set(notionId, sessions);
     }
   }
 
-  for (const [notionId, cumul] of pointsRecents) {
+  for (const [notionId, questionsVues] of questionsTotalesParNotion) {
     const mesure = activite.get(notionId);
-    if (mesure && cumul.maximum > 0) {
-      mesure.scoreRecent = Math.round((cumul.obtenus / cumul.maximum) * 100);
+    if (mesure) mesure.nombreQuestionsDistinctesTotal = questionsVues.size;
+  }
+
+  for (const [notionId, sessions] of sessionsRecentesParNotion) {
+    const mesure = activite.get(notionId);
+    if (mesure) mesure.nombreSessionsRecentes = sessions.size;
+  }
+
+  for (const [notionId, reponsesParQuestion] of dernieresReponsesRecentes) {
+    const mesure = activite.get(notionId);
+    if (!mesure) continue;
+
+    mesure.nombreQuestionsDistinctesRecentes = reponsesParQuestion.size;
+    let pointsObtenus = 0;
+    let pointsPossibles = 0;
+    for (const reponse of reponsesParQuestion.values()) {
+      pointsObtenus += reponse.points * reponse.score;
+      pointsPossibles += reponse.points;
+    }
+    if (pointsPossibles > 0) {
+      mesure.scoreRecent = Math.round((pointsObtenus / pointsPossibles) * 100);
     }
   }
 
@@ -122,14 +159,14 @@ export function analyserActiviteNotions(
 }
 
 export function determinerEtatCouverture(activite: ActiviteNotion): "a-decouvrir" | "en-cours" | "maitrise" {
-  if (activite.nombreReponsesTotal === 0) return "a-decouvrir";
-  if (activite.nombreReponsesRecentes < 10 || (activite.scoreRecent ?? 0) < 70) return "en-cours";
+  if (activite.nombreQuestionsDistinctesTotal === 0) return "a-decouvrir";
+  if (activite.nombreQuestionsDistinctesRecentes < 10 || activite.nombreSessionsRecentes < 2 || (activite.scoreRecent ?? 0) < 70) return "en-cours";
   return "maitrise";
 }
 
 export function determinerFiabilite(activite: ActiviteNotion): string {
-  if (activite.nombreReponsesRecentes >= 10) return "élevée";
-  if (activite.nombreReponsesRecentes >= 5) return "moyenne";
-  if (activite.nombreReponsesRecentes > 0) return "limitée";
+  if (activite.nombreQuestionsDistinctesRecentes >= 10 && activite.nombreSessionsRecentes >= 2) return "élevée";
+  if (activite.nombreQuestionsDistinctesRecentes >= 5 && activite.nombreSessionsRecentes >= 2) return "moyenne";
+  if (activite.nombreQuestionsDistinctesRecentes > 0) return "limitée";
   return "À actualiser";
 }

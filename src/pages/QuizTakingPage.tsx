@@ -6,7 +6,8 @@ import ZoneCode from "../components/ZoneCode";
 import ZoneDessin from "../components/ZoneDessin";
 import ZoneLibre from "../components/ZoneLibre";
 import { useSession } from "../hooks/useSession";
-import { clearQuizDraft, getQuestionsFromDraft, readQuizDraft, saveQuizDraft, type QuizDraft } from "../lib/quizDraft";
+import { choisirBrouillonLePlusRecent, clearQuizDraft, getQuestionsFromDraft, readQuizDraft, saveQuizDraft, type QuizDraft } from "../lib/quizDraft";
+import { effacerQuizDraftDistant, lireQuizDraftDistant, sauvegarderQuizDraftDistant } from "../lib/quizDraftCloud";
 import { recompenserParrainage } from "../lib/referral";
 import { supabase } from "../lib/supabaseClient";
 import { filtrerQuestionsParNiveau, melanger, tirerQuestionsAvancees, tirerQuestionsStandard } from "../lib/quizSelection";
@@ -66,6 +67,11 @@ function enregistrerTirage(quizId: string, questions: Question[]) {
   }
 }
 
+function effacerBrouillonUtilisateur(quizId: string, userId: string) {
+  clearQuizDraft(quizId, userId);
+  void effacerQuizDraftDistant(quizId, userId);
+}
+
 const STYLE_STATUT: Record<string, string> = {
   correct: "bg-sage/20 text-sage",
   partiel: "bg-highlight/30 text-ink",
@@ -118,6 +124,7 @@ export default function QuizTakingPage() {
   const [brouillon, setBrouillon] = useState<QuizDraft | null>(null);
   const [brouillonDisponible, setBrouillonDisponible] = useState(false);
   const [brouillonPret, setBrouillonPret] = useState(false);
+  const [brouillonSynchronise, setBrouillonSynchronise] = useState(false);
   const estModeRelecture = revisionDue || relectureImmediate;
 
   useEffect(() => {
@@ -128,42 +135,54 @@ export default function QuizTakingPage() {
     if (!id || !session?.user.id || !questions.length || resultat || resultatAvance || !brouillonPret) return;
 
     if (!aDesReponsesSauvables(selections, reponsesAvancees)) {
-      clearQuizDraft(id, session.user.id);
+      if (!brouillonDisponible) effacerBrouillonUtilisateur(id, session.user.id);
       return;
     }
 
-    saveQuizDraft(id, session.user.id, {
+    const draft = {
       selections,
       reponsesAvancees,
       questionsIds: questions.map((question) => question.id),
       updatedAt: new Date().toISOString(),
-    });
-  }, [brouillonPret, id, questions, reponsesAvancees, resultat, resultatAvance, selections, session?.user.id]);
+    };
+    saveQuizDraft(id, session.user.id, draft);
+    const timer = window.setTimeout(() => {
+      void sauvegarderQuizDraftDistant(id, session.user.id, draft).then(setBrouillonSynchronise);
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [brouillonDisponible, brouillonPret, id, questions, reponsesAvancees, resultat, resultatAvance, selections, session?.user.id]);
 
   useEffect(() => {
     if (!id || !session?.user.id) return;
 
     const sauvegarderAvantSortie = () => {
-      if (resultat || resultatAvance || !aDesReponsesSauvables(selections, reponsesAvancees)) {
-        clearQuizDraft(id, session.user.id);
+      if (resultat || resultatAvance) {
+        effacerBrouillonUtilisateur(id, session.user.id);
+        return;
+      }
+      if (!aDesReponsesSauvables(selections, reponsesAvancees)) {
+        if (!brouillonDisponible) effacerBrouillonUtilisateur(id, session.user.id);
         return;
       }
 
-      saveQuizDraft(id, session.user.id, {
+      const draft = {
         selections,
         reponsesAvancees,
         questionsIds: questions.map((question) => question.id),
         updatedAt: new Date().toISOString(),
-      });
+      };
+      saveQuizDraft(id, session.user.id, draft);
+      void sauvegarderQuizDraftDistant(id, session.user.id, draft);
     };
 
     window.addEventListener("pagehide", sauvegarderAvantSortie);
     return () => window.removeEventListener("pagehide", sauvegarderAvantSortie);
-  }, [id, questions, reponsesAvancees, resultat, resultatAvance, selections, session?.user.id]);
+  }, [brouillonDisponible, id, questions, reponsesAvancees, resultat, resultatAvance, selections, session?.user.id]);
 
   useEffect(() => {
-    const userId = session?.user.id;
-    if (!id || !userId) return;
+    const user = session?.user;
+    if (!id || !user) return;
+    const userId = user.id;
     const quizId = id;
 
     async function charger() {
@@ -283,11 +302,17 @@ export default function QuizTakingPage() {
           }
         }
 
-        const draft = userId ? readQuizDraft(quizId, userId) : null;
+        const brouillonLocal = readQuizDraft(quizId, userId);
+        const brouillonDistant = await lireQuizDraftDistant(quizId, userId);
+        const draft = choisirBrouillonLePlusRecent(brouillonLocal, brouillonDistant);
         if (draft && draft.questionsIds.length > 0) {
+          saveQuizDraft(quizId, userId, draft);
           setQuestions(getQuestionsFromDraft(draft, questionsPourSession));
           setBrouillon(draft);
           setBrouillonDisponible(true);
+          setBrouillonSynchronise(await sauvegarderQuizDraftDistant(quizId, userId, draft));
+        } else {
+          setBrouillonSynchronise(false);
         }
         setBrouillonPret(true);
       }
@@ -295,7 +320,7 @@ export default function QuizTakingPage() {
     }
 
     charger();
-  }, [id, session?.user.id, revisionDue]);
+  }, [id, session?.user, revisionDue]);
 
   function toggleReponse(question: Question, reponseId: string) {
     setSelections((prev) => {
@@ -310,6 +335,7 @@ export default function QuizTakingPage() {
 
   function handleReprendreBrouillon() {
     if (!brouillon) return;
+    setBrouillonSynchronise(false);
     setSelections(brouillon.selections);
     setReponsesAvancees(brouillon.reponsesAvancees);
     setBrouillon(null);
@@ -318,7 +344,7 @@ export default function QuizTakingPage() {
 
   function handleAbandonnerBrouillon() {
     if (!id || !session?.user.id) return;
-    clearQuizDraft(id, session.user.id);
+    effacerBrouillonUtilisateur(id, session.user.id);
     setSelections({});
     setReponsesAvancees({});
     setBrouillon(null);
@@ -376,7 +402,7 @@ export default function QuizTakingPage() {
       setErreur(data.error);
       return;
     }
-    if (id && session?.user.id) clearQuizDraft(id, session.user.id);
+    if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
     if (id) void recompenserParrainage(id);
     setResultat({ score, scoreMax });
   }
@@ -412,7 +438,7 @@ export default function QuizTakingPage() {
       setErreur(data.error);
       return;
     }
-    if (id && session?.user.id) clearQuizDraft(id, session.user.id);
+    if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
     if (id) void recompenserParrainage(id);
     setResultatAvance({ score: data.score, scoreMax: data.score_max, details: data.details });
   }
@@ -501,7 +527,7 @@ export default function QuizTakingPage() {
   }
 
   function handleReessayer() {
-    if (id && session?.user.id) clearQuizDraft(id, session.user.id);
+    if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
     setSelections({});
     setReponsesAvancees({});
     setResultat(null);
@@ -539,7 +565,7 @@ export default function QuizTakingPage() {
   function handleRevoirMesErreurs() {
     const questionsIncorrectes = obtenirQuestionsIncorrectes();
     if (questionsIncorrectes.length === 0) return;
-    if (id && session?.user.id) clearQuizDraft(id, session.user.id);
+    if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
     setQuestionsDisponibles(questionsIncorrectes);
     setQuestions(questionsIncorrectes);
     setSelections({});
@@ -571,6 +597,9 @@ export default function QuizTakingPage() {
             </p>
             <p className="mt-4 text-xs text-inkmuted">
               Dernière sauvegarde : {brouillon?.updatedAt ? new Date(brouillon.updatedAt).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" }) : "À l'instant"}
+            </p>
+            <p className="mt-1 text-xs text-inkmuted">
+              {brouillonSynchronise ? "Brouillon synchronisé à ton compte, disponible sur tes appareils." : "Brouillon conservé sur cet appareil ; vérifie ta connexion ou applique la migration pour le synchroniser."}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <button type="button" onClick={handleReprendreBrouillon} className="rounded-md bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-navy transition-colors">
@@ -923,7 +952,7 @@ export default function QuizTakingPage() {
                   Annuler
                 </button>
                 <button type="button" onClick={() => {
-                  if (id && session?.user.id) clearQuizDraft(id, session.user.id);
+                  if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
                   setConfirmerQuitter(false);
                   navigate("/questionnaires");
                 }} className="flex-1 rounded-md bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 transition-colors">
@@ -999,7 +1028,7 @@ export default function QuizTakingPage() {
                 Annuler
               </button>
               <button type="button" onClick={() => {
-                if (id && session?.user.id) clearQuizDraft(id, session.user.id);
+                if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
                 setConfirmerQuitter(false);
                 navigate("/questionnaires");
               }} className="flex-1 rounded-md bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 transition-colors">

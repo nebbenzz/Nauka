@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../includes/Header";
 import Footer from "../includes/Footer";
-import RevisionCalendar from "../components/RevisionCalendar";
+import RevisionCalendar, { type RevisionCalendarOverride } from "../components/RevisionCalendar";
+import ProgrammeLicenceInformatique from "../components/ProgrammeLicenceInformatique";
 import { FORMATIONS } from "../data/formations";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../lib/supabaseClient";
@@ -15,6 +16,7 @@ import {
   type QuestionProgression,
   type ResultatProgression,
 } from "../lib/competenceCoverage";
+import { estProgrammeLicenceInformatiqueLaRochelle } from "../lib/programmeCoverage";
 
 interface Stats {
   quiz_completes: number;
@@ -146,12 +148,17 @@ export default function Dashboard() {
   const [competences, setCompetences] = useState<Competence[]>([]);
   const [pageCompetences, setPageCompetences] = useState(0);
   const [couvertureProgramme, setCouvertureProgramme] = useState<NotionCouverture[]>([]);
+  const [notionsCatalogue, setNotionsCatalogue] = useState<NotionCouverture[]>([]);
   const [activitesNotions, setActivitesNotions] = useState<NotionActivite[]>([]);
   const [formationProgramme, setFormationProgramme] = useState("");
+  const [etablissementProgramme, setEtablissementProgramme] = useState("");
+  const [niveauFormationProgramme, setNiveauFormationProgramme] = useState<number | null>(null);
   const [chargementCouverture, setChargementCouverture] = useState(true);
   const [erreurCouverture, setErreurCouverture] = useState(false);
   const [historique, setHistorique] = useState<HistoriqueItem[]>([]);
   const [revisionsDisponibles, setRevisionsDisponibles] = useState<RevisionDisponible[]>([]);
+  const [planificationsPersonnalisees, setPlanificationsPersonnalisees] = useState<RevisionCalendarOverride[]>([]);
+  const [erreurPlanification, setErreurPlanification] = useState<string | null>(null);
   const [enregistrementObjectif, setEnregistrementObjectif] = useState(false);
   const [messageObjectif, setMessageObjectif] = useState<string | null>(null);
 
@@ -163,7 +170,7 @@ export default function Dashboard() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("prenom, formation, niveau_formation, plan, pro_expires_at, quiz_completes_today, quiz_completes_reset_date, objectif_revision, date_examen, sessions_par_semaine, duree_session_minutes")
+          .select("prenom, formation, niveau_formation, etablissement, plan, pro_expires_at, quiz_completes_today, quiz_completes_reset_date, objectif_revision, date_examen, sessions_par_semaine, duree_session_minutes")
           .eq("id", userId)
           .single();
         if (error || !data) throw error ?? new Error("Profil introuvable");
@@ -183,11 +190,14 @@ export default function Dashboard() {
         }
 
         setFormationProgramme(data.formation || "");
+        setEtablissementProgramme(data.etablissement || "");
         const formation = FORMATIONS.find((candidate) => candidate.label === data.formation);
         const domaine = formation?.domaine;
         const niveauFormation = data.niveau_formation ?? formation?.niveauOrdinal;
+        setNiveauFormationProgramme(niveauFormation ?? null);
         if (!domaine || !niveauFormation) {
           setCouvertureProgramme([]);
+          setNotionsCatalogue([]);
           setChargementCouverture(false);
           return;
         }
@@ -201,6 +211,7 @@ export default function Dashboard() {
         if (erreurMatiere) throw erreurMatiere;
         if (!matiere) {
           setCouvertureProgramme([]);
+          setNotionsCatalogue([]);
           setChargementCouverture(false);
           return;
         }
@@ -230,7 +241,7 @@ export default function Dashboard() {
         for (let debut = 0; ; debut += 1000) {
           const { data: page, error: erreurResultats } = await supabase
             .from("resultats")
-            .select("created_at, reponses_json")
+            .select("id, created_at, reponses_json")
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
             .range(debut, debut + 999);
@@ -245,6 +256,25 @@ export default function Dashboard() {
           (questions || []) as unknown as QuestionProgression[],
           resultats,
         );
+        setNotionsCatalogue(notionsDisponibles.flatMap((notion) => {
+          const matiereAssociee = Array.isArray(notion.matieres) ? notion.matieres[0] : notion.matieres;
+          if (!matiereAssociee?.nom) return [];
+          const activite = activites.get(notion.id) ?? {
+            nombreQuestionsDistinctesTotal: 0,
+            nombreQuestionsDistinctesRecentes: 0,
+            nombreSessionsRecentes: 0,
+            derniereReponse: null,
+            scoreRecent: null,
+          };
+          return [{
+            id: notion.id,
+            nom: notion.nom,
+            niveau: notion.niveau,
+            matiere_nom: matiereAssociee.nom,
+            ...activite,
+            etat: determinerEtatCouverture(activite),
+          }];
+        }));
         setActivitesNotions(notionsDisponibles.flatMap((notion) => {
           const matiereAssociee = Array.isArray(notion.matieres) ? notion.matieres[0] : notion.matieres;
           const activite = activites.get(notion.id);
@@ -253,8 +283,9 @@ export default function Dashboard() {
         }));
         setCouvertureProgramme(notionsProgramme.map((notion) => {
           const activite = activites.get(notion.id) ?? {
-            nombreReponsesTotal: 0,
-            nombreReponsesRecentes: 0,
+            nombreQuestionsDistinctesTotal: 0,
+            nombreQuestionsDistinctesRecentes: 0,
+            nombreSessionsRecentes: 0,
             derniereReponse: null,
             scoreRecent: null,
           };
@@ -269,6 +300,7 @@ export default function Dashboard() {
       } catch {
         setErreurCouverture(true);
         setCouvertureProgramme([]);
+        setNotionsCatalogue([]);
         setActivitesNotions([]);
       } finally {
         setChargementCouverture(false);
@@ -276,6 +308,22 @@ export default function Dashboard() {
     }
 
     void chargerProfilEtProgramme();
+
+    async function chargerPlanificationsPersonnalisees() {
+      const { data, error } = await supabase
+        .from("revision_calendar_overrides")
+        .select("jour_initial, jour_cible, ignoree")
+        .eq("user_id", userId);
+      if (error) {
+        setErreurPlanification("Applique la migration des séances personnalisées pour modifier ton calendrier.");
+        setPlanificationsPersonnalisees([]);
+        return;
+      }
+      setPlanificationsPersonnalisees((data || []) as RevisionCalendarOverride[]);
+      setErreurPlanification(null);
+    }
+
+    void chargerPlanificationsPersonnalisees();
 
     supabase.rpc("get_stats_utilisateur").then(({ data }) => {
       if (data && data[0]) setStats(data[0]);
@@ -361,6 +409,36 @@ export default function Dashboard() {
     setMessageObjectif("Objectifs mis à jour.");
   }
 
+  async function enregistrerOverrideCalendrier(
+    jourInitial: string,
+    jourCible: string | null,
+    ignoree: boolean,
+  ): Promise<boolean> {
+    if (!session?.user.id) return false;
+    const modification: RevisionCalendarOverride = { jour_initial: jourInitial, jour_cible: jourCible, ignoree };
+    const { error } = await supabase.from("revision_calendar_overrides").upsert({
+      user_id: session.user.id,
+      ...modification,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,jour_initial" });
+    if (error) return false;
+
+    setPlanificationsPersonnalisees((actuelles) => [
+      ...actuelles.filter((element) => element.jour_initial !== jourInitial),
+      modification,
+    ]);
+    setErreurPlanification(null);
+    return true;
+  }
+
+  function handleReplanifierSeance(jourInitial: string, jourCible: string) {
+    return enregistrerOverrideCalendrier(jourInitial, jourCible, false);
+  }
+
+  function handleIgnorerSeance(jourInitial: string) {
+    return enregistrerOverrideCalendrier(jourInitial, null, true);
+  }
+
   const nombrePagesCompetences = Math.max(1, Math.ceil(competences.length / COMPETENCES_PAR_PAGE));
   const competencesAffichees = competences.slice(
     pageCompetences * COMPETENCES_PAR_PAGE,
@@ -372,6 +450,7 @@ export default function Dashboard() {
     { etat: "en-cours" as const, libelle: "En cours", description: "Des réponses, maîtrise à consolider", notions: couvertureProgramme.filter((notion) => notion.etat === "en-cours") },
     { etat: "maitrise" as const, libelle: "Maîtrisé", description: "Réussite récente et confirmée", notions: couvertureProgramme.filter((notion) => notion.etat === "maitrise") },
   ];
+  const afficherProgrammeLaRochelle = estProgrammeLicenceInformatiqueLaRochelle(formationProgramme, etablissementProgramme);
 
   const notionPrioritaire = competences
     .filter((competence) => competence.notion_nom.trim())
@@ -581,6 +660,10 @@ export default function Dashboard() {
             sessionsParSemaine={sessionsParSemaine}
             dureeSessionMinutes={dureeSessionMinutes}
             sessionsCetteSemaine={sessionsCetteSemaine}
+            planificationsPersonnalisees={planificationsPersonnalisees}
+            onReplanifier={handleReplanifierSeance}
+            onIgnorer={handleIgnorerSeance}
+            erreurPlanification={erreurPlanification}
           />
         </div>
 
@@ -646,10 +729,10 @@ export default function Dashboard() {
                       {activite && (
                         <div id={tooltipId} role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-56 max-w-[calc(100vw-3rem)] -translate-x-1/2 border border-line bg-white p-3 text-left text-xs text-ink shadow-lg group-hover:block group-focus-within:block">
                           <p className="font-semibold">Taux de fiabilité : {determinerFiabilite(activite)}</p>
-                          <p className="mt-1">{activite.nombreReponsesRecentes} réponse{activite.nombreReponsesRecentes === 1 ? "" : "s"} sur les 90 derniers jours</p>
+                          <p className="mt-1">{activite.nombreQuestionsDistinctesRecentes} question{activite.nombreQuestionsDistinctesRecentes === 1 ? "" : "s"} distincte{activite.nombreQuestionsDistinctesRecentes === 1 ? "" : "s"} · {activite.nombreSessionsRecentes} séance{activite.nombreSessionsRecentes === 1 ? "" : "s"} sur les 90 derniers jours</p>
                           <p className="mt-1">Score récent : {activite.scoreRecent === null ? "indisponible" : `${activite.scoreRecent}%`}</p>
                           <p className="mt-1 text-inkmuted">{formaterDateRevision(activite.derniereReponse)}</p>
-                          {activite.nombreReponsesRecentes < 10 && <p className="mt-2 font-semibold text-navy">Refais un quiz pour confirmer cette estimation.</p>}
+                          {(activite.nombreQuestionsDistinctesRecentes < 10 || activite.nombreSessionsRecentes < 2) && <p className="mt-2 font-semibold text-navy">Refais un quiz sur des questions différentes pour confirmer cette estimation.</p>}
                         </div>
                       )}
                     </div>
@@ -677,6 +760,8 @@ export default function Dashboard() {
               <p className="mt-4 text-sm text-inkmuted">
                 Renseigne ta formation pour voir les notions à découvrir. <Link to="/profil" className="font-semibold text-navy underline underline-offset-4">Compléter mon profil</Link>
               </p>
+            ) : afficherProgrammeLaRochelle && niveauFormationProgramme !== null ? (
+              <ProgrammeLicenceInformatique niveauFormation={niveauFormationProgramme} notions={notionsCatalogue} />
             ) : couvertureProgramme.length === 0 ? (
               <p className="mt-4 text-sm text-inkmuted">Aucune notion n’est encore référencée pour cette formation.</p>
             ) : (

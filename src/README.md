@@ -22,6 +22,8 @@ Le choix de l'ia s'est porté sur Claude (Claude API). Il parrait performant pou
 - Mise en place du système de flash card IA (pro)
 - Ajouts questions et questionnaires tout niveaux
 - Pousser Notio sur Vercel 
+- Uniformiser les intitulés des cartes de niveaux 
+- Classer les cartes à partir des L2 (plusieurs niv car plusieurs années)
 
 - Logo Notio + insertion dans Header + onglet 
 - Achat nom de domaine Notio (Notio.fr)(mdr plus dispo)

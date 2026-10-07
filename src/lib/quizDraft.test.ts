@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   clearQuizDraft,
+  choisirBrouillonLePlusRecent,
   getDraftStorageKey,
   getQuestionsFromDraft,
   readQuizDraft,
@@ -11,6 +12,16 @@ import {
 
 test("getDraftStorageKey scopes the draft to the user and quiz", () => {
   assert.equal(getDraftStorageKey("quiz-42", "user-7"), "notio:quiz:draft:user-7:quiz-42");
+});
+
+test("choisirBrouillonLePlusRecent selects the newest synchronized copy", () => {
+  const local = { selections: {}, reponsesAvancees: {}, questionsIds: ["q1"], updatedAt: "2026-10-05T10:00:00.000Z" };
+  const distant = { selections: {}, reponsesAvancees: {}, questionsIds: ["q2"], updatedAt: "2026-10-05T11:00:00.000Z" };
+
+  assert.equal(choisirBrouillonLePlusRecent(local, distant), distant);
+  assert.equal(choisirBrouillonLePlusRecent(distant, local), distant);
+  assert.equal(choisirBrouillonLePlusRecent(local, null), local);
+  assert.equal(choisirBrouillonLePlusRecent(null, distant), distant);
 });
 
 test("saveQuizDraft and readQuizDraft round-trip a draft payload", () => {

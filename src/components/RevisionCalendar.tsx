@@ -16,6 +16,16 @@ interface Props {
   sessionsParSemaine: number;
   dureeSessionMinutes: number;
   sessionsCetteSemaine: number;
+  planificationsPersonnalisees: RevisionCalendarOverride[];
+  onReplanifier: (jourInitial: string, jourCible: string) => Promise<boolean>;
+  onIgnorer: (jourInitial: string) => Promise<boolean>;
+  erreurPlanification: string | null;
+}
+
+export interface RevisionCalendarOverride {
+  jour_initial: string;
+  jour_cible: string | null;
+  ignoree: boolean;
 }
 
 const joursSemaine = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -39,10 +49,24 @@ function dateLocale(date: Date) {
   return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-export default function RevisionCalendar({ dateExamen, evenements, sessionsParSemaine, dureeSessionMinutes, sessionsCetteSemaine }: Props) {
+export default function RevisionCalendar({
+  dateExamen,
+  evenements,
+  sessionsParSemaine,
+  dureeSessionMinutes,
+  sessionsCetteSemaine,
+  planificationsPersonnalisees,
+  onReplanifier,
+  onIgnorer,
+  erreurPlanification,
+}: Props) {
   const aujourdHui = new Date();
   const [moisAffiche, setMoisAffiche] = useState(new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), 1));
   const [jourSelectionne, setJourSelectionne] = useState(cleDate(aujourdHui));
+  const [reportOuvert, setReportOuvert] = useState(false);
+  const [dateCible, setDateCible] = useState("");
+  const [enregistrementPlanification, setEnregistrementPlanification] = useState(false);
+  const [erreurAction, setErreurAction] = useState<string | null>(null);
 
   const evenementsParJour = useMemo(() => {
     return evenements.reduce<Record<string, EvenementRevision[]>>((acc, evenement) => {
@@ -106,15 +130,73 @@ export default function RevisionCalendar({ dateExamen, evenements, sessionsParSe
       semaine.setDate(semaine.getDate() + 7);
     }
 
+    for (const modification of planificationsPersonnalisees) {
+      planifies.delete(modification.jour_initial);
+      if (!modification.ignoree && modification.jour_cible && !joursCompletes.has(modification.jour_cible)) {
+        planifies.add(modification.jour_cible);
+      }
+    }
+
     return planifies;
-  }, [dateExamen, evenementsParJour, moisAffiche, sessionsCetteSemaine, sessionsParSemaine]);
+  }, [dateExamen, evenementsParJour, moisAffiche, planificationsPersonnalisees, sessionsCetteSemaine, sessionsParSemaine]);
 
   const evenementsSelectionnes = evenementsParJour[jourSelectionne] || [];
   const examenDansLeMois = dateExamen?.startsWith(`${moisAffiche.getFullYear()}-${String(moisAffiche.getMonth() + 1).padStart(2, "0")}`);
   const sessionPlanifieeSelectionnee = joursPlanifies.has(jourSelectionne);
+  const planificationOrigine = planificationsPersonnalisees.find((modification) =>
+    !modification.ignoree && modification.jour_cible === jourSelectionne
+  );
+  const jourInitialSelectionne = planificationOrigine?.jour_initial ?? jourSelectionne;
 
   function changerMois(delta: number) {
     setMoisAffiche((mois) => new Date(mois.getFullYear(), mois.getMonth() + delta, 1));
+  }
+
+  async function enregistrerReport() {
+    setErreurAction(null);
+    if (!dateCible || dateCible === jourInitialSelectionne) {
+      setErreurAction("Choisis une autre date pour reporter la séance.");
+      return;
+    }
+    if (dateCible <= cleDate(aujourdHui) || (dateExamen && dateCible >= dateExamen)) {
+      setErreurAction("Choisis une date future, avant ton examen.");
+      return;
+    }
+    if (joursPlanifies.has(dateCible) || evenementsParJour[dateCible]?.length) {
+      setErreurAction("Une séance est déjà prévue ou enregistrée à cette date.");
+      return;
+    }
+
+    setEnregistrementPlanification(true);
+    try {
+      if (await onReplanifier(jourInitialSelectionne, dateCible)) {
+        setReportOuvert(false);
+        setDateCible("");
+      } else {
+        setErreurAction("La séance n’a pas pu être déplacée. Réessaie.");
+      }
+    } catch {
+      setErreurAction("La séance n’a pas pu être déplacée. Réessaie.");
+    } finally {
+      setEnregistrementPlanification(false);
+    }
+  }
+
+  async function ignorerSession() {
+    setErreurAction(null);
+    setEnregistrementPlanification(true);
+    try {
+      if (await onIgnorer(jourInitialSelectionne)) {
+        setReportOuvert(false);
+        setDateCible("");
+      } else {
+        setErreurAction("La séance n’a pas pu être ignorée. Réessaie.");
+      }
+    } catch {
+      setErreurAction("La séance n’a pas pu être ignorée. Réessaie.");
+    } finally {
+      setEnregistrementPlanification(false);
+    }
   }
 
   return (
@@ -175,7 +257,35 @@ export default function RevisionCalendar({ dateExamen, evenements, sessionsParSe
         {sessionPlanifieeSelectionnee && (
           <div className="mt-3 border-l-2 border-navy pl-3">
             <p className="text-sm font-semibold text-ink">Séance conseillée · {dureeSessionMinutes} minutes</p>
-            <p className="mt-1 text-xs text-inkmuted">Une courte session suffit. Tu peux la déplacer ou adapter ton rythme depuis ton profil.</p>
+            <p className="mt-1 text-xs text-inkmuted">Une courte session suffit. Déplace-la à un autre jour ou ignore cette suggestion.</p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button type="button" onClick={() => { setErreurAction(null); setReportOuvert((ouvert) => !ouvert); }} className="text-xs font-semibold text-navy underline underline-offset-4">
+                {reportOuvert ? "Annuler le déplacement" : "Reporter la séance"}
+              </button>
+              <button type="button" onClick={() => void ignorerSession()} disabled={enregistrementPlanification} className="text-xs font-semibold text-inkmuted underline underline-offset-4 disabled:opacity-50">
+                Ignorer
+              </button>
+            </div>
+            {reportOuvert && (
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div className="min-w-0 flex-1">
+                  <label htmlFor="date-session-reportee" className="text-xs font-medium text-inkmuted">Nouvelle date</label>
+                  <input
+                    id="date-session-reportee"
+                    type="date"
+                    min={cleDate(aujourdHui)}
+                    max={dateExamen || undefined}
+                    value={dateCible}
+                    onChange={(event) => setDateCible(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-ink"
+                  />
+                </div>
+                <button type="button" onClick={() => void enregistrerReport()} disabled={enregistrementPlanification || !dateCible} className="rounded-md bg-navy px-3 py-2 text-xs font-semibold text-paper disabled:opacity-50">
+                  {enregistrementPlanification ? "Enregistrement…" : "Confirmer"}
+                </button>
+              </div>
+            )}
+            {(erreurAction || erreurPlanification) && <p role="alert" className="mt-2 text-xs text-red-700">{erreurAction || erreurPlanification}</p>}
           </div>
         )}
         {evenementsSelectionnes.length === 0 ? (

@@ -34,6 +34,38 @@ export function getDraftStorageKey(quizId: string, userId: string): string {
   return `notio:quiz:draft:${userId}:${quizId}`;
 }
 
+export function normaliserQuizDraft(valeur: unknown): QuizDraft | null {
+  if (typeof valeur !== "object" || valeur === null || Array.isArray(valeur)) return null;
+  const draft = valeur as Partial<QuizDraft>;
+  const selections = typeof draft.selections === "object" && draft.selections !== null
+    ? Object.fromEntries(Object.entries(draft.selections).flatMap(([questionId, choix]) =>
+      Array.isArray(choix) ? [[questionId, choix.filter((id): id is string => typeof id === "string")]] : []))
+    : {};
+  const reponsesAvancees = typeof draft.reponsesAvancees === "object" && draft.reponsesAvancees !== null
+    ? Object.fromEntries(Object.entries(draft.reponsesAvancees).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+    : {};
+  const questionsIds = Array.isArray(draft.questionsIds)
+    ? draft.questionsIds.filter((questionId): questionId is string => typeof questionId === "string")
+    : [];
+  const updatedAt = typeof draft.updatedAt === "string" && !Number.isNaN(Date.parse(draft.updatedAt))
+    ? draft.updatedAt
+    : new Date().toISOString();
+
+  return { selections, reponsesAvancees, questionsIds, updatedAt };
+}
+
+export function choisirBrouillonLePlusRecent(
+  brouillonLocal: QuizDraft | null,
+  brouillonDistant: QuizDraft | null,
+): QuizDraft | null {
+  if (!brouillonLocal) return brouillonDistant;
+  if (!brouillonDistant) return brouillonLocal;
+
+  return Date.parse(brouillonDistant.updatedAt) > Date.parse(brouillonLocal.updatedAt)
+    ? brouillonDistant
+    : brouillonLocal;
+}
+
 export function saveQuizDraft(
   quizId: string,
   userId: string,
@@ -55,16 +87,7 @@ export function readQuizDraft(
   try {
     const value = readStorageItem(storage, getDraftStorageKey(quizId, userId));
     if (!value) return null;
-
-    const parsed = JSON.parse(value) as Partial<QuizDraft>;
-    if (!parsed || typeof parsed !== "object") return null;
-
-    return {
-      selections: parsed.selections ?? {},
-      reponsesAvancees: parsed.reponsesAvancees ?? {},
-      questionsIds: Array.isArray(parsed.questionsIds) ? parsed.questionsIds.filter((questionId): questionId is string => typeof questionId === "string") : [],
-      updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : new Date().toISOString(),
-    };
+    return normaliserQuizDraft(JSON.parse(value));
   } catch {
     return null;
   }
