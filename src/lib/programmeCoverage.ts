@@ -44,6 +44,15 @@ export function estProgrammeLicenceInformatiqueLaRochelle(
   return /^l[1-3] informatique$/.test(formationNormalisee) && etablissementNormalise.includes("rochelle");
 }
 
+export function estProgrammeLicenceDroitLaRochelle(
+  formation: string | null | undefined,
+  etablissement: string | null | undefined,
+): boolean {
+  const formationNormalisee = normaliserTexte(formation);
+  const etablissementNormalise = normaliserTexte(etablissement);
+  return /^l[1-3] droit$/.test(formationNormalisee) && etablissementNormalise.includes("rochelle");
+}
+
 export function construireSemestresProgramme(
   programme: ProgrammeCurriculum,
   niveauFormation: number,

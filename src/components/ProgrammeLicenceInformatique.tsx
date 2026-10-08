@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { programmeLicenceInformatiqueLaRochelle } from "../data/programmeLicenceInformatiqueLaRochelle";
+import { programmeLicenceInformatiqueLaRochelle, type ProgrammeCurriculum } from "../data/programmeLicenceInformatiqueLaRochelle";
 import { construireSemestresProgramme, type EtatCoursProgramme, type NotionSuivieProgramme } from "../lib/programmeCoverage";
 
 interface Props {
   niveauFormation: number;
   notions: NotionSuivieProgramme[];
+  programme?: ProgrammeCurriculum;
 }
 
 const etatsCours: Record<EtatCoursProgramme, { libelle: string; classes: string }> = {
@@ -14,17 +15,22 @@ const etatsCours: Record<EtatCoursProgramme, { libelle: string; classes: string 
   "non-disponible": { libelle: "Pas encore dans Notio", classes: "bg-paper text-inkmuted" },
 };
 
-export default function ProgrammeLicenceInformatique({ niveauFormation, notions }: Props) {
-  const semestres = construireSemestresProgramme(programmeLicenceInformatiqueLaRochelle, niveauFormation, notions);
+export default function ProgrammeLicenceInformatique({
+  niveauFormation,
+  notions,
+  programme = programmeLicenceInformatiqueLaRochelle,
+}: Props) {
+  const semestres = construireSemestresProgramme(programme, niveauFormation, notions);
+  const universite = programme.nom.slice(programme.nom.lastIndexOf(", ") + 2);
 
   return (
     <div className="mt-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
         <p className="text-sm font-semibold text-ink">
-          {programmeLicenceInformatiqueLaRochelle.parcours} · La Rochelle Université
+          {programme.parcours} · {universite}
         </p>
         <a
-          href={programmeLicenceInformatiqueLaRochelle.source}
+          href={programme.source}
           target="_blank"
           rel="noreferrer"
           className="text-xs font-semibold text-navy underline underline-offset-4"

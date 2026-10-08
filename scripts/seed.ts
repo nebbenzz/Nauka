@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import { informatiqueMatiere, informatiqueQuestions, informatiqueQuizzes, quizzesLicenceInformatiqueLaRochelle } from "../src/data/seed/informatique";
-import { droitMatiere, droitQuestions, droitQuizzes } from "../src/data/seed/droit";
+import { droitMatiere, droitQuestions, droitQuizzes, quizzesLicenceDroitLaRochelle } from "../src/data/seed/droit";
 import { sciencesVieMatiere, sciencesVieQuestions, sciencesVieQuizzes } from "../src/data/seed/sciences-vie";
 import { btsGestionMatiere, btsGestionQuestions, btsGestionQuizzes } from "../src/data/seed/bts-gestion";
 import type { QuestionSeed, QuizSeed } from "../src/data/seed/types";
@@ -19,7 +19,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 const MAX_QUESTIONS_PAR_QUIZ = 10;
-const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "sciences-vie", "bts-gestion"]);
+const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "bts-gestion"]);
 const matiereCible = process.argv[2]?.trim().toLowerCase();
 
 async function upsertMatiere(nom: string, description: string): Promise<string> {
@@ -154,7 +154,7 @@ async function seedMatiere(
       const { data: quizAvecAncienTitre, error: erreurAncienTitre } = await supabase
         .from("quiz")
         .select("id")
-        .eq("titre", `Licence Informatique — ${quiz.titre}`)
+        .eq("titre", `${matiere.nom === "Droit" ? "Licence Droit" : "Licence Informatique"} — ${quiz.titre}`)
         .eq("matiere_id", matiereId)
         .maybeSingle();
       if (erreurAncienTitre) throw erreurAncienTitre;
@@ -232,6 +232,12 @@ async function main() {
     const questionsCibles = [...informatiqueQuestions, ...btsInformatiqueQuestions]
       .filter((question) => notionsCibles.has(question.notion));
     await seedMatiere(informatiqueMatiere, questionsCibles, quizzesLicenceInformatiqueLaRochelle);
+  }
+
+  if (matiereCible === "licence-droit") {
+    const notionsCibles = new Set(quizzesLicenceDroitLaRochelle.flatMap((quiz) => quiz.notionFiltre ?? []));
+    const questionsCibles = droitQuestions.filter((question) => notionsCibles.has(question.notion));
+    await seedMatiere(droitMatiere, questionsCibles, quizzesLicenceDroitLaRochelle);
   }
 
   if (!matiereCible || matiereCible === "informatique") {

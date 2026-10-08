@@ -1533,6 +1533,550 @@ droitQuestions.push(
   },
 );
 
+type QuestionSupplementaireDroit = {
+  type: "qcu" | "qcm";
+  intitule: string;
+  bonnesReponses: string[];
+  mauvaisesReponses: string[];
+  explication: string;
+};
+
+interface LotQuestionsProgrammeDroit {
+  notion: string;
+  niveau: number;
+  questions: [
+    QuestionSupplementaireDroit,
+    QuestionSupplementaireDroit,
+    QuestionSupplementaireDroit,
+    QuestionSupplementaireDroit,
+    QuestionSupplementaireDroit,
+    QuestionSupplementaireDroit,
+  ];
+}
+
+function qcuDroit(intitule: string, bonne: string, mauvaises: [string, string, string], explication: string): QuestionSupplementaireDroit {
+  return { type: "qcu", intitule, bonnesReponses: [bonne], mauvaisesReponses: mauvaises, explication };
+}
+
+function qcmDroit(intitule: string, bonnes: [string, string], mauvaises: [string, string], explication: string): QuestionSupplementaireDroit {
+  return { type: "qcm", intitule, bonnesReponses: bonnes, mauvaisesReponses: mauvaises, explication };
+}
+
+const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
+  {
+    notion: "Introduction au droit",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quelle branche règle principalement les rapports entre personnes privées ?", "Le droit privé", ["Le droit constitutionnel", "Le droit administratif", "Le droit budgétaire"], "Le droit privé encadre principalement les rapports entre personnes privées ; le droit public organise notamment l'action publique."),
+      qcuDroit("Quel instrument sert à interpréter une règle en tenant compte de son contexte et de son objectif ?", "L'interprétation juridique", ["La preuve par sondage", "La hiérarchie des juridictions", "La promulgation"], "L'interprétation recherche le sens et la portée de la règle au regard de son texte, de son contexte et de sa finalité."),
+      qcuDroit("Qu'appelle-t-on une personne morale ?", "Une entité à laquelle le droit reconnaît une personnalité juridique distincte", ["Une personne physique ayant plusieurs prénoms", "Un document signé devant témoin", "Une juridiction spécialisée"], "Une société ou une association peut notamment être reconnue comme personne morale et agir en son nom."),
+      qcmDroit("Quelles propriétés décrivent une règle impérative ?", ["Les parties ne peuvent pas librement y déroger", "Elle s'impose dans son champ pour protéger un intérêt que la loi juge nécessaire"], ["Elle ne s'applique qu'aux personnes qui la connaissent", "Elle peut être écartée par une simple clause contraire"], "Une règle impérative s'impose aux personnes concernées et ne peut être écartée par leur seule volonté."),
+      qcmDroit("Quelles sources peuvent contribuer à déterminer le droit applicable en France ?", ["La Constitution et les lois", "Les règlements pris par les autorités compétentes"], ["Une opinion publiée sans valeur juridique", "Un usage personnel ignoré de tous"], "Constitution, lois, règlements, traités et jurisprudence interviennent selon leur place et leur domaine."),
+      qcmDroit("Quelles démarches sont utiles pour qualifier juridiquement une situation ?", ["Identifier les faits pertinents", "Relier les faits aux conditions d'une règle applicable"], ["Choisir une règle avant de lire les faits", "Confondre l'allégation d'une partie et un fait établi"], "La qualification juridique confronte les faits pertinents aux catégories et conditions définies par le droit."),
+    ],
+  },
+  {
+    notion: "Droit constitutionnel - théorie générale",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel est l'objet principal du droit constitutionnel ?", "L'organisation et l'exercice du pouvoir politique ainsi que les droits garantis", ["La gestion quotidienne des contrats de vente", "La fixation des prix commerciaux", "Le règlement intérieur de chaque association"], "Le droit constitutionnel étudie l'organisation des pouvoirs publics et les normes constitutionnelles, notamment relatives aux droits."),
+      qcuDroit("Que désigne le pouvoir constituant originaire ?", "Le pouvoir d'établir une nouvelle Constitution", ["Le pouvoir de rendre une décision de justice", "Le pouvoir de conclure un contrat privé", "Le pouvoir d'adopter un règlement municipal"], "Le pouvoir constituant originaire instaure un nouvel ordre constitutionnel, à distinguer de la révision prévue par une Constitution existante."),
+      qcuDroit("Quel est l'intérêt d'un contrôle de constitutionnalité ?", "Vérifier la conformité d'une norme à la Constitution selon la procédure applicable", ["Remplacer toutes les juridictions ordinaires", "Vérifier uniquement la conformité d'un contrat à une facture", "Autoriser le gouvernement à ignorer la loi"], "Le contrôle de constitutionnalité confronte une norme à la Constitution par les voies prévues par le droit."),
+      qcmDroit("Quelles notions sont classiquement étudiées en droit constitutionnel ?", ["La séparation des pouvoirs", "Le contrôle de constitutionnalité"], ["Le calcul du salaire net", "La responsabilité contractuelle d'un vendeur uniquement"], "La séparation des pouvoirs et le contrôle de constitutionnalité sont des thèmes classiques de droit constitutionnel."),
+      qcmDroit("Quelles propositions décrivent généralement une Constitution écrite ?", ["Elle énonce des règles fondamentales relatives aux pouvoirs publics", "Elle peut prévoir une procédure particulière de révision"], ["Elle est nécessairement impossible à modifier", "Elle remplace automatiquement toutes les lois ordinaires"], "Une Constitution écrite fixe des règles fondamentales et peut établir les conditions de sa propre révision."),
+      qcmDroit("Quelles affirmations distinguent le régime politique de la forme de l'État ?", ["La forme de l'État décrit notamment son organisation territoriale", "Le régime politique concerne les relations et l'exercice des pouvoirs"], ["Les deux notions désignent toujours la même chose", "La forme de l'État dépend uniquement du nombre de ministres"], "La forme de l'État et le régime politique sont deux dimensions distinctes de l'organisation constitutionnelle."),
+    ],
+  },
+  {
+    notion: "Droit civil - les personnes",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel événement marque en principe le début de la personnalité juridique d'une personne physique en droit civil français ?", "La naissance vivante et viable", ["La majorité", "La première inscription scolaire", "La délivrance d'un passeport"], "La personnalité juridique commence en principe à la naissance si l'enfant naît vivant et viable, sous réserve de mécanismes protecteurs de l'enfant conçu."),
+      qcuDroit("Que désigne la capacité de jouissance ?", "L'aptitude à être titulaire de droits", ["L'aptitude à conduire tout véhicule", "Le droit de voter à toute élection", "La capacité de conclure seul tout acte"], "La capacité de jouissance concerne l'aptitude à posséder des droits ; la capacité d'exercice porte sur leur exercice."),
+      qcuDroit("Quelle institution protège un majeur dont les facultés sont altérées selon les conditions prévues par la loi ?", "Une mesure de protection juridique", ["Une sanction pénale automatique", "Une procédure de naturalisation", "Une autorisation de construire"], "La sauvegarde de justice, la curatelle ou la tutelle sont des mesures de protection adaptées à différentes situations."),
+      qcmDroit("Quels éléments peuvent permettre d'identifier une personne physique dans l'état civil ?", ["Son nom", "Sa date et son lieu de naissance"], ["Son numéro de dossier judiciaire uniquement", "Le nom de son employeur actuel"], "L'état civil comporte des éléments d'identification comme le nom, les prénoms, la naissance et la filiation selon les actes concernés."),
+      qcmDroit("Quelles affirmations concernant le respect de la personne sont exactes ?", ["La vie privée bénéficie d'une protection juridique", "L'intégrité du corps humain est protégée par des règles spécifiques"], ["Toute atteinte est libre avec un simple accord oral", "Le droit au respect de la vie privée ne concerne que les personnes publiques"], "La vie privée et l'intégrité du corps sont protégées par des principes et textes applicables selon les circonstances."),
+      qcmDroit("Quelles notions sont à distinguer en matière de capacité ?", ["La capacité de jouissance", "La capacité d'exercice"], ["La personnalité morale et la nationalité uniquement", "Le domicile et le régime fiscal uniquement"], "La jouissance porte sur la titularité des droits ; l'exercice porte sur la possibilité de les exercer soi-même."),
+    ],
+  },
+  {
+    notion: "Introduction historique au droit",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel code promulgué en 1804 est devenu le socle historique du droit civil français ?", "Le Code civil", ["Le Code de commerce de 1804", "Le Code pénal de 1958", "La Constitution de 1791"], "Le Code civil de 1804, parfois appelé Code Napoléon, a profondément unifié et structuré le droit civil français."),
+      qcuDroit("Quel ordre politique précède la Révolution française de 1789 ?", "La monarchie d'Ancien Régime", ["La Cinquième République", "Le Directoire européen", "La Quatrième République"], "La Révolution de 1789 met fin à l'ordre monarchique d'Ancien Régime et ouvre une période de transformation juridique."),
+      qcuDroit("Pourquoi l'étude historique du droit est-elle utile ?", "Pour comprendre l'origine et l'évolution des institutions et des règles", ["Pour rendre toute règle ancienne applicable aujourd'hui", "Pour remplacer l'interprétation des textes en vigueur", "Pour déterminer automatiquement l'issue de tout procès"], "L'histoire éclaire la formation des concepts juridiques, sans rendre automatiquement applicables les règles anciennes."),
+      qcmDroit("Quelles évolutions sont associées à la période révolutionnaire française ?", ["La remise en cause des privilèges d'Ancien Régime", "L'affirmation de nouveaux principes d'égalité juridique"], ["La création immédiate de l'Union européenne", "Le rétablissement de toutes les corporations féodales"], "La Révolution transforme les structures politiques et juridiques et affirme notamment l'égalité devant la loi."),
+      qcmDroit("Quelles sources ont contribué à la formation historique du droit français ?", ["Le droit romain", "Les coutumes et ordonnances royales"], ["Les protocoles Internet", "Les seuls règlements municipaux contemporains"], "Le droit romain, les coutumes, les ordonnances et les codifications ont contribué à l'histoire juridique française."),
+      qcmDroit("Quelles affirmations sur la codification sont exactes ?", ["Elle rassemble et organise des règles dans un ensemble structuré", "Elle peut favoriser l'accessibilité et la cohérence des textes"], ["Elle rend toutes les décisions de justice identiques", "Elle empêche toute réforme ultérieure"], "La codification organise les règles par matières, sans rendre le droit immuable ni supprimer l'interprétation."),
+    ],
+  },
+  {
+    notion: "Science politique",
+    niveau: 1,
+    questions: [
+      qcuDroit("Que désigne principalement la légitimité politique ?", "La reconnaissance du droit à gouverner par la population ou les institutions", ["Le montant du budget d'une commune", "La compétence d'un tribunal civil", "La rédaction matérielle d'un bulletin de vote"], "La légitimité concerne la reconnaissance de l'autorité politique comme justifiée selon des critères sociaux ou institutionnels."),
+      qcuDroit("Quel mécanisme permet aux citoyens de choisir des représentants ?", "L'élection", ["La promulgation", "La cassation", "La codification"], "L'élection est une procédure de désignation de représentants ou de titulaires de fonctions publiques."),
+      qcuDroit("Quel est l'objet principal d'un parti politique dans une démocratie représentative ?", "Participer à la compétition politique et contribuer à l'expression du suffrage", ["Rendre les décisions de justice", "Remplacer les administrations publiques", "Adopter seul les lois sans procédure"], "Les partis concourent à l'expression du suffrage et à la compétition pour l'exercice du pouvoir politique."),
+      qcmDroit("Quels éléments sont des formes de participation politique ?", ["Voter à une élection", "Participer à une association ou une mobilisation collective"], ["Payer une facture commerciale", "Déposer une marque auprès d'un registre"], "La participation politique comprend le vote et diverses formes d'action collective ou de contribution au débat public."),
+      qcmDroit("Quelles notions permettent d'analyser un régime politique ?", ["La distribution des pouvoirs", "Les modes de désignation et de responsabilité des gouvernants"], ["La marque des véhicules officiels", "La composition d'un contrat de vente"], "L'analyse porte notamment sur les pouvoirs, leur contrôle et les relations entre gouvernants et gouvernés."),
+      qcmDroit("Quelles affirmations décrivent une démocratie représentative ?", ["Des représentants sont choisis selon des procédures électorales", "Les citoyens peuvent aussi exercer des libertés politiques"], ["Les décisions sont prises uniquement par des juges", "Toute consultation implique nécessairement un référendum"], "La représentation organise la désignation de gouvernants, dans un cadre de libertés et de procédures politiques."),
+    ],
+  },
+  {
+    notion: "Introduction à la gestion",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel est l'objectif d'un organigramme dans une organisation ?", "Représenter les fonctions et les relations hiérarchiques ou fonctionnelles", ["Établir la hiérarchie des normes juridiques", "Calculer automatiquement l'impôt sur le revenu", "Remplacer les statuts d'une société"], "Un organigramme donne une représentation synthétique des fonctions et des relations au sein d'une organisation."),
+      qcuDroit("À quoi sert principalement un budget prévisionnel ?", "Anticiper les ressources et les dépenses sur une période", ["Déterminer la culpabilité d'une personne", "Fixer la compétence territoriale d'un tribunal", "Établir un acte d'état civil"], "Un budget prévisionnel estime les recettes et dépenses afin d'aider à la décision et au pilotage."),
+      qcuDroit("Quel document décrit les règles de fonctionnement d'une société lors de sa constitution ?", "Les statuts", ["Le jugement d'ouverture d'une succession", "Le procès-verbal d'une audience pénale", "La déclaration de TVA d'un client"], "Les statuts définissent notamment la forme, l'objet et les règles de fonctionnement de la société."),
+      qcmDroit("Quelles fonctions sont couramment présentes dans une organisation ?", ["La production ou la réalisation du service", "La gestion des ressources humaines"], ["La promulgation des lois nationales", "Le contrôle de constitutionnalité des lois"], "Production, ressources humaines, finance ou commercial sont des fonctions de gestion distinctes des fonctions souveraines de l'État."),
+      qcmDroit("Quelles informations peuvent figurer dans un tableau de bord de gestion ?", ["Des indicateurs associés à des objectifs", "Des données suivies dans le temps"], ["Des informations sans rapport avec les décisions", "Une garantie que toute prévision se réalisera"], "Un tableau de bord rassemble des indicateurs utiles au suivi et à la décision ; il ne garantit pas l'exactitude des prévisions."),
+      qcmDroit("Quelles distinctions sont utiles pour analyser les ressources d'une organisation ?", ["Charges et produits", "Recettes et dépenses"], ["Peines et infractions", "Compétence et recevabilité d'une juridiction"], "Les catégories comptables et budgétaires servent à suivre les flux et la situation financière de l'organisation."),
+    ],
+  },
+  {
+    notion: "Argumentation et logique",
+    niveau: 1,
+    questions: [
+      qcuDroit("Dans un syllogisme juridique, quelle place occupe la règle générale applicable ?", "La majeure", ["La mineure", "La conclusion", "Le dispositif"], "La majeure énonce la règle générale ; la mineure présente les faits qualifiés ; la conclusion en tire la conséquence juridique."),
+      qcuDroit("Que signifie qualifier juridiquement un fait ?", "Le rattacher à une catégorie juridique pertinente", ["Le rendre automatiquement vrai", "Le transformer en texte de loi", "L'écarter de toute discussion"], "La qualification attribue aux faits une catégorie juridique pour identifier les règles applicables."),
+      qcuDroit("Quel terme désigne une affirmation utilisée pour soutenir une conclusion ?", "Un argument", ["Une compétence territoriale", "Une promulgation", "Une sanction disciplinaire"], "Un argument relie des prémisses à une conclusion et doit être évalué selon sa pertinence et sa solidité."),
+      qcmDroit("Quelles étapes structurent un raisonnement juridique simple ?", ["Énoncer la règle pertinente", "Appliquer la règle aux faits établis"], ["Commencer par choisir une sanction au hasard", "Confondre la demande d'une partie avec la règle applicable"], "Le raisonnement juridique identifie la règle, qualifie et analyse les faits, puis formule une conclusion motivée."),
+      qcmDroit("Quelles qualités renforcent une argumentation juridique ?", ["Des prémisses explicites", "Une conclusion liée aux éléments analysés"], ["Des affirmations contradictoires non expliquées", "L'absence de distinction entre fait et opinion"], "Une argumentation claire expose ses prémisses et explique comment elles justifient la conclusion."),
+      qcmDroit("Quelles précautions aident à éviter un raisonnement fallacieux ?", ["Vérifier que les prémisses soutiennent réellement la conclusion", "Distinguer corrélation et causalité"], ["Déduire une règle générale d'un cas isolé sans justification", "Ignorer les faits qui contredisent l'hypothèse"], "L'examen logique contrôle le lien entre les prémisses et la conclusion et recherche les contre-exemples pertinents."),
+    ],
+  },
+  {
+    notion: "Histoire des institutions",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel changement institutionnel majeur est associé à la Révolution française ?", "La remise en cause de la monarchie absolue et des privilèges", ["La création du Conseil de l'Europe", "L'adoption de l'euro", "La disparition de toute administration"], "La période révolutionnaire transforme la souveraineté, les institutions et l'organisation juridique héritées de l'Ancien Régime."),
+      qcuDroit("Quel régime succède à la Première République en 1799 ?", "Le Consulat", ["La Cinquième République", "La Restauration de 1814 immédiatement", "La Troisième République"], "Le coup d'État de 18 Brumaire instaure le Consulat en 1799."),
+      qcuDroit("Quel texte organise les institutions de la Ve République ?", "La Constitution du 4 octobre 1958", ["Le Code civil de 1804", "La Charte de 1814", "Le traité de Rome de 1957"], "La Constitution promulguée le 4 octobre 1958 fonde les institutions de la Ve République."),
+      qcmDroit("Quelles périodes ont marqué l'évolution des institutions françaises ?", ["La monarchie d'Ancien Régime", "Les Républiques successives"], ["Un système institutionnel inchangé depuis l'Antiquité", "Une administration créée uniquement par l'Union européenne"], "L'histoire institutionnelle française est marquée par différents régimes, révolutions et changements constitutionnels."),
+      qcmDroit("Quelles transformations sont associées à la construction de l'État moderne en France ?", ["La centralisation progressive de certaines fonctions", "La mise en place d'administrations et de juridictions organisées"], ["La disparition complète de toute règle écrite", "La suppression permanente de tout pouvoir central"], "La construction de l'État moderne passe notamment par la consolidation du pouvoir central et l'organisation d'institutions."),
+      qcmDroit("Quelles affirmations distinguent une institution d'un titulaire de fonction ?", ["Une institution est une structure ou un ensemble de compétences organisé", "Les personnes titulaires d'une fonction peuvent changer sans supprimer l'institution"], ["Une institution est toujours une personne physique", "Le départ d'un titulaire abolit nécessairement la règle constitutionnelle"], "L'institution perdure au-delà des personnes qui occupent temporairement les fonctions prévues."),
+    ],
+  },
+  {
+    notion: "Institutions administratives",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quelle collectivité territoriale administre les affaires d'une commune ?", "La commune", ["La préfecture de région", "Le Parlement", "La Cour de cassation"], "La commune est une collectivité territoriale administrée par un conseil municipal et un maire."),
+      qcuDroit("Quel représentant de l'État exerce des fonctions dans un département ?", "Le préfet", ["Le maire élu par le conseil municipal", "Le président de la Cour de cassation", "Le président du Sénat"], "Le préfet représente l'État dans le département et exerce les missions définies par les textes."),
+      qcuDroit("Que signifie la décentralisation administrative ?", "Le transfert de compétences à des personnes publiques distinctes de l'État, dotées d'une autonomie", ["La suppression de toutes les collectivités territoriales", "Le transfert du pouvoir judiciaire aux entreprises", "La concentration de toutes les décisions à Paris"], "La décentralisation confie des compétences à des collectivités ou établissements publics distincts de l'État, sous le contrôle prévu par le droit."),
+      qcmDroit("Quelles entités sont des collectivités territoriales françaises ?", ["La commune", "Le département"], ["Le tribunal judiciaire", "Le ministère pris isolément"], "Communes, départements et régions sont notamment des collectivités territoriales ; une juridiction ou un ministère n'en est pas une."),
+      qcmDroit("Quelles affirmations distinguent déconcentration et décentralisation ?", ["La déconcentration répartit des fonctions de l'État entre ses services", "La décentralisation confie des compétences à des personnes publiques autonomes"], ["La déconcentration crée nécessairement une nouvelle collectivité élue", "Les deux notions signifient la privatisation d'un service"], "La déconcentration reste au sein de la même personne morale, l'État ; la décentralisation concerne des personnes publiques distinctes."),
+      qcmDroit("Quelles missions relèvent typiquement d'une administration publique ?", ["Mettre en œuvre des politiques publiques", "Gérer des services publics selon les compétences attribuées"], ["Rendre tous les arrêts des juridictions", "Adopter seule toute loi de la République"], "Les administrations exécutent les missions publiques dans le cadre de leurs compétences, sous le contrôle applicable."),
+    ],
+  },
+  {
+    notion: "Droit civil - la famille",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel principe guide les décisions concernant un enfant dans les procédures qui le concernent ?", "La prise en considération de son intérêt supérieur", ["L'application automatique de la préférence d'un tiers", "L'absence de toute audition possible", "Le choix exclusif de l'administration scolaire"], "L'intérêt supérieur de l'enfant doit être une considération primordiale selon les textes applicables."),
+      qcuDroit("Que désigne la filiation ?", "Le lien juridique entre un enfant et ses parents", ["Un contrat de travail à durée déterminée", "La nationalité d'une juridiction", "Une règle de compétence territoriale"], "La filiation est le lien juridique qui rattache un enfant à ses parents selon les modes prévus par la loi."),
+      qcuDroit("Quel effet caractérise l'autorité parentale ?", "Un ensemble de droits et de devoirs exercés dans l'intérêt de l'enfant", ["Un droit de propriété sur l'enfant", "Une sanction pénale automatique", "Une compétence pour rendre des décisions de justice"], "L'autorité parentale regroupe des droits et devoirs visant la protection et l'éducation de l'enfant."),
+      qcmDroit("Quels éléments peuvent être pris en compte par un juge dans une décision relative à un enfant ?", ["L'intérêt de l'enfant", "Les circonstances concrètes de sa situation"], ["La seule préférence d'un parent sans examen", "Une règle qui exclut toujours l'audition du mineur"], "Le juge examine les circonstances et l'intérêt de l'enfant dans le cadre des règles procédurales applicables."),
+      qcmDroit("Quelles affirmations concernant le mariage civil sont exactes ?", ["Il est célébré par une autorité d'état civil compétente", "Le consentement des futurs époux est une condition essentielle"], ["Un accord commercial suffit à créer un mariage", "Il n'entraîne jamais d'effets juridiques"], "Le mariage civil suppose notamment le consentement des époux et une célébration conformément aux règles d'état civil."),
+      qcmDroit("Quelles notions peuvent organiser les relations patrimoniales d'un couple ?", ["Un régime matrimonial", "La séparation ou la communauté de certains biens selon le régime applicable"], ["La compétence d'une cour d'assises", "La hiérarchie entre loi et règlement"], "Le régime matrimonial organise les rapports patrimoniaux des époux selon le régime applicable et, le cas échéant, leur contrat."),
+    ],
+  },
+  {
+    notion: "Droit constitutionnel - Ve République",
+    niveau: 1,
+    questions: [
+      qcuDroit("Qui nomme le Premier ministre sous la Ve République ?", "Le président de la République", ["Le président du Conseil constitutionnel", "Le président de l'Assemblée nationale seul", "Le président de la Cour de cassation"], "L'article 8 de la Constitution prévoit que le président de la République nomme le Premier ministre."),
+      qcuDroit("Quelle institution vote la loi avec le Sénat dans le cadre du Parlement ?", "L'Assemblée nationale", ["Le Conseil d'État", "La Cour des comptes", "Le Conseil constitutionnel"], "Le Parlement comprend l'Assemblée nationale et le Sénat, qui participent à l'examen et au vote de la loi."),
+      qcuDroit("Quel organe contrôle notamment la conformité des lois à la Constitution ?", "Le Conseil constitutionnel", ["La Cour de cassation", "Le tribunal de commerce", "Le Conseil économique et social uniquement"], "Le Conseil constitutionnel exerce notamment le contrôle de constitutionnalité selon les procédures prévues."),
+      qcmDroit("Quelles compétences appartiennent au président de la République selon la Constitution ?", ["Promulguer les lois", "Nommer le Premier ministre"], ["Présider les audiences de la Cour de cassation", "Voter seul les lois ordinaires"], "La Constitution attribue notamment au président la promulgation des lois et la nomination du Premier ministre."),
+      qcmDroit("Quelles affirmations sur le Gouvernement sont exactes ?", ["Il détermine et conduit la politique de la Nation", "Le Premier ministre dirige l'action du Gouvernement"], ["Il exerce seul le pouvoir judiciaire", "Il peut modifier librement la Constitution par décret"], "Les articles 20 et 21 de la Constitution définissent les fonctions du Gouvernement et du Premier ministre."),
+      qcmDroit("Quelles institutions composent le Parlement français ?", ["L'Assemblée nationale", "Le Sénat"], ["Le Conseil constitutionnel", "La Cour des comptes"], "Le Parlement est composé de l'Assemblée nationale et du Sénat."),
+    ],
+  },
+  {
+    notion: "Relations internationales",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quel sujet possède en principe la personnalité juridique internationale générale ?", "L'État", ["Une commune française dans tous les domaines", "Une société commerciale ordinaire", "Une juridiction nationale"], "L'État est un sujet central du droit international public, doté notamment d'une personnalité juridique internationale."),
+      qcuDroit("Quel instrument écrit formalise fréquemment un accord entre États ?", "Un traité international", ["Un règlement intérieur d'entreprise", "Un acte de naissance", "Une ordonnance municipale"], "Un traité est un accord international écrit régi par le droit international."),
+      qcuDroit("Quel principe affirme l'égalité juridique souveraine des États ?", "L'égalité souveraine des États", ["La subordination de tous les États à une commune", "La primauté automatique d'un contrat privé", "La compétence exclusive d'un parlement étranger"], "La Charte des Nations unies affirme l'égalité souveraine de ses membres."),
+      qcmDroit("Quelles entités peuvent participer aux relations internationales ?", ["Les États", "Les organisations internationales"], ["Les particuliers comme seuls auteurs de traités interétatiques", "Les collectivités territoriales comme sujets universels de toutes les compétences internationales"], "États et organisations internationales sont des acteurs majeurs ; la capacité des autres acteurs dépend du cadre juridique."),
+      qcmDroit("Quelles sources sont reconnues par le droit international public ?", ["Les traités", "La coutume internationale"], ["Un contrat privé sans lien avec un État", "Un sondage d'opinion isolé"], "Le Statut de la Cour internationale de Justice mentionne notamment les traités et la coutume parmi les sources à appliquer."),
+      qcmDroit("Quelles fonctions peuvent remplir les organisations internationales ?", ["Organiser la coopération entre États", "Mettre en œuvre les compétences que leurs textes constitutifs leur attribuent"], ["Remplacer automatiquement les constitutions nationales", "Exercer toutes les compétences des États sans fondement"], "Les organisations agissent dans les limites des compétences attribuées par leurs textes constitutifs."),
+    ],
+  },
+  {
+    notion: "Droit européen - introduction",
+    niveau: 1,
+    questions: [
+      qcuDroit("Quelle institution de l'Union européenne est élue directement par les citoyens de l'Union ?", "Le Parlement européen", ["La Commission européenne", "La Cour de justice de l'Union européenne", "Le Conseil de l'Europe"], "Les députés au Parlement européen sont élus au suffrage universel direct dans les États membres."),
+      qcuDroit("Quel texte fondateur fixe notamment les compétences et le fonctionnement de l'Union européenne ?", "Les traités de l'Union européenne", ["Le Code civil français", "Le règlement intérieur d'une commune", "La Convention de Genève uniquement"], "Les traités fondateurs et leurs révisions déterminent l'organisation et les compétences de l'Union."),
+      qcuDroit("Quel organe juridictionnel interprète le droit de l'Union européenne ?", "La Cour de justice de l'Union européenne", ["La Cour européenne des droits de l'homme", "La Cour de cassation française", "Le Tribunal des conflits"], "La CJUE assure le respect du droit dans l'interprétation et l'application des traités de l'Union."),
+      qcmDroit("Quelles institutions font partie du cadre institutionnel de l'Union européenne ?", ["Le Parlement européen", "La Commission européenne"], ["Le Conseil constitutionnel français", "La Cour européenne des droits de l'homme"], "Parlement et Commission sont des institutions de l'Union ; les deux autres institutions relèvent d'ordres juridiques différents."),
+      qcmDroit("Quelles affirmations distinguent l'Union européenne du Conseil de l'Europe ?", ["Ce sont deux organisations distinctes", "La Cour européenne des droits de l'homme appartient au système du Conseil de l'Europe"], ["Le Conseil de l'Europe est une institution de l'Union européenne", "La CJUE et la CEDH sont la même juridiction"], "L'Union et le Conseil de l'Europe sont distincts ; la CJUE et la Cour européenne des droits de l'homme ont des cadres différents."),
+      qcmDroit("Quelles formes peuvent prendre les actes du droit dérivé de l'Union européenne ?", ["Un règlement", "Une directive"], ["Un arrêté municipal français", "Une convention collective d'entreprise"], "Les règlements et directives sont des actes de droit dérivé prévus par les traités de l'Union."),
+    ],
+  },
+  {
+    notion: "Droit des obligations - formation",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel mécanisme forme généralement un contrat lorsque les parties se mettent d'accord ?", "La rencontre d'une offre et d'une acceptation", ["La seule rédaction d'un brouillon", "L'enregistrement automatique d'une facture", "La publication d'une annonce sans acceptation"], "Le contrat se forme en principe par la rencontre d'une offre et d'une acceptation exprimant la volonté de s'engager."),
+      qcuDroit("Que constitue en principe une réponse qui modifie le prix proposé dans une offre ?", "Une contre-proposition", ["Une acceptation pure et simple", "Une décision de justice", "Une novation automatique"], "Une acceptation qui n'est pas conforme à l'offre peut constituer une offre nouvelle plutôt que former le contrat initial."),
+      qcuDroit("À quel moment une offre assortie d'un délai ne peut-elle en principe plus être acceptée comme telle ?", "Après l'expiration du délai indiqué", ["Dès qu'elle est lue", "Uniquement après un jugement", "Jamais, même si elle est révoquée dans les conditions légales"], "L'offre cesse en principe d'être valable à l'expiration du délai qu'elle fixe, sous réserve des règles applicables."),
+      qcmDroit("Quelles conditions de validité sont prévues pour un contrat par le Code civil ?", ["Le consentement des parties", "Un contenu licite et certain"], ["L'inscription obligatoire dans un registre public pour tout contrat", "L'intervention systématique d'un juge"], "L'article 1128 du Code civil énonce le consentement, la capacité et un contenu licite et certain."),
+      qcmDroit("Quelles situations peuvent affecter la validité du consentement ?", ["L'erreur dans les conditions prévues par la loi", "Le dol ou la violence dans les conditions légales"], ["Un simple regret sans autre élément", "La lecture d'une offre après son expiration"], "L'erreur, le dol et la violence peuvent constituer des vices du consentement selon leurs conditions juridiques."),
+      qcmDroit("Quelles obligations pèsent généralement sur les parties pendant les négociations ?", ["Négocier de bonne foi", "Informer sur certains éléments déterminants lorsque la loi l'impose"], ["Conclure nécessairement un contrat", "Révéler toute information sans aucune limite"], "Les négociations sont libres mais doivent respecter les exigences légales, notamment de bonne foi et d'information dans les cas prévus."),
+    ],
+  },
+  {
+    notion: "Droit pénal général - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel principe impose qu'une infraction et une peine soient prévues par un texte applicable ?", "Le principe de légalité des délits et des peines", ["Le principe de libre administration", "Le principe de solidarité fiscale", "Le principe de publicité foncière"], "Le principe de légalité interdit de punir un comportement sans incrimination et peine prévus par la loi."),
+      qcuDroit("Quel élément décrit le comportement ou l'omission visé par une incrimination ?", "L'élément matériel", ["L'élément budgétaire", "La personnalité juridique", "La compétence territoriale"], "L'élément matériel correspond aux faits ou à l'omission exigés par l'infraction."),
+      qcuDroit("Qu'est-ce que la complicité en droit pénal ?", "La participation à une infraction dans les conditions prévues par la loi", ["La seule présence sur les lieux", "Une responsabilité civile sans lien avec une infraction", "Une condamnation automatique d'un proche"], "La complicité suppose des actes et une intention répondant aux conditions fixées par le droit pénal."),
+      qcmDroit("Quels éléments sont classiquement examinés pour caractériser une infraction ?", ["L'élément légal", "L'élément matériel"], ["L'élément commercial", "L'élément budgétaire"], "L'analyse distingue notamment l'élément légal, matériel et moral de l'infraction."),
+      qcmDroit("Quelles propositions décrivent la tentative punissable dans les conditions prévues par le Code pénal ?", ["Elle suppose un commencement d'exécution", "Elle peut échouer ou être interrompue indépendamment de la volonté de l'auteur"], ["Une simple pensée est toujours punissable", "Elle exige que le résultat recherché soit toujours atteint"], "La tentative implique notamment un commencement d'exécution et l'absence de désistement volontaire dans les conditions légales."),
+      qcmDroit("Quelles distinctions sont utiles pour analyser l'élément moral ?", ["L'intention exigée par l'infraction", "La faute non intentionnelle lorsqu'elle est prévue"], ["La seule réputation de la personne", "La responsabilité déduite automatiquement d'un dommage"], "L'élément moral dépend de l'incrimination : intention ou faute, sans présumer la culpabilité du seul résultat."),
+    ],
+  },
+  {
+    notion: "Droit des affaires - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel acte relève classiquement du droit commercial lorsqu'il est accompli dans les conditions prévues par le Code de commerce ?", "Un acte de commerce", ["Un acte d'état civil", "Une décision constitutionnelle", "Une déclaration de naissance"], "Le droit commercial s'applique notamment aux actes qualifiés commerciaux par la loi et aux personnes relevant de ce statut."),
+      qcuDroit("Quel registre centralise notamment des informations légales sur les entreprises immatriculées ?", "Le registre national des entreprises", ["Le registre des audiences pénales", "Le cadastre des collectivités uniquement", "Le registre des actes de naissance"], "Le registre national des entreprises centralise des informations relatives aux entreprises dans le cadre légal en vigueur."),
+      qcuDroit("Quel est l'objet principal d'un fonds de commerce ?", "Regrouper des éléments affectés à l'exploitation d'une activité commerciale", ["Créer une juridiction spécialisée", "Remplacer la personnalité juridique de l'exploitant", "Déterminer la nationalité d'un associé"], "Le fonds de commerce est un ensemble d'éléments affectés à l'activité commerciale, distinct de la personne qui l'exploite."),
+      qcmDroit("Quels éléments peuvent composer un fonds de commerce ?", ["La clientèle", "Le nom commercial"], ["La personnalité de l'exploitant", "Un immeuble qui appartient nécessairement au fonds"], "La clientèle et des éléments incorporels comme le nom commercial peuvent composer le fonds ; l'immeuble n'en fait pas automatiquement partie."),
+      qcmDroit("Quelles obligations peuvent concerner un commerçant dans le cadre de son activité ?", ["L'immatriculation lorsque les textes l'exigent", "La tenue d'une comptabilité conforme aux règles applicables"], ["L'obligation d'adopter la forme de société anonyme", "L'immunité contre toute procédure collective"], "Les obligations dépendent du statut et de l'activité ; elles peuvent inclure immatriculation et comptabilité."),
+      qcmDroit("Quelles notions sont utiles pour distinguer une société de son associé ?", ["La personnalité morale lorsqu'elle est acquise", "Le patrimoine propre de la société dans les conditions prévues par la loi"], ["La confusion automatique de toutes les dettes", "L'absence de règles de représentation"], "La personnalité morale distingue l'entité de ses membres, sous réserve des formes et responsabilités prévues par la loi."),
+    ],
+  },
+  {
+    notion: "Finances publiques - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel texte autorise et prévoit les ressources et charges de l'État pour une année ?", "La loi de finances", ["Le Code civil", "Le règlement intérieur du Sénat", "Le contrat de travail"], "La loi de finances prévoit et autorise les ressources et charges de l'État dans les conditions constitutionnelles et organiques."),
+      qcuDroit("Que désigne une dépense publique ?", "Une dépense prise en charge par une personne publique dans le cadre de ses compétences", ["Toute dépense d'un ménage", "Un achat privé sans financement public", "Une peine prononcée par un tribunal"], "Une dépense publique est supportée par une personne publique et doit respecter les règles budgétaires applicables."),
+      qcuDroit("Quel principe budgétaire rapproche dans un document les recettes et les dépenses prévues ?", "L'unité budgétaire", ["La séparation des pouvoirs", "La personnalité des peines", "La force obligatoire du contrat"], "Le principe d'unité tend à présenter les recettes et dépenses dans un document budgétaire cohérent, avec les exceptions prévues."),
+      qcmDroit("Quels principes sont classiquement étudiés en droit budgétaire ?", ["L'annualité", "L'unité"], ["La présomption d'innocence", "La liberté contractuelle uniquement"], "Annualité, unité, universalité et spécialité sont des principes budgétaires classiques, assortis d'aménagements."),
+      qcmDroit("Quelles opérations relèvent de l'exécution budgétaire publique ?", ["L'engagement et la liquidation d'une dépense", "L'ordonnancement et le paiement selon les règles applicables"], ["Le vote direct de chaque facture par un tribunal", "La suppression du contrôle comptable"], "L'exécution suit des étapes et contrôles qui répartissent les rôles entre ordonnateurs et comptables publics."),
+      qcmDroit("Quelles ressources peuvent financer les dépenses publiques ?", ["Les impositions", "Les emprunts dans le cadre autorisé"], ["Les amendes privées sans fondement", "Les cotisations d'une association sans lien"], "Les personnes publiques disposent de ressources variées, notamment fiscales et d'emprunt sous les règles applicables."),
+    ],
+  },
+  {
+    notion: "Histoire du droit pénal - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel changement est associé à la codification pénale révolutionnaire ?", "L'affirmation d'une légalité écrite des infractions et des peines", ["La disparition de toute peine écrite", "Le transfert de tous les procès aux juridictions européennes", "La création de la Ve République"], "La période révolutionnaire affirme notamment la légalité et l'encadrement écrit de la répression."),
+      qcuDroit("À quelle période le Code pénal de 1810 est-il adopté ?", "Sous le Premier Empire", ["Sous la Ve République", "Sous la monarchie de Juillet", "Pendant la Révolution de 1848"], "Le Code pénal de 1810 est adopté sous le Premier Empire et marque durablement l'histoire pénale française."),
+      qcuDroit("Pourquoi l'histoire pénale étudie-t-elle l'évolution des peines ?", "Pour comprendre les transformations des objectifs et des limites de la répression", ["Pour appliquer automatiquement une peine ancienne", "Pour remplacer le principe de légalité", "Pour décider sans examiner le droit en vigueur"], "L'histoire des peines éclaire les évolutions des politiques pénales sans rendre applicables les peines anciennes."),
+      qcmDroit("Quelles évolutions sont souvent étudiées dans l'histoire pénale française ?", ["La codification des infractions et des peines", "La transformation des juridictions criminelles"], ["La disparition de toute procédure", "La création d'une justice entièrement privée"], "Codification et organisation des juridictions reflètent les changements de l'État et de la justice pénale."),
+      qcmDroit("Quelles idées ont contribué aux réformes pénales modernes ?", ["La légalité des délits et des peines", "La proportionnalité de la sanction"], ["La responsabilité pénale héréditaire", "La peine déterminée par la seule réputation"], "Les réformes modernes cherchent notamment à encadrer la répression par la légalité et des garanties individuelles."),
+      qcmDroit("Quelles sources aident à étudier l'histoire du droit pénal ?", ["Les codes et textes de loi de leur époque", "Les archives de juridictions et travaux historiques"], ["Les seules règles aujourd'hui en vigueur", "Les données d'un sondage sans contexte"], "Les textes et archives doivent être replacés dans leur contexte institutionnel et social."),
+    ],
+  },
+  {
+    notion: "Sociologie politique - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Que désigne la socialisation politique ?", "Le processus par lequel une personne acquiert des valeurs et comportements politiques", ["La création d'une société commerciale", "L'inscription d'un jugement au registre foncier", "La rédaction d'un budget communal"], "La socialisation politique se construit par des expériences, groupes et institutions au cours de la vie."),
+      qcuDroit("Quel concept désigne la capacité d'un groupe à influencer les décisions publiques ?", "La mobilisation collective", ["La personnalité civile", "La compétence judiciaire", "La prescription extinctive"], "La mobilisation collective rassemble des acteurs pour défendre une cause ou peser sur des décisions."),
+      qcuDroit("Qu'appelle-t-on abstention électorale ?", "Le fait pour un électeur inscrit de ne pas voter lors d'un scrutin", ["Le fait de voter blanc", "Le fait d'être candidat", "Le fait de publier un décret"], "L'abstention correspond à l'absence de participation au vote, à distinguer du vote blanc ou nul."),
+      qcmDroit("Quels facteurs peuvent influencer la participation politique ?", ["L'âge et les ressources sociales", "La confiance dans les institutions et l'intérêt politique"], ["La couleur du bulletin sans autre facteur", "Une règle qui rend tous les comportements identiques"], "La participation varie selon des facteurs individuels, sociaux, institutionnels et contextuels."),
+      qcmDroit("Quelles formes peut prendre une mobilisation collective ?", ["Une manifestation", "Une campagne associative ou syndicale"], ["Une décision rendue par un tribunal en chambre", "Une inscription cadastrale"], "Manifestations, pétitions, associations et syndicats sont des formes de mobilisation, selon les cadres applicables."),
+      qcmDroit("Quelles notions la sociologie politique peut-elle analyser ?", ["Les groupes sociaux et leurs comportements politiques", "Les rapports entre institutions et citoyens"], ["Uniquement le contenu des contrats individuels", "Le calcul mécanique de toutes les décisions électorales"], "La sociologie politique étudie les acteurs, pratiques, rapports de pouvoir et comportements politiques."),
+    ],
+  },
+  {
+    notion: "Droit administratif - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel est l'objet principal d'un recours pour excès de pouvoir ?", "Demander l'annulation d'un acte administratif illégal", ["Demander la condamnation pénale d'un élu", "Créer un contrat de travail", "Annuler automatiquement une loi votée"], "Le recours pour excès de pouvoir vise en principe l'annulation d'un acte administratif unilatéral illégal."),
+      qcuDroit("Quelle juridiction administrative est généralement la juridiction de premier ressort ?", "Le tribunal administratif", ["La cour d'assises", "Le tribunal de commerce", "Le Conseil constitutionnel"], "Le tribunal administratif est la juridiction de droit commun du contentieux administratif en premier ressort, sous réserve des compétences attribuées autrement."),
+      qcuDroit("Que désigne un acte administratif unilatéral ?", "Une décision prise par une autorité administrative sans accord contractuel du destinataire", ["Un contrat signé entre deux personnes privées", "Une loi votée par le Parlement", "Un jugement rendu par une juridiction pénale"], "L'acte administratif unilatéral produit des effets juridiques par la décision de l'administration dans son champ de compétence."),
+      qcmDroit("Quelles autorités peuvent prendre des actes administratifs dans leur domaine de compétence ?", ["Un maire", "Un ministre"], ["Un particulier agissant sans délégation", "Une société privée sans prérogative publique"], "Les autorités administratives prennent des actes dans les limites de leurs compétences et procédures."),
+      qcmDroit("Quels éléments peuvent être contrôlés lors de l'examen d'un acte administratif ?", ["La compétence de son auteur", "Le respect des règles de procédure et de fond applicables"], ["La préférence personnelle du requérant uniquement", "La conformité à une règle inexistante"], "Le contrôle peut porter sur la compétence, la procédure, les motifs, le but et le contenu de l'acte."),
+      qcmDroit("Quelles activités peuvent constituer un service public ?", ["Une activité d'intérêt général prise en charge ou contrôlée par une personne publique", "Une activité confiée à un opérateur privé sous contrôle public selon le cadre applicable"], ["Toute activité privée automatiquement", "Une activité sans intérêt général ni encadrement public"], "Le service public peut être assuré par une personne publique ou, sous conditions, par un opérateur privé."),
+    ],
+  },
+  {
+    notion: "Responsabilité civile - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quels éléments sont classiquement nécessaires pour engager une responsabilité civile extracontractuelle pour faute ?", "Une faute, un dommage et un lien de causalité", ["Un contrat écrit dans tous les cas", "Une condamnation pénale préalable", "Une simple inquiétude sans dommage"], "Le régime général repose notamment sur la faute, le dommage et le lien causal, sous réserve des régimes spéciaux."),
+      qcuDroit("Que permet principalement la responsabilité civile ?", "La réparation d'un dommage subi par une victime", ["La prononciation automatique d'une peine de prison", "L'annulation de toute loi", "La création d'une nouvelle juridiction"], "La responsabilité civile vise en principe à réparer le dommage selon les règles applicables."),
+      qcuDroit("Quel lien doit exister entre le fait reproché et le dommage allégué ?", "Un lien de causalité", ["Un lien de parenté", "Un lien hiérarchique", "Un lien de nationalité"], "Le demandeur doit établir le lien causal requis par le régime applicable entre le fait générateur et le dommage."),
+      qcmDroit("Quels types de préjudice peuvent être réparés lorsqu'ils sont juridiquement reconnus et établis ?", ["Un préjudice matériel", "Un préjudice moral"], ["Une sanction administrative sans victime", "Un dommage seulement supposé sans preuve"], "La réparation peut concerner différentes catégories de préjudices, sous réserve de leur caractère certain et de leur preuve."),
+      qcmDroit("Quelles causes peuvent être examinées dans l'analyse du lien de causalité ?", ["Le fait d'un tiers", "La faute de la victime"], ["La seule existence d'un contrat sans rapport", "La couleur du lieu du dommage"], "Le fait d'un tiers ou la faute de la victime peut avoir une incidence selon le régime et les circonstances."),
+      qcmDroit("Quelles distinctions sont utiles en responsabilité civile ?", ["Responsabilité contractuelle et extracontractuelle", "Obligation de réparer et sanction pénale"], ["Droit public et droit de l'Union comme synonymes", "Préjudice et peine comme notions identiques"], "La responsabilité civile répare un dommage ; les régimes contractuel et extracontractuel répondent à des conditions distinctes."),
+    ],
+  },
+  {
+    notion: "Procédure pénale - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quelle autorité exerce en principe l'action publique au nom de la société ?", "Le ministère public", ["La victime seule dans tous les cas", "Le greffe de la juridiction", "Le Conseil constitutionnel"], "Le ministère public met en mouvement et exerce l'action publique selon les règles de procédure pénale."),
+      qcuDroit("Quel principe signifie qu'une personne poursuivie est considérée innocente jusqu'à l'établissement légal de sa culpabilité ?", "La présomption d'innocence", ["La présomption de responsabilité civile", "La publicité foncière", "Le principe de spécialité budgétaire"], "La présomption d'innocence est une garantie fondamentale durant la procédure pénale."),
+      qcuDroit("Quel magistrat dirige une information judiciaire lorsqu'elle est ouverte ?", "Le juge d'instruction", ["Le maire", "Le juge aux affaires familiales dans tous les cas", "Le président de la République"], "Le juge d'instruction mène l'information judiciaire dans les limites de sa saisine et des textes applicables."),
+      qcmDroit("Quelles garanties s'appliquent à une personne mise en cause dans une procédure pénale ?", ["Le droit de connaître les faits reprochés dans les conditions prévues", "Le droit à l'assistance d'un avocat selon le cadre applicable"], ["Une déclaration de culpabilité avant jugement", "L'impossibilité de contester une mesure"], "Les droits de la défense comprennent notamment l'information et l'assistance d'un avocat selon le stade procédural."),
+      qcmDroit("Quels acteurs peuvent intervenir dans une procédure pénale ?", ["La police judiciaire", "Le ministère public"], ["Le notaire chargé d'une vente comme juge pénal", "L'expert-comptable comme juridiction"], "Police judiciaire, ministère public, juridictions, mis en cause et parties civiles ont des rôles distincts."),
+      qcmDroit("Quelles étapes peuvent se succéder dans une procédure pénale ?", ["Une enquête", "Un jugement par une juridiction compétente"], ["Une condamnation automatique dès le dépôt de plainte", "Une peine exécutée sans décision ni base légale"], "Selon les cas, une enquête précède une décision de poursuite, d'instruction ou de jugement, avec des garanties procédurales."),
+    ],
+  },
+  {
+    notion: "Droit de l'Union européenne - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel effet caractérise généralement un règlement de l'Union européenne ?", "Il est directement applicable dans les États membres", ["Il doit toujours être retranscrit mot pour mot par une loi nationale", "Il ne concerne que les institutions françaises", "Il constitue un arrêt de la Cour de cassation"], "Le règlement est obligatoire dans tous ses éléments et directement applicable dans les États membres."),
+      qcuDroit("Quel objectif fixe généralement une directive européenne ?", "Un résultat à atteindre que les États mettent en œuvre selon les modalités requises", ["Une recommandation toujours dépourvue de toute portée", "Une décision rendue par un tribunal national", "La modification directe de toute constitution nationale"], "La directive lie les États destinataires quant au résultat, tout en leur laissant le choix de la forme et des moyens de transposition."),
+      qcuDroit("Quelle institution propose généralement les actes législatifs de l'Union ?", "La Commission européenne", ["La Cour européenne des droits de l'homme", "Le Conseil constitutionnel français", "La Cour des comptes européenne seule"], "La Commission dispose en principe de l'initiative législative dans la procédure ordinaire, sous réserve des traités."),
+      qcmDroit("Quelles affirmations sur les sources du droit de l'Union sont exactes ?", ["Les traités constituent le droit primaire", "Les règlements et directives relèvent du droit dérivé"], ["Une directive est toujours un arrêt juridictionnel", "Un traité de l'Union est une circulaire administrative française"], "Les traités forment le droit primaire ; règlements et directives sont des actes de droit dérivé."),
+      qcmDroit("Quelles institutions participent ordinairement à la procédure législative de l'Union ?", ["Le Parlement européen", "Le Conseil de l'Union européenne"], ["Le Conseil de l'Europe", "La Cour européenne des droits de l'homme"], "Le Parlement et le Conseil de l'Union adoptent la plupart des actes législatifs selon les procédures des traités."),
+      qcmDroit("Quelles missions relèvent de la Cour de justice de l'Union européenne ?", ["Interpréter le droit de l'Union dans le cadre des renvois préjudiciels", "Contrôler le respect des obligations issues des traités dans les procédures prévues"], ["Annuler directement toute loi nationale sans procédure", "Juger les crimes de droit commun en France"], "La CJUE garantit l'interprétation et l'application du droit de l'Union selon les voies prévues par les traités."),
+    ],
+  },
+  {
+    notion: "Droit fiscal général - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel principe exige une base légale pour établir une imposition ?", "Le principe de légalité de l'impôt", ["Le principe de liberté contractuelle", "Le principe de présomption d'innocence", "Le principe de libre concurrence uniquement"], "Les impositions sont établies et recouvrées selon les règles fixées par les textes, dans le cadre constitutionnel."),
+      qcuDroit("Que désigne l'assiette d'un impôt ?", "Les éléments ou la matière sur lesquels l'impôt est calculé", ["Le tribunal compétent pour un litige fiscal", "La date de promulgation d'une loi", "La sanction pénale d'un contribuable"], "L'assiette détermine la base imposable avant application du taux ou du barème applicable."),
+      qcuDroit("Quel organisme recouvre principalement les impôts d'État en France ?", "L'administration fiscale", ["Le Conseil constitutionnel", "La Cour européenne des droits de l'homme", "Le conseil municipal dans tous les cas"], "Les services de l'administration fiscale assurent notamment l'établissement et le recouvrement des impositions relevant de leur compétence."),
+      qcmDroit("Quelles opérations interviennent dans le calcul d'un impôt ?", ["La détermination de l'assiette", "L'application du taux ou du barème applicable"], ["Le choix du juge pénal sans lien", "La rédaction d'un contrat privé par l'administration"], "Le calcul part de l'assiette et applique le taux ou barème prévu, avec les règles propres à l'impôt concerné."),
+      qcmDroit("Quelles garanties peuvent protéger un contribuable dans un contrôle fiscal ?", ["Le respect des procédures prévues par la loi", "La possibilité de contester une imposition selon les voies de recours applicables"], ["L'absence de toute obligation déclarative", "L'impossibilité pour l'administration de demander des pièces"], "Le contribuable et l'administration disposent de droits et obligations encadrés, avec des voies de contestation."),
+      qcmDroit("Quelles distinctions fiscales sont utiles ?", ["Impôts directs et impôts indirects", "Assiette et liquidation de l'impôt"], ["Impôt et peine de prison comme synonymes", "Déclaration et jugement comme actes identiques"], "Ces catégories décrivent des modalités différentes d'imposition et des étapes du calcul fiscal."),
+    ],
+  },
+  {
+    notion: "Histoire des idées politiques - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel auteur est associé à la théorie de la séparation des pouvoirs dans De l'esprit des lois ?", "Montesquieu", ["Jean Bodin uniquement", "Auguste Comte", "Émile Durkheim"], "Montesquieu analyse la séparation des pouvoirs comme garantie contre leur concentration."),
+      qcuDroit("Quel auteur associe le contrat social à la souveraineté populaire ?", "Jean-Jacques Rousseau", ["Charles de Gaulle", "Hans Kelsen", "Max Weber"], "Rousseau développe une théorie du contrat social et de la souveraineté du peuple."),
+      qcuDroit("Quel concept désigne la limitation du pouvoir par des règles juridiques ?", "L'État de droit", ["La souveraineté sans limite", "La coutume privée", "La personnalité morale"], "L'État de droit soumet les autorités publiques au respect de normes et de contrôles juridiques."),
+      qcmDroit("Quelles questions relèvent de la philosophie et de l'histoire des idées politiques ?", ["La légitimité du pouvoir", "Les formes de la souveraineté"], ["Le calcul d'une indemnité contractuelle uniquement", "La tenue matérielle d'un registre foncier"], "Ces disciplines examinent les justifications du pouvoir, la souveraineté et les conceptions de l'ordre politique."),
+      qcmDroit("Quelles garanties caractérisent une séparation des pouvoirs dans une démocratie constitutionnelle ?", ["La répartition de fonctions entre organes", "Des mécanismes de contrôle et d'équilibre"], ["La concentration de toutes les fonctions entre les mains d'un organe", "L'absence de responsabilité des autorités"], "La séparation implique une répartition et des mécanismes de limitation réciproque, dont la forme varie selon le régime."),
+      qcmDroit("Quelles notions sont associées à la pensée libérale constitutionnelle ?", ["La protection des libertés", "La limitation juridique du pouvoir"], ["L'absence de toute règle publique", "La suppression de toute représentation politique"], "Le constitutionnalisme libéral cherche notamment à protéger les libertés et à limiter l'exercice arbitraire du pouvoir."),
+    ],
+  },
+  {
+    notion: "Histoire de l'Europe - L2",
+    niveau: 2,
+    questions: [
+      qcuDroit("Quel traité fonde la Communauté économique européenne en 1957 ?", "Le traité de Rome", ["Le traité de Maastricht", "Le traité de Lisbonne", "Le traité de Versailles"], "Les traités de Rome de 1957 instituent notamment la Communauté économique européenne."),
+      qcuDroit("Quel traité marque la création de l'Union européenne en 1992 ?", "Le traité de Maastricht", ["Le traité de Rome de 1957", "Le traité de Nice", "Le traité de Paris de 1951"], "Le traité de Maastricht, signé en 1992 et entré en vigueur en 1993, fonde l'Union européenne."),
+      qcuDroit("Quelle communauté européenne est à l'origine de la coopération sectorielle autour du charbon et de l'acier ?", "La CECA", ["La CEDH", "L'OTAN", "L'OSCE"], "La Communauté européenne du charbon et de l'acier a été créée pour organiser une coopération sectorielle entre États européens."),
+      qcmDroit("Quelles étapes sont liées à la construction européenne ?", ["La création de communautés européennes", "L'approfondissement des traités et des institutions"], ["La création d'un État européen unique par le traité de Rome", "La disparition de tous les États membres"], "La construction européenne s'est développée par traités et institutions, sans supprimer les États membres."),
+      qcmDroit("Quelles politiques ont contribué à l'intégration européenne ?", ["La coopération économique", "La libre circulation dans les domaines prévus par les traités"], ["La fusion automatique de tous les systèmes juridiques", "La suppression générale des langues nationales"], "L'intégration s'est développée par des politiques communes et des libertés organisées par les traités."),
+      qcmDroit("Quelles institutions appartiennent à l'histoire de l'intégration européenne ?", ["La Commission européenne", "Le Parlement européen"], ["Le Parlement de Westminster comme institution de l'Union", "La Cour de cassation française comme institution européenne"], "Commission et Parlement sont des institutions de l'Union, dont les rôles ont évolué au fil des traités."),
+    ],
+  },
+  {
+    notion: "Droit du travail - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel critère caractérise classiquement le lien de subordination dans un contrat de travail ?", "Le pouvoir de donner des directives, d'en contrôler l'exécution et de sanctionner", ["Le seul versement d'une somme d'argent", "La détention d'un diplôme professionnel", "La réalisation d'une mission unique"], "La jurisprudence caractérise le lien de subordination par le pouvoir de direction, de contrôle et de sanction de l'employeur."),
+      qcuDroit("Quel document précise les conditions d'emploi convenues entre employeur et salarié ?", "Le contrat de travail", ["Le règlement de l'Union européenne", "Le jugement de liquidation", "Le mandat parlementaire"], "Le contrat de travail formalise l'accord et les conditions d'emploi, dans le respect des règles légales et conventionnelles."),
+      qcuDroit("Quel est le rôle principal d'une convention collective ?", "Fixer des règles collectives applicables aux relations de travail dans son champ", ["Remplacer la Constitution", "Rendre des décisions de justice", "Déterminer la compétence d'un tribunal pénal"], "La convention collective adapte ou complète les règles applicables dans une branche ou entreprise selon son champ."),
+      qcmDroit("Quels éléments peuvent caractériser une relation de travail salariée ?", ["Une prestation de travail", "Une rémunération et un lien de subordination"], ["La seule propriété d'une entreprise", "La seule inscription à un registre public"], "La prestation, la rémunération et la subordination sont les critères classiquement examinés ensemble."),
+      qcmDroit("Quelles obligations pèsent généralement sur l'employeur ?", ["Fournir le travail convenu et payer la rémunération due", "Protéger la santé et la sécurité selon les obligations applicables"], ["Garantir l'absence de tout risque dans la vie privée", "Modifier unilatéralement toute clause sans limite"], "L'employeur doit respecter le contrat et les obligations légales de rémunération, santé et sécurité."),
+      qcmDroit("Quelles institutions ou acteurs interviennent dans les relations collectives du travail ?", ["Les syndicats", "Les représentants élus du personnel selon les règles applicables"], ["Le Conseil constitutionnel dans la négociation de chaque contrat", "Le notaire chargé des ventes immobilières"], "Syndicats et représentants du personnel participent au dialogue social selon les textes et la situation."),
+    ],
+  },
+  {
+    notion: "Droit des sociétés - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel acte fixe notamment les règles de fonctionnement d'une société ?", "Les statuts", ["Le procès-verbal d'une audience pénale", "Le règlement d'une commune", "Le contrat de vente d'un associé"], "Les statuts définissent notamment la forme, l'objet, le capital et les règles de fonctionnement de la société."),
+      qcuDroit("Quel effet produit généralement l'acquisition de la personnalité morale par une société ?", "La société devient une personne juridique distincte de ses associés", ["Les associés cessent d'avoir des droits", "La société devient une juridiction", "Toutes ses dettes sont automatiquement celles de l'État"], "La personnalité morale confère à la société une existence juridique distincte, selon les règles propres à sa forme."),
+      qcuDroit("Quel organe dirige une société selon les règles prévues par sa forme et ses statuts ?", "L'organe de direction compétent", ["Le tribunal correctionnel", "Le greffe de l'état civil", "Le Parlement européen"], "La direction relève des organes prévus par la loi et les statuts, qui varient selon la forme sociale."),
+      qcmDroit("Quels éléments peuvent figurer dans les statuts d'une société ?", ["La dénomination et l'objet social", "Les règles de direction et de décision"], ["La culpabilité pénale de chaque associé", "Les compétences de toutes les juridictions françaises"], "Les statuts organisent l'identité, l'objet et le fonctionnement de la société dans les limites légales."),
+      qcmDroit("Quelles formes sont des sociétés commerciales prévues par le droit français ?", ["La société par actions simplifiée", "La société à responsabilité limitée"], ["La commune", "Le tribunal administratif"], "SAS et SARL sont des formes sociales commerciales, distinctes des personnes publiques et juridictions."),
+      qcmDroit("Quelles affirmations sur les associés sont exactes ?", ["Ils peuvent réaliser des apports à la société", "Leurs droits dépendent notamment de la forme et des statuts"], ["Ils sont toujours salariés de la société", "Ils exercent systématiquement la fonction de juge"], "Les apports et droits des associés sont encadrés par la loi et les statuts, et ne confèrent pas automatiquement un emploi."),
+    ],
+  },
+  {
+    notion: "Libertés fondamentales - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel texte du Conseil de l'Europe garantit notamment des droits fondamentaux et permet une requête devant la CEDH sous conditions ?", "La Convention européenne des droits de l'homme", ["Le traité de Maastricht uniquement", "Le Code de commerce", "La Charte des Nations unies seule"], "La Convention européenne des droits de l'homme relève du Conseil de l'Europe et fonde le contrôle de la Cour européenne des droits de l'homme."),
+      qcuDroit("Quel test est couramment utilisé pour apprécier la justification d'une restriction à une liberté ?", "Le contrôle de proportionnalité", ["Le contrôle du chiffre d'affaires", "La règle de l'unanimité des associés", "Le principe d'annualité budgétaire"], "Le juge vérifie notamment si une restriction poursuit un but légitime et demeure nécessaire et proportionnée."),
+      qcuDroit("Quelle liberté protège la possibilité d'exprimer et de recevoir des idées dans les limites prévues par le droit ?", "La liberté d'expression", ["La liberté de construire sans autorisation", "La liberté de ne respecter aucune règle", "La liberté de juger les affaires d'autrui"], "La liberté d'expression est protégée mais peut faire l'objet de restrictions prévues par la loi et nécessaires à certains buts."),
+      qcmDroit("Quelles libertés et garanties sont protégées par des textes fondamentaux ?", ["La liberté de conscience", "Le respect de la vie privée"], ["L'immunité contre toute règle pénale", "Un droit illimité de porter atteinte aux droits d'autrui"], "Les droits fondamentaux protègent les personnes et peuvent être conciliés avec d'autres droits et objectifs légitimes."),
+      qcmDroit("Quelles conditions encadrent généralement une restriction à une liberté fondamentale ?", ["Une base juridique accessible et prévisible", "Une nécessité et une proportionnalité au but poursuivi"], ["Une simple préférence personnelle de l'autorité", "Une interdiction sans limite ni contrôle"], "Les restrictions doivent respecter les exigences du texte applicable, notamment légalité, but légitime et proportionnalité."),
+      qcmDroit("Quelles institutions peuvent contribuer à la protection des droits fondamentaux en France ?", ["Le Conseil constitutionnel", "Les juridictions administratives et judiciaires dans leur compétence"], ["Une société commerciale agissant seule comme juridiction", "Un sondage sans procédure de contrôle"], "Différentes juridictions protègent les droits dans le cadre de leurs compétences et procédures."),
+    ],
+  },
+  {
+    notion: "Régime général des obligations - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel mécanisme éteint deux dettes réciproques à hauteur de la plus faible lorsque ses conditions sont réunies ?", "La compensation", ["La novation", "La délégation de pouvoir", "La prescription acquisitive"], "La compensation éteint des obligations réciproques dans les conditions prévues par le Code civil."),
+      qcuDroit("Quel mécanisme remplace une obligation ancienne par une obligation nouvelle avec intention de nover ?", "La novation", ["La subrogation réelle automatique", "La publication foncière", "La transaction administrative"], "La novation suppose une obligation nouvelle et la volonté non équivoque de remplacer l'obligation ancienne."),
+      qcuDroit("Que signifie la cession de créance ?", "Le transfert d'une créance du créancier initial à un cessionnaire", ["La suppression de toute dette par le débiteur", "La transformation d'une loi en règlement", "La vente obligatoire d'un immeuble"], "La cession transfère une créance selon les conditions de forme et d'opposabilité prévues par la loi."),
+      qcmDroit("Quelles causes peuvent éteindre une obligation ?", ["Le paiement ou l'exécution de la prestation", "La compensation lorsque ses conditions sont réunies"], ["La simple modification de l'adresse d'une partie", "L'existence d'un litige sans décision"], "Le paiement, la compensation et d'autres modes prévus par le Code civil peuvent éteindre une obligation."),
+      qcmDroit("Quelles opérations transfèrent ou réorganisent une obligation ?", ["La cession de créance", "La délégation dans les conditions légales"], ["La promulgation d'une loi", "L'inscription sur une liste électorale"], "Cession, délégation et subrogation organisent des transferts ou changements dans les rapports d'obligation."),
+      qcmDroit("Quelles règles gouvernent l'exécution d'une obligation ?", ["Le contenu de l'obligation et les stipulations valables", "Les exigences de bonne foi applicables"], ["La préférence unilatérale du débiteur sans base juridique", "L'ordre alphabétique des créanciers"], "L'exécution s'apprécie au regard de la source et du contenu de l'obligation ainsi que des règles impératives."),
+    ],
+  },
+  {
+    notion: "Droit judiciaire - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quelle juridiction connaît en principe des litiges civils entre personnes privées lorsqu'aucune compétence spécialisée n'est attribuée ?", "Le tribunal judiciaire", ["La cour d'assises", "Le Conseil constitutionnel", "Le tribunal administratif dans tous les cas"], "Le tribunal judiciaire est la juridiction civile de droit commun, sous réserve des compétences attribuées à d'autres juridictions."),
+      qcuDroit("Que désigne la compétence d'attribution d'une juridiction ?", "La catégorie d'affaires qu'elle peut juger", ["Le lieu de naissance du juge", "Le montant des impôts locaux", "La durée d'un contrat"], "La compétence d'attribution, ou matérielle, détermine les matières confiées à la juridiction."),
+      qcuDroit("Quel est le rôle principal d'un appel civil ?", "Permettre le réexamen d'une décision de première instance dans les limites de la procédure", ["Créer automatiquement une loi", "Faire juger le litige par une juridiction pénale", "Effacer les faits du dossier"], "L'appel permet un nouvel examen de la décision et du litige dans les limites fixées par les règles procédurales."),
+      qcmDroit("Quelles questions sont examinées avant de statuer sur le fond d'une demande ?", ["La compétence de la juridiction", "La recevabilité de la demande"], ["La popularité des parties", "La seule préférence du juge pour une solution"], "Compétence et recevabilité peuvent être examinées avant le fond selon les règles de procédure."),
+      qcmDroit("Quelles garanties structurent un procès civil équitable ?", ["Le contradictoire", "L'impartialité de la juridiction"], ["La décision sans entendre les parties dans tous les cas", "L'absence de motivation de toute décision"], "Le contradictoire et l'impartialité font partie des garanties du procès équitable."),
+      qcmDroit("Quelles juridictions spécialisées peuvent connaître de certains litiges civils ou commerciaux ?", ["Le conseil de prud'hommes", "Le tribunal de commerce"], ["Le Parlement", "Le Conseil européen"], "Prud'hommes et tribunaux de commerce disposent de compétences spécialisées définies par les textes."),
+    ],
+  },
+  {
+    notion: "Contentieux administratif - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel recours vise principalement à obtenir l'annulation d'un acte administratif illégal ?", "Le recours pour excès de pouvoir", ["L'action en divorce", "La demande de brevet", "Le pourvoi pénal dans tous les cas"], "Le recours pour excès de pouvoir demande au juge administratif l'annulation d'un acte administratif pour illégalité."),
+      qcuDroit("Quelle juridiction administrative juge ordinairement l'appel des jugements des tribunaux administratifs ?", "La cour administrative d'appel", ["La cour d'assises", "Le tribunal de commerce", "La Cour de justice de l'Union européenne"], "Les cours administratives d'appel connaissent en principe de l'appel des jugements des tribunaux administratifs, sauf exceptions."),
+      qcuDroit("Quel type de recours permet au juge d'accorder une indemnisation contre une personne publique ?", "Un recours de pleine juridiction", ["Un recours en inscription d'état civil", "Un contrôle parlementaire", "Un recours gracieux uniquement"], "Dans un contentieux de pleine juridiction, le juge peut disposer de pouvoirs plus étendus, notamment indemnitaires."),
+      qcmDroit("Quels moyens peuvent être invoqués contre un acte administratif ?", ["L'incompétence de son auteur", "La violation d'une règle de droit applicable"], ["L'absence de préférence du requérant", "La couleur du bâtiment administratif sans incidence juridique"], "Légalité externe et interne peuvent être contestées selon des moyens pertinents et recevables."),
+      qcmDroit("Quelles voies peuvent précéder ou accompagner un recours contentieux administratif ?", ["Un recours gracieux auprès de l'auteur de l'acte", "Un recours hiérarchique auprès du supérieur compétent"], ["Une plainte pénale obligatoire pour tout acte", "Une décision d'un tribunal civil comme condition générale"], "Les recours administratifs préalables dépendent des textes ; ils peuvent être gracieux ou hiérarchiques."),
+      qcmDroit("Quels pouvoirs le juge administratif peut-il exercer selon le type de contentieux ?", ["Annuler un acte dans un recours pour excès de pouvoir", "Accorder certaines réparations en pleine juridiction"], ["Adopter une loi à la place du Parlement", "Diriger directement tous les services de l'État"], "Les pouvoirs du juge varient selon le contentieux et demeurent encadrés par sa compétence."),
+    ],
+  },
+  {
+    notion: "Droit international public - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel principe impose en règle générale l'exécution de bonne foi des traités en vigueur ?", "Pacta sunt servanda", ["Non bis in idem", "Légalité criminelle", "Force obligatoire du jugement civil uniquement"], "Pacta sunt servanda signifie que les traités en vigueur lient leurs parties et doivent être exécutés de bonne foi."),
+      qcuDroit("Quel texte fondateur organise l'Organisation des Nations unies ?", "La Charte des Nations unies", ["Le traité de Rome", "Le Code civil", "La Convention européenne des droits de l'homme"], "La Charte des Nations unies, adoptée en 1945, est le traité constitutif de l'ONU."),
+      qcuDroit("Quel organe judiciaire principal de l'ONU règle des différends entre États qui acceptent sa compétence ?", "La Cour internationale de Justice", ["La Cour de justice de l'Union européenne", "La Cour de cassation", "La Cour pénale internationale dans tous les différends étatiques"], "La CIJ tranche des différends entre États selon sa compétence et peut rendre des avis consultatifs."),
+      qcmDroit("Quelles conditions participent à la formation d'une coutume internationale ?", ["Une pratique suffisamment générale", "La conviction qu'une pratique est juridiquement obligatoire"], ["Une seule déclaration privée", "Un vote municipal sans pratique ni acceptation"], "La coutume internationale repose sur une pratique générale accompagnée de l'opinio juris."),
+      qcmDroit("Quelles situations peuvent engager la responsabilité internationale d'un État ?", ["Un fait attribuable à l'État", "La violation d'une obligation internationale applicable"], ["Un désaccord politique sans obligation violée", "Un dommage sans attribution ni manquement dans tous les cas"], "La responsabilité internationale suppose notamment un fait attribuable à l'État et la violation d'une obligation."),
+      qcmDroit("Quelles fonctions peut exercer une organisation internationale créée par traité ?", ["Coordonner la coopération entre ses membres", "Adopter des actes dans les limites des compétences qui lui sont attribuées"], ["Agir sans aucune règle constitutive", "Remplacer toutes les juridictions nationales"], "Une organisation internationale agit dans le cadre de ses compétences attribuées par son traité constitutif."),
+    ],
+  },
+  {
+    notion: "Droit privé des biens - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quels attributs composent classiquement le droit de propriété ?", "L'usus, le fructus et l'abusus", ["La légalité, la compétence et la procédure", "Le suffrage, le mandat et la représentation", "L'offre, l'acceptation et la cause"], "La propriété est classiquement présentée à travers l'usage, la perception des fruits et la disposition du bien."),
+      qcuDroit("Qu'est-ce que l'usufruit ?", "Le droit d'utiliser un bien et d'en percevoir les fruits sans en être nu-propriétaire", ["Un contrat de travail", "Une peine complémentaire", "Une compétence administrative"], "L'usufruitier utilise le bien et en perçoit les fruits, tandis que la nue-propriété appartient à une autre personne."),
+      qcuDroit("Que désigne la possession en droit des biens ?", "L'exercice de fait d'un pouvoir sur une chose avec les éléments requis par la loi", ["La seule inscription à l'université", "Un titre de fonction publique", "La détention d'une somme fiscale"], "La possession est une situation de fait dont les effets dépendent notamment des éléments et conditions prévus par le droit."),
+      qcmDroit("Quels droits réels démembrent ou limitent certains attributs de la propriété ?", ["L'usufruit", "Une servitude"], ["Un mandat parlementaire", "Une obligation de résultat"], "Usufruit et servitudes sont des droits réels distincts de la pleine propriété."),
+      qcmDroit("Quelles affirmations sur les biens sont exactes ?", ["Un bien peut être meuble ou immeuble", "La qualification juridique influence le régime applicable"], ["Tous les biens suivent exactement le même régime", "Un droit incorporel ne peut jamais être un bien"], "La classification des biens, notamment meubles ou immeubles, détermine des règles spécifiques."),
+      qcmDroit("Quels modes peuvent établir ou transférer la propriété selon les cas ?", ["Un contrat translatif de propriété", "Une succession ou un autre mode prévu par la loi"], ["La seule présence temporaire sur les lieux", "Une déclaration orale sans effet juridique dans tous les cas"], "La propriété peut être acquise par différents modes, dont contrat et succession, selon leurs conditions."),
+    ],
+  },
+  {
+    notion: "Histoire de la propriété - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel événement a contribué à remettre en cause les privilèges fonciers de l'Ancien Régime ?", "La nuit du 4 août 1789", ["La signature du traité de Maastricht", "La promulgation de la Constitution de 1958", "La création de la Ve République"], "Les décisions d'août 1789 abolissent les privilèges féodaux dans le contexte révolutionnaire."),
+      qcuDroit("Quel code a consacré une conception moderne du droit de propriété civil en France au début du XIXe siècle ?", "Le Code civil de 1804", ["Le Code de procédure pénale de 1958", "La Charte des Nations unies", "Le traité de Rome"], "Le Code civil de 1804 organise le droit des biens et affirme une conception structurée de la propriété privée."),
+      qcuDroit("Quel régime foncier reposait historiquement sur des droits superposés entre seigneur et tenancier ?", "Le régime féodal", ["Le régime de copropriété moderne uniquement", "La concession de service public", "La société par actions"], "Le régime féodal connaissait des droits et obligations superposés sur la terre, différents de la propriété moderne unifiée."),
+      qcmDroit("Quelles évolutions marquent l'histoire du droit de propriété en France ?", ["La remise en cause de certains droits féodaux", "La codification civile de règles de propriété"], ["L'absence permanente de toute propriété privée", "La disparition de toute propriété publique"], "L'histoire passe par des transformations révolutionnaires, la codification et l'évolution des propriétés privées et publiques."),
+      qcmDroit("Quelles distinctions historiques aident à comprendre les régimes de propriété ?", ["Droits seigneuriaux et propriété moderne", "Propriété individuelle et formes collectives de détention"], ["Droit pénal et registre électoral comme synonymes", "Un bien meuble et un pouvoir politique comme catégories identiques"], "Les catégories et titulaires de droits ont varié au cours du temps ; leur comparaison exige un contexte historique."),
+      qcmDroit("Quelles sources permettent d'étudier l'évolution de la propriété ?", ["Les textes de codification et lois historiques", "Les archives notariales et judiciaires"], ["Les seuls catalogues commerciaux contemporains", "Des opinions sans date ni provenance"], "Textes, archives et travaux historiques documentent les pratiques et règles de propriété à différentes périodes."),
+    ],
+  },
+  {
+    notion: "Philosophie du droit - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quelle conception associe la validité d'une règle à son édiction selon les procédures reconnues par un système juridique ?", "Le positivisme juridique", ["Le droit naturel exclusivement", "La sociologie électorale", "Le réalisme économique uniquement"], "Le positivisme juridique étudie la validité des normes au regard des sources et procédures du système juridique."),
+      qcuDroit("Quelle question centrale pose la philosophie du droit ?", "Les rapports entre droit, justice, autorité et liberté", ["Le calcul d'une facture commerciale uniquement", "L'ordre des articles dans un registre", "La gestion matérielle d'une audience"], "La philosophie du droit interroge notamment la légitimité, la justice et l'autorité des normes."),
+      qcuDroit("Que désigne le droit naturel dans la pensée juridique ?", "L'idée de principes de justice fondés indépendamment de la seule volonté du législateur", ["Un règlement municipal adopté par un maire", "Une coutume locale automatiquement applicable", "Un contrat conclu entre deux entreprises"], "Les théories du droit naturel rattachent des principes juridiques à une conception de la nature ou de la raison, distincte du droit positif."),
+      qcmDroit("Quelles oppositions théoriques sont étudiées en philosophie du droit ?", ["Droit positif et droit naturel", "Validité juridique et légitimité morale"], ["Actif et passif d'une société", "Compétence territoriale et domicile comme notions identiques"], "La philosophie distingue notamment la validité dans un système et les questions de justice ou de légitimité."),
+      qcmDroit("Quelles fonctions peut remplir une règle de droit dans la société ?", ["Organiser les relations et anticiper les comportements", "Fournir un cadre de règlement des conflits"], ["Déterminer à elle seule toutes les convictions morales", "Éliminer toute interprétation"], "Le droit organise des rapports sociaux et des procédures de résolution des différends, sans abolir les débats d'interprétation."),
+      qcmDroit("Quelles questions relèvent de la légitimité du droit ?", ["Pourquoi une autorité peut édicter une norme", "Dans quelles conditions une règle peut être considérée comme juste"], ["Quelle police de caractères utiliser dans un jugement", "Quel taux choisir sans base juridique"], "La légitimité interroge les justifications de l'autorité et la conformité des règles à des critères de justice."),
+    ],
+  },
+  {
+    notion: "Droit des contrats spéciaux - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Dans un contrat de vente, quelle obligation principale pèse sur le vendeur ?", "Délivrer le bien et garantir l'acheteur selon les règles applicables", ["Rendre une décision de justice", "Payer le prix à la place de l'acheteur", "Créer une société avec l'acheteur"], "Le vendeur est notamment tenu de délivrance et des garanties prévues par la loi et le contrat."),
+      qcuDroit("Dans un contrat de mandat, que fait le mandataire ?", "Il accomplit un acte juridique au nom et pour le compte du mandant dans les limites du mandat", ["Il transfère automatiquement la propriété de tous ses biens", "Il rend un jugement", "Il devient nécessairement salarié du mandant"], "Le mandat donne pouvoir d'accomplir un acte juridique au nom du mandant, dans les limites convenues et légales."),
+      qcuDroit("Quel contrat met temporairement un bien à disposition d'un locataire contre un loyer ?", "Le bail", ["Le mandat", "La transaction", "Le dépôt de garantie seul"], "Le bail organise la jouissance temporaire d'un bien par le preneur en contrepartie d'un loyer."),
+      qcmDroit("Quelles clauses ou éléments sont importants pour analyser un contrat spécial ?", ["La qualification du contrat et ses obligations principales", "Les règles impératives applicables à ce type de contrat"], ["Le seul titre choisi par les parties sans examiner le contenu", "Une règle d'un autre contrat sans lien"], "La qualification dépend du contenu et du régime légal du contrat, pas uniquement du titre choisi."),
+      qcmDroit("Quelles obligations caractérisent généralement une vente ?", ["La délivrance du bien par le vendeur", "Le paiement du prix par l'acheteur"], ["La représentation permanente de l'acheteur par le vendeur", "La mise à disposition gratuite comme élément nécessaire"], "La vente met en principe à la charge du vendeur la délivrance et à celle de l'acheteur le paiement du prix."),
+      qcmDroit("Quelles affirmations sur les contrats spéciaux sont exactes ?", ["Ils obéissent à des règles communes du droit des contrats et à des règles propres", "Leur régime dépend de leur qualification juridique"], ["Ils échappent tous au Code civil", "Leur nom suffit toujours à établir leur régime"], "Les contrats spéciaux combinent le droit commun et des dispositions propres à chaque qualification."),
+    ],
+  },
+  {
+    notion: "Droit public des biens - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel critère caractérise notamment l'appartenance d'un bien au domaine public ?", "Son affectation à l'usage direct du public ou à un service public avec les aménagements requis", ["La seule propriété d'une personne privée", "Le seul fait qu'un bien soit coûteux", "Sa mention dans un contrat de travail"], "Le domaine public suppose notamment une propriété publique et une affectation répondant aux critères légaux."),
+      qcuDroit("Quel principe protège les biens appartenant au domaine public ?", "Le principe d'inaliénabilité dans les conditions prévues par la loi", ["Le principe de vente obligatoire", "Le principe de propriété privée des usagers", "La libre cession par tout agent public"], "Les biens du domaine public sont en principe inaliénables tant qu'ils relèvent de ce domaine, sous réserve des mécanismes légaux."),
+      qcuDroit("Quel usage d'une dépendance du domaine public requiert souvent une autorisation ?", "Une occupation privative dépassant l'usage commun", ["Le simple passage du public sur une voie ouverte", "La lecture d'un panneau public", "La consultation d'un texte de loi"], "Une occupation privative du domaine public nécessite en principe un titre et peut donner lieu à redevance."),
+      qcmDroit("Quelles personnes publiques peuvent posséder un domaine public ?", ["L'État", "Une collectivité territoriale"], ["Une association privée sans transfert de propriété", "Un particulier en qualité d'usager seulement"], "L'État et les collectivités territoriales peuvent être propriétaires de dépendances de leur domaine public."),
+      qcmDroit("Quelles règles peuvent s'appliquer à l'occupation privative du domaine public ?", ["La délivrance d'un titre d'occupation", "Le paiement d'une redevance lorsque les textes le prévoient"], ["Un droit permanent sans autorisation", "La propriété automatique du sol par l'occupant"], "L'occupation privative est encadrée par un titre, souvent temporaire et précaire, et peut être payante."),
+      qcmDroit("Quelles caractéristiques distinguent souvent le domaine public du domaine privé d'une personne publique ?", ["L'affectation et le régime de protection spécifique", "L'application de règles particulières d'utilisation et de gestion"], ["La personnalité morale de l'usager", "L'absence de toute règle de propriété"], "Les biens du domaine public et privé sont soumis à des critères et régimes distincts."),
+    ],
+  },
+  {
+    notion: "Droit de l'environnement - L3",
+    niveau: 3,
+    questions: [
+      qcuDroit("Quel principe prévoit que le responsable d'une pollution doit contribuer aux coûts de prévention et de réparation dans les conditions applicables ?", "Le principe pollueur-payeur", ["Le principe de libre circulation", "Le principe de non-rétroactivité pénale", "Le principe d'annualité budgétaire"], "Le principe pollueur-payeur vise l'imputation au pollueur des coûts liés à la prévention et à la lutte contre la pollution."),
+      qcuDroit("Quel principe peut justifier des mesures préventives face à un risque incertain mais potentiellement grave ?", "Le principe de précaution", ["Le principe de spécialité des sociétés", "Le principe d'unité budgétaire", "Le principe de liberté absolue"], "Le principe de précaution concerne les risques incertains susceptibles de causer un dommage grave ou irréversible, selon le cadre juridique applicable."),
+      qcuDroit("Quel est l'objectif général du principe de prévention ?", "Agir pour éviter ou réduire un dommage environnemental connu", ["Attendre systématiquement la réalisation du dommage", "Remplacer toute autorisation administrative", "Permettre une pollution sans contrôle"], "La prévention vise à éviter ou réduire les atteintes environnementales identifiées avant leur réalisation."),
+      qcmDroit("Quels principes structurent le droit de l'environnement ?", ["La prévention", "Le pollueur-payeur"], ["L'immunité générale des exploitants", "La suppression de l'information du public"], "Prévention et pollueur-payeur sont des principes reconnus du droit de l'environnement."),
+      qcmDroit("Quelles démarches peuvent associer le public aux décisions environnementales ?", ["L'information et la participation selon les textes", "Une consultation organisée dans les procédures prévues"], ["Une décision tenue secrète par principe", "Un vote informel remplaçant toute procédure légale"], "Le droit prévoit diverses formes d'information et de participation du public, suivant les décisions et procédures concernées."),
+      qcmDroit("Quels objectifs peuvent être conciliés dans une décision environnementale ?", ["La protection de l'environnement", "Les activités économiques et les intérêts sociaux dans le cadre légal"], ["La suppression de tout contrôle juridictionnel", "L'autorisation automatique de tout projet"], "Les décisions concilient plusieurs objectifs dans le respect des normes et des évaluations applicables."),
+    ],
+  },
+];
+
+function normaliserIdQuestionDroit(valeur: string): string {
+  return valeur
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function creerQuestionSupplementaireDroit(
+  id: string,
+  lot: LotQuestionsProgrammeDroit,
+  question: QuestionSupplementaireDroit,
+): QuestionSeed {
+  const reponses = [
+    ...question.bonnesReponses.map((texte) => ({ texte, correcte: true })),
+    ...question.mauvaisesReponses.map((texte) => ({ texte, correcte: false })),
+  ];
+  const sommeIdentifiant = Array.from(id).reduce((total, caractere) => total + caractere.charCodeAt(0), 0);
+  const positionDepart = sommeIdentifiant % reponses.length;
+  const reponsesMelangees = [...reponses.slice(positionDepart), ...reponses.slice(0, positionDepart)];
+  return {
+    id,
+    notion: lot.notion,
+    niveau: lot.niveau,
+    type: question.type,
+    intitule: question.intitule,
+    explication: question.explication,
+    reponses: reponsesMelangees,
+  };
+}
+
+const questionsProgrammeLicenceDroit = lotsQuestionsProgrammeDroit.flatMap((lot) =>
+  lot.questions.map((question, index) =>
+    creerQuestionSupplementaireDroit(
+      `lr-droit-supp-${normaliserIdQuestionDroit(lot.notion)}-${String(index + 1).padStart(2, "0")}`,
+      lot,
+      question,
+    ),
+  ),
+);
+
+droitQuestions.push(...questionsProgrammeLicenceDroit);
+
 export const droitQuizzes: QuizSeed[] = [
   {
     titre: "Droit pénal — les fondamentaux",
@@ -1607,3 +2151,12 @@ export const droitQuizzes: QuizSeed[] = [
     questionIds: ["qcm-avance-4", "qcu-avance-3", "libre-avance-6", "libre-avance-7", "const4", "const5", "admin4", "admin5", "intl12", "dp12"],
   },
 ]; 
+
+export const quizzesLicenceDroitLaRochelle: QuizSeed[] = lotsQuestionsProgrammeDroit.map((lot) => ({
+  titre: lot.notion,
+  type: "notion",
+  notionFiltre: lot.notion,
+  questionIds: droitQuestions.filter((question) => question.notion === lot.notion).map((question) => question.id),
+}));
+
+droitQuizzes.push(...quizzesLicenceDroitLaRochelle);

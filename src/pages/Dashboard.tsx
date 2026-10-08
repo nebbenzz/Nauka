@@ -5,6 +5,7 @@ import Footer from "../includes/Footer";
 import RevisionCalendar, { type RevisionCalendarOverride } from "../components/RevisionCalendar";
 import ProgrammeLicenceInformatique from "../components/ProgrammeLicenceInformatique";
 import { FORMATIONS } from "../data/formations";
+import { programmeLicenceDroitLaRochelle } from "../data/programmeLicenceDroitLaRochelle";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { useThemeColor } from "../hooks/useThemeColor";
@@ -16,7 +17,7 @@ import {
   type QuestionProgression,
   type ResultatProgression,
 } from "../lib/competenceCoverage";
-import { estProgrammeLicenceInformatiqueLaRochelle } from "../lib/programmeCoverage";
+import { estProgrammeLicenceDroitLaRochelle, estProgrammeLicenceInformatiqueLaRochelle } from "../lib/programmeCoverage";
 
 interface Stats {
   quiz_completes: number;
@@ -451,6 +452,7 @@ export default function Dashboard() {
     { etat: "maitrise" as const, libelle: "Maîtrisé", description: "Réussite récente et confirmée", notions: couvertureProgramme.filter((notion) => notion.etat === "maitrise") },
   ];
   const afficherProgrammeLaRochelle = estProgrammeLicenceInformatiqueLaRochelle(formationProgramme, etablissementProgramme);
+  const afficherProgrammeDroitLaRochelle = estProgrammeLicenceDroitLaRochelle(formationProgramme, etablissementProgramme);
 
   const notionPrioritaire = competences
     .filter((competence) => competence.notion_nom.trim())
@@ -760,8 +762,12 @@ export default function Dashboard() {
               <p className="mt-4 text-sm text-inkmuted">
                 Renseigne ta formation pour voir les notions à découvrir. <Link to="/profil" className="font-semibold text-navy underline underline-offset-4">Compléter mon profil</Link>
               </p>
-            ) : afficherProgrammeLaRochelle && niveauFormationProgramme !== null ? (
-              <ProgrammeLicenceInformatique niveauFormation={niveauFormationProgramme} notions={notionsCatalogue} />
+            ) : (afficherProgrammeLaRochelle || afficherProgrammeDroitLaRochelle) && niveauFormationProgramme !== null ? (
+              <ProgrammeLicenceInformatique
+                niveauFormation={niveauFormationProgramme}
+                notions={notionsCatalogue}
+                programme={afficherProgrammeDroitLaRochelle ? programmeLicenceDroitLaRochelle : undefined}
+              />
             ) : couvertureProgramme.length === 0 ? (
               <p className="mt-4 text-sm text-inkmuted">Aucune notion n’est encore référencée pour cette formation.</p>
             ) : (
