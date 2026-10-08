@@ -26,6 +26,45 @@ interface QuizCard {
   dernier_score_max: number | null;
 }
 
+type SelectionAnnee = number | null;
+
+interface FiltresAnneeProps {
+  annees: number[];
+  comptes: Record<number, number>;
+  selection: SelectionAnnee;
+  nombreTotal: number;
+  onChange: (annee: SelectionAnnee) => void;
+}
+
+function FiltresAnnee({ annees, comptes, selection, nombreTotal, onChange }: FiltresAnneeProps) {
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-3" aria-label="Filtrer les questionnaires par année d'étude">
+      <span className="text-xs font-semibold text-inkmuted">Année d'étude</span>
+      <div role="group" aria-label="Année des questionnaires recommandés" className="inline-flex max-w-full flex-wrap gap-1 border border-line bg-white p-1">
+        <button
+          type="button"
+          aria-pressed={selection === null}
+          onClick={() => onChange(null)}
+          className={selection === null ? "min-h-9 bg-navy px-3 text-xs font-bold text-paper" : "min-h-9 px-3 text-xs font-semibold text-inkmuted transition-colors hover:bg-paper hover:text-ink"}
+        >
+          Toutes ({nombreTotal})
+        </button>
+        {annees.map((annee) => (
+          <button
+            key={annee}
+            type="button"
+            aria-pressed={selection === annee}
+            onClick={() => onChange(annee)}
+            className={selection === annee ? "min-h-9 bg-navy px-3 text-xs font-bold text-paper" : "min-h-9 px-3 text-xs font-semibold text-inkmuted transition-colors hover:bg-paper hover:text-ink"}
+          >
+            Année {annee} ({comptes[annee] ?? 0})
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function QuestionnairesListPage() {
   const { session } = useSession();
   const navigate = useNavigate();
@@ -38,6 +77,8 @@ export default function QuestionnairesListPage() {
   const [matiereFiltre, setMatiereFiltre] = useState("");
   const [matiereSidebarClassique, setMatiereSidebarClassique] = useState("");
   const [matiereSidebarAvancee, setMatiereSidebarAvancee] = useState("");
+  const [anneeSelectionnee, setAnneeSelectionnee] = useState<SelectionAnnee>(null);
+  const [anneeAvanceeSelectionnee, setAnneeAvanceeSelectionnee] = useState<SelectionAnnee>(null);
   const [chargement, setChargement] = useState(true);
   const [sidebarReduite, setSidebarReduite] = useState(false);
   const [sectionAnimee, setSectionAnimee] = useState<string | null>(null);
@@ -155,6 +196,7 @@ export default function QuestionnairesListPage() {
   const correspond = (q: QuizCard) =>
     q.titre.toLowerCase().includes(rechercheLower) ||
     q.matiere_nom.toLowerCase().includes(rechercheLower) ||
+    (q.notion_nom?.toLowerCase().includes(rechercheLower) ?? false) ||
     q.notions_couvertes.some((n) => n.toLowerCase().includes(rechercheLower));
 
   const estPourVous = (q: QuizCard) => {
@@ -236,6 +278,39 @@ export default function QuestionnairesListPage() {
       }));
   };
 
+  const regrouperParAnnee = (liste: QuizCard[]) => {
+    const groupes = new Map<number | null, QuizCard[]>();
+    liste.forEach((quiz) => {
+      const groupe = groupes.get(quiz.notion_niveau) ?? [];
+      groupe.push(quiz);
+      groupes.set(quiz.notion_niveau, groupe);
+    });
+
+    return Array.from(groupes.entries())
+      .sort(([anneeA], [anneeB]) => {
+        if (anneeA === niveauUtilisateur) return -1;
+        if (anneeB === niveauUtilisateur) return 1;
+        if (anneeA === null) return 1;
+        if (anneeB === null) return -1;
+        return anneeB - anneeA;
+      })
+      .map(([annee, quizs]) => ({
+        annee,
+        quizs: [...quizs].sort((a, b) => a.titre.localeCompare(b.titre, "fr")),
+      }));
+  };
+
+  const filtrerParAnnee = (liste: QuizCard[], selection: SelectionAnnee) =>
+    selection === null ? liste : liste.filter((quiz) => quiz.notion_niveau === selection || quiz.notion_niveau === null);
+
+  const compterParAnnee = (liste: QuizCard[]): Record<number, number> => {
+    const comptes: Record<number, number> = {};
+    liste.forEach((quiz) => {
+      if (quiz.notion_niveau !== null) comptes[quiz.notion_niveau] = (comptes[quiz.notion_niveau] ?? 0) + 1;
+    });
+    return comptes;
+  };
+
   const decouvrezAussi = (domaineUtilisateur ? standards.filter((q) => !estPourVous(q)) : standards)
     .filter(correspondAuxFiltres)
     .filter((q) => !matiereSidebarClassique || q.matiere_nom === matiereSidebarClassique);
@@ -244,8 +319,14 @@ export default function QuestionnairesListPage() {
     .filter((q) => !matiereSidebarAvancee || q.matiere_nom === matiereSidebarAvancee);
 
   const sectionsPourVous = regrouperParMatiere(pourVous);
+  const groupesPourVousParAnnee = regrouperParAnnee(filtrerParAnnee(pourVous, anneeSelectionnee));
+  const anneesPourVous = Object.keys(compterParAnnee(pourVous)).map(Number).sort((a, b) => a - b);
+  const comptesPourVous = compterParAnnee(pourVous);
   const sectionsDecouvrezAussi = regrouperParMatiere(decouvrezAussi);
   const sectionsAvancesPourVous = regrouperParMatiere(avancesPourVous);
+  const groupesAvancesPourVousParAnnee = regrouperParAnnee(filtrerParAnnee(avancesPourVous, anneeAvanceeSelectionnee));
+  const anneesAvanceesPourVous = Object.keys(compterParAnnee(avancesPourVous)).map(Number).sort((a, b) => a - b);
+  const comptesAvancesPourVous = compterParAnnee(avancesPourVous);
   const sectionsAvancesDecouvrezAussi = regrouperParMatiere(avancesDecouvrezAussi);
 
   function handleClic(quizId: string) {
@@ -258,6 +339,8 @@ export default function QuestionnairesListPage() {
     setRecherche(estMatiereClassique || estMatiereAvancee ? "" : terme);
     setFiltre("tous");
     setMatiereFiltre("");
+    if (cible === "pour-vous") setAnneeSelectionnee(null);
+    if (cible === "avances-pour-vous") setAnneeAvanceeSelectionnee(null);
     if (estMatiereClassique) setMatiereSidebarClassique(terme);
     if (estMatiereAvancee) setMatiereSidebarAvancee(terme);
     if (cible === "pour-vous") setMatiereSidebarClassique("");
@@ -380,7 +463,13 @@ export default function QuestionnairesListPage() {
               type="text"
               placeholder="Rechercher une matière, une notion..."
               value={recherche}
-              onChange={(e) => setRecherche(e.target.value)}
+              onChange={(e) => {
+                setRecherche(e.target.value);
+                if (e.target.value.trim()) {
+                  setAnneeSelectionnee(null);
+                  setAnneeAvanceeSelectionnee(null);
+                }
+              }}
               className="w-full border border-line bg-white py-3 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-inkmuted/70 focus:border-navy focus:ring-2 focus:ring-highlight/40"
             />
           </div>
@@ -429,7 +518,28 @@ export default function QuestionnairesListPage() {
                     <section id="pour-vous" className={sectionAnimee === "pour-vous" ? "section-focus mt-12 scroll-mt-24" : "mt-12 scroll-mt-24"}>
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-inkmuted">Sélection</p>
                       <h2 className="mt-2 font-display text-2xl font-extrabold">Pour vous</h2>
-                      <div className="mt-6 space-y-10 border-t border-line pt-6">
+                      {niveauUtilisateur !== null && niveauUtilisateur > 1 ? (
+                        <>
+                          <FiltresAnnee annees={anneesPourVous} comptes={comptesPourVous} selection={anneeSelectionnee} nombreTotal={pourVous.length} onChange={setAnneeSelectionnee} />
+                          <div className="mt-5 divide-y divide-line border-y border-line">
+                            {groupesPourVousParAnnee.map(({ annee, quizs }) => (
+                              <details key={annee ?? "tous-niveaux"} className="group" open={recherche.trim().length > 0 || annee === niveauUtilisateur || annee === anneeSelectionnee || annee === null}>
+                                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 marker:hidden">
+                                  <span className="min-w-0">
+                                    <span className="block font-display text-lg font-bold text-ink">{annee === null ? "Tous niveaux" : `Année ${annee}`}</span>
+                                    <span className="mt-1 block text-xs text-inkmuted">{annee === niveauUtilisateur ? "Année actuelle · " : ""}{quizs.length} questionnaire{quizs.length === 1 ? "" : "s"}</span>
+                                  </span>
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-inkmuted transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                                </summary>
+                                <div className="grid gap-3 pb-5 sm:grid-cols-2 lg:grid-cols-3">
+                                  {quizs.map((quiz) => <Carte key={quiz.id} q={quiz} />)}
+                                </div>
+                              </details>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="mt-6 space-y-10 border-t border-line pt-6">
                         {sectionsPourVous.map(({ matiere, quizs }) => (
                           <div key={matiere} id={`pour-vous-${matiere}`}>
                             <div className="mb-4 flex items-center justify-between gap-3">
@@ -443,7 +553,8 @@ export default function QuestionnairesListPage() {
                             </div>
                           </div>
                         ))}
-                      </div>
+                        </div>
+                      )}
                     </section>
                   )}
 
@@ -488,6 +599,27 @@ export default function QuestionnairesListPage() {
                           <div id="avances-pour-vous" className="mt-8 scroll-mt-24">
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-inkmuted">Sélection</p>
                             <h2 className="mt-2 font-display text-2xl font-extrabold">Pour vous</h2>
+                            {niveauUtilisateur !== null && niveauUtilisateur > 1 ? (
+                              <>
+                                <FiltresAnnee annees={anneesAvanceesPourVous} comptes={comptesAvancesPourVous} selection={anneeAvanceeSelectionnee} nombreTotal={avancesPourVous.length} onChange={setAnneeAvanceeSelectionnee} />
+                                <div className="mt-5 divide-y divide-line border-y border-line">
+                                  {groupesAvancesPourVousParAnnee.map(({ annee, quizs }) => (
+                                    <details key={annee ?? "tous-niveaux"} className="group" open={recherche.trim().length > 0 || annee === niveauUtilisateur || annee === anneeAvanceeSelectionnee || annee === null}>
+                                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 marker:hidden">
+                                        <span className="min-w-0">
+                                          <span className="block font-display text-lg font-bold text-ink">{annee === null ? "Tous niveaux" : `Année ${annee}`}</span>
+                                          <span className="mt-1 block text-xs text-inkmuted">{annee === niveauUtilisateur ? "Année actuelle · " : ""}{quizs.length} questionnaire{quizs.length === 1 ? "" : "s"}</span>
+                                        </span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-inkmuted transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                                      </summary>
+                                      <div className="grid gap-3 pb-5 sm:grid-cols-2 lg:grid-cols-3">
+                                        {quizs.map((quiz) => <Carte key={quiz.id} q={quiz} />)}
+                                      </div>
+                                    </details>
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
                             <div className="mt-6 space-y-10">
                               {sectionsAvancesPourVous.map(({ matiere, quizs }) => (
                                 <div key={matiere} id={`avances-pour-vous-${matiere}`}>
@@ -503,6 +635,7 @@ export default function QuestionnairesListPage() {
                                 </div>
                               ))}
                             </div>
+                            )}
                           </div>
                         )}
 
