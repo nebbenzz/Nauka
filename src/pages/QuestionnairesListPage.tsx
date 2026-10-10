@@ -7,11 +7,12 @@ import QuestionnaireFilters, { type FiltreQuestionnaire } from "../components/Qu
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { FORMATIONS } from "../data/formations";
-import { estQuizCompatibleAvecNiveau, formatDureeQuiz, formatNiveauQuiz, getPreviewNotions, getScorePourcentage } from "../lib/catalogUtils";
+import { dedupliquerQuizParNotion, estQuizCompatibleAvecNiveau, formatDureeQuiz, formatNiveauQuiz, getPreviewNotions, getScorePourcentage, uniformiserTitresQuestionnaires } from "../lib/catalogUtils";
 
 interface QuizCard {
   id: string;
   titre: string;
+  titreAffiche: string;
   type: string;
   est_avance: boolean;
   duree_secondes: number | null;
@@ -19,6 +20,9 @@ interface QuizCard {
   matiere_nom: string;
   notion_nom: string | null;
   notion_niveau: number | null;
+  niveau_cible: number | null;
+  niveau_premiere_decouverte: number | null;
+  niveau_contenu_max: number | null;
   notions_couvertes: string[];
   nombre_questions: number;
   est_a_moi: boolean;
@@ -86,6 +90,7 @@ export default function QuestionnairesListPage() {
   useEffect(() => {
     async function charger() {
       let formationChargee: string | null = null;
+      let niveauFormationChargee: number | null = null;
       if (session?.user) {
         const { data: profil } = await supabase
           .from("profiles")
@@ -94,7 +99,8 @@ export default function QuestionnairesListPage() {
           .single();
 
         formationChargee = profil?.formation ?? null;
-        setNiveauUtilisateur(profil?.niveau_formation ?? null);
+        niveauFormationChargee = profil?.niveau_formation ?? null;
+        setNiveauUtilisateur(niveauFormationChargee);
         const proActif = profil?.plan === "pro" && (!profil.pro_expires_at || new Date(profil.pro_expires_at) > new Date());
         setEstPro(proActif);
         if (profil?.formation) {
@@ -105,14 +111,14 @@ export default function QuestionnairesListPage() {
 
       const { data: quizPublics } = await supabase
         .from("quiz")
-        .select("id, titre, type, est_avance, duree_secondes, formation_cible, matieres(nom), notions(nom, niveau), quiz_questions(count)")
+        .select("id, titre, type, est_avance, duree_secondes, formation_cible, niveau_cible, niveau_premiere_decouverte, matieres(nom), notions(nom, niveau), quiz_questions(count)")
         .eq("is_public", true);
 
       let quizPersonnels: any[] = [];
       if (session?.user) {
         const { data } = await supabase
           .from("quiz")
-          .select("id, titre, type, est_avance, duree_secondes, formation_cible, matieres(nom), notions(nom, niveau), quiz_questions(count)")
+          .select("id, titre, type, est_avance, duree_secondes, formation_cible, niveau_cible, niveau_premiere_decouverte, matieres(nom), notions(nom, niveau), quiz_questions(count)")
           .eq("created_by", session.user.id);
         quizPersonnels = data || [];
       }
@@ -156,22 +162,30 @@ export default function QuestionnairesListPage() {
       const idsQuiz = tousLesQuiz.map((q) => q.id);
       const { data: liaisons } = await supabase
         .from("quiz_questions")
-        .select("quiz_id, questions(notions(nom))")
+        .select("quiz_id, questions(niveau, notions(nom, niveau))")
         .in("quiz_id", idsQuiz);
 
       const notionsParQuiz: Record<string, Set<string>> = {};
+      const niveauxParQuiz: Record<string, Set<number>> = {};
       (liaisons || []).forEach((l: any) => {
         const nom = l.questions?.notions?.nom;
         if (nom) {
           notionsParQuiz[l.quiz_id] = notionsParQuiz[l.quiz_id] || new Set();
           notionsParQuiz[l.quiz_id].add(nom);
         }
+        const niveau = l.questions?.niveau ?? l.questions?.notions?.niveau;
+        if (typeof niveau === "number") {
+          niveauxParQuiz[l.quiz_id] = niveauxParQuiz[l.quiz_id] || new Set();
+          niveauxParQuiz[l.quiz_id].add(niveau);
+        }
       });
 
-      setQuizzes(
-        tousLesQuiz.map((q: any) => ({
+      const quizCards: QuizCard[] = tousLesQuiz.map((q: any) => {
+        const niveauxQuiz = Array.from(niveauxParQuiz[q.id] || []);
+        return {
           id: q.id,
           titre: q.titre,
+          titreAffiche: q.titre,
           type: q.type,
           est_avance: q.est_avance,
           duree_secondes: q.duree_secondes,
@@ -179,13 +193,17 @@ export default function QuestionnairesListPage() {
           matiere_nom: q.matieres?.nom ?? "",
           notion_nom: q.notions?.nom ?? null,
           notion_niveau: q.notions?.niveau ?? null,
+          niveau_cible: q.niveau_cible ?? null,
+          niveau_premiere_decouverte: q.niveau_premiere_decouverte ?? (niveauxQuiz.length > 0 ? Math.min(...niveauxQuiz) : q.notions?.niveau ?? null),
+          niveau_contenu_max: niveauxQuiz.length > 0 ? Math.max(...niveauxQuiz) : q.notions?.niveau ?? null,
           notions_couvertes: Array.from(notionsParQuiz[q.id] || []),
           nombre_questions: Math.min(5, q.quiz_questions?.[0]?.count ?? 0),
           est_a_moi: q.est_a_moi,
           dernier_score: dernierScoreParQuiz.get(q.id)?.score ?? null,
           dernier_score_max: dernierScoreParQuiz.get(q.id)?.score_max ?? null,
-        }))
-      );
+        };
+      });
+      setQuizzes(uniformiserTitresQuestionnaires(dedupliquerQuizParNotion(quizCards, niveauFormationChargee), niveauFormationChargee));
       setChargement(false);
     }
 
@@ -195,6 +213,7 @@ export default function QuestionnairesListPage() {
   const rechercheLower = recherche.toLowerCase();
   const correspond = (q: QuizCard) =>
     q.titre.toLowerCase().includes(rechercheLower) ||
+    q.titreAffiche.toLowerCase().includes(rechercheLower) ||
     q.matiere_nom.toLowerCase().includes(rechercheLower) ||
     (q.notion_nom?.toLowerCase().includes(rechercheLower) ?? false) ||
     q.notions_couvertes.some((n) => n.toLowerCase().includes(rechercheLower));
@@ -204,7 +223,11 @@ export default function QuestionnairesListPage() {
     return estQuizCompatibleAvecNiveau(
       {
         type: q.type,
+        notion_nom: q.notion_nom,
         notion_niveau: q.notion_niveau,
+        niveau_cible: q.niveau_cible,
+        niveau_premiere_decouverte: q.niveau_premiere_decouverte,
+        niveau_contenu_max: q.niveau_contenu_max,
         est_avance: q.est_avance,
       },
       niveauUtilisateur,
@@ -265,8 +288,8 @@ export default function QuestionnairesListPage() {
           const differencePriorite = prioriteType(a) - prioriteType(b);
           if (differencePriorite !== 0) return differencePriorite;
 
-          const niveauA = a.notion_niveau ?? 999;
-          const niveauB = b.notion_niveau ?? 999;
+          const niveauA = a.niveau_cible ?? a.notion_niveau ?? 999;
+          const niveauB = b.niveau_cible ?? b.notion_niveau ?? 999;
           if (niveauA !== niveauB) return niveauA - niveauB;
 
           const notionA = a.notion_nom ?? "";
@@ -281,9 +304,10 @@ export default function QuestionnairesListPage() {
   const regrouperParAnnee = (liste: QuizCard[]) => {
     const groupes = new Map<number | null, QuizCard[]>();
     liste.forEach((quiz) => {
-      const groupe = groupes.get(quiz.notion_niveau) ?? [];
+      const niveau = quiz.niveau_cible ?? quiz.notion_niveau;
+      const groupe = groupes.get(niveau) ?? [];
       groupe.push(quiz);
-      groupes.set(quiz.notion_niveau, groupe);
+      groupes.set(niveau, groupe);
     });
 
     return Array.from(groupes.entries())
@@ -301,12 +325,13 @@ export default function QuestionnairesListPage() {
   };
 
   const filtrerParAnnee = (liste: QuizCard[], selection: SelectionAnnee) =>
-    selection === null ? liste : liste.filter((quiz) => quiz.notion_niveau === selection || quiz.notion_niveau === null);
+    selection === null ? liste : liste.filter((quiz) => (quiz.niveau_cible ?? quiz.notion_niveau) === selection || (quiz.niveau_cible ?? quiz.notion_niveau) === null);
 
   const compterParAnnee = (liste: QuizCard[]): Record<number, number> => {
     const comptes: Record<number, number> = {};
     liste.forEach((quiz) => {
-      if (quiz.notion_niveau !== null) comptes[quiz.notion_niveau] = (comptes[quiz.notion_niveau] ?? 0) + 1;
+      const niveau = quiz.niveau_cible ?? quiz.notion_niveau;
+      if (niveau !== null) comptes[niveau] = (comptes[niveau] ?? 0) + 1;
     });
     return comptes;
   };
@@ -356,8 +381,9 @@ export default function QuestionnairesListPage() {
     const scoreActuel = getScorePourcentage(q.dernier_score, q.dernier_score_max);
     const apercuNotions = getPreviewNotions(q.notions_couvertes);
     const niveau = formatNiveauQuiz(q);
-    const typeLibelle = q.est_avance ? "Matière" : q.type === "global" ? "Matière" : "Notion";
-    const etiquetteType = q.type === "notion" && niveau ? `${typeLibelle} • ${niveau}` : typeLibelle;
+    const typeLibelle = q.est_avance || (q.type === "global" && !q.notion_nom) ? "Matière" : "Notion";
+    const niveauEtiquette = q.type === "notion" ? niveau : q.notion_nom && q.notion_niveau ? `niv. ${q.notion_niveau}` : "";
+    const etiquetteType = niveauEtiquette ? `${typeLibelle} • ${niveauEtiquette}` : typeLibelle;
     const estCarteMatiere = q.type === "global" || q.est_avance;
     const texteApercu = apercuNotions.length > 0 ? apercuNotions.join(" • ") : q.notion_nom ?? "Couverture globale de la matière";
 
@@ -400,7 +426,7 @@ export default function QuestionnairesListPage() {
         </div>
 
         <div className="flex flex-1 items-center py-4">
-          <h3 className="line-clamp-2 text-left font-display text-lg font-extrabold leading-snug text-ink">{q.titre}</h3>
+          <h3 className="line-clamp-2 text-left font-display text-lg font-extrabold leading-snug text-ink">{q.titreAffiche}</h3>
         </div>
 
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-4 text-xs text-inkmuted">

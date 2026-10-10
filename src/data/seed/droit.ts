@@ -1,4 +1,5 @@
 import type { QuestionSeed, QuizSeed } from "./types";
+import { creerQuizAgreges } from "../../lib/quizSeedGroups";
 
 export const droitMatiere = {
   nom: "Droit",
@@ -1732,7 +1733,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit pénal général - L2",
+    notion: "Droit pénal général",
     niveau: 2,
     questions: [
       qcuDroit("Quel principe impose qu'une infraction et une peine soient prévues par un texte applicable ?", "Le principe de légalité des délits et des peines", ["Le principe de libre administration", "Le principe de solidarité fiscale", "Le principe de publicité foncière"], "Le principe de légalité interdit de punir un comportement sans incrimination et peine prévus par la loi."),
@@ -1744,7 +1745,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit des affaires - L2",
+    notion: "Droit des affaires",
     niveau: 2,
     questions: [
       qcuDroit("Quel acte relève classiquement du droit commercial lorsqu'il est accompli dans les conditions prévues par le Code de commerce ?", "Un acte de commerce", ["Un acte d'état civil", "Une décision constitutionnelle", "Une déclaration de naissance"], "Le droit commercial s'applique notamment aux actes qualifiés commerciaux par la loi et aux personnes relevant de ce statut."),
@@ -1756,7 +1757,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Finances publiques - L2",
+    notion: "Finances publiques",
     niveau: 2,
     questions: [
       qcuDroit("Quel texte autorise et prévoit les ressources et charges de l'État pour une année ?", "La loi de finances", ["Le Code civil", "Le règlement intérieur du Sénat", "Le contrat de travail"], "La loi de finances prévoit et autorise les ressources et charges de l'État dans les conditions constitutionnelles et organiques."),
@@ -1768,7 +1769,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Histoire du droit pénal - L2",
+    notion: "Histoire du droit pénal",
     niveau: 2,
     questions: [
       qcuDroit("Quel changement est associé à la codification pénale révolutionnaire ?", "L'affirmation d'une légalité écrite des infractions et des peines", ["La disparition de toute peine écrite", "Le transfert de tous les procès aux juridictions européennes", "La création de la Ve République"], "La période révolutionnaire affirme notamment la légalité et l'encadrement écrit de la répression."),
@@ -1780,7 +1781,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Sociologie politique - L2",
+    notion: "Sociologie politique",
     niveau: 2,
     questions: [
       qcuDroit("Que désigne la socialisation politique ?", "Le processus par lequel une personne acquiert des valeurs et comportements politiques", ["La création d'une société commerciale", "L'inscription d'un jugement au registre foncier", "La rédaction d'un budget communal"], "La socialisation politique se construit par des expériences, groupes et institutions au cours de la vie."),
@@ -1792,10 +1793,10 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit administratif - L2",
+    notion: "Droit administratif",
     niveau: 2,
     questions: [
-      qcuDroit("Quel est l'objet principal d'un recours pour excès de pouvoir ?", "Demander l'annulation d'un acte administratif illégal", ["Demander la condamnation pénale d'un élu", "Créer un contrat de travail", "Annuler automatiquement une loi votée"], "Le recours pour excès de pouvoir vise en principe l'annulation d'un acte administratif unilatéral illégal."),
+      qcuDroit("Quel recours permet principalement au juge administratif d'annuler une décision administrative unilatérale illégale ?", "Le recours pour excès de pouvoir", ["Le recours indemnitaire de pleine juridiction", "L'appel d'une décision pénale", "La demande de révision d'une loi"], "Le recours pour excès de pouvoir vise l'annulation d'un acte administratif unilatéral illégal, tandis que le recours indemnitaire tend à réparer un préjudice."),
       qcuDroit("Quelle juridiction administrative est généralement la juridiction de premier ressort ?", "Le tribunal administratif", ["La cour d'assises", "Le tribunal de commerce", "Le Conseil constitutionnel"], "Le tribunal administratif est la juridiction de droit commun du contentieux administratif en premier ressort, sous réserve des compétences attribuées autrement."),
       qcuDroit("Que désigne un acte administratif unilatéral ?", "Une décision prise par une autorité administrative sans accord contractuel du destinataire", ["Un contrat signé entre deux personnes privées", "Une loi votée par le Parlement", "Un jugement rendu par une juridiction pénale"], "L'acte administratif unilatéral produit des effets juridiques par la décision de l'administration dans son champ de compétence."),
       qcmDroit("Quelles autorités peuvent prendre des actes administratifs dans leur domaine de compétence ?", ["Un maire", "Un ministre"], ["Un particulier agissant sans délégation", "Une société privée sans prérogative publique"], "Les autorités administratives prennent des actes dans les limites de leurs compétences et procédures."),
@@ -1804,7 +1805,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Responsabilité civile - L2",
+    notion: "Responsabilité civile",
     niveau: 2,
     questions: [
       qcuDroit("Quels éléments sont classiquement nécessaires pour engager une responsabilité civile extracontractuelle pour faute ?", "Une faute, un dommage et un lien de causalité", ["Un contrat écrit dans tous les cas", "Une condamnation pénale préalable", "Une simple inquiétude sans dommage"], "Le régime général repose notamment sur la faute, le dommage et le lien causal, sous réserve des régimes spéciaux."),
@@ -1816,7 +1817,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Procédure pénale - L2",
+    notion: "Procédure pénale",
     niveau: 2,
     questions: [
       qcuDroit("Quelle autorité exerce en principe l'action publique au nom de la société ?", "Le ministère public", ["La victime seule dans tous les cas", "Le greffe de la juridiction", "Le Conseil constitutionnel"], "Le ministère public met en mouvement et exerce l'action publique selon les règles de procédure pénale."),
@@ -1828,7 +1829,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit de l'Union européenne - L2",
+    notion: "Droit de l'Union européenne",
     niveau: 2,
     questions: [
       qcuDroit("Quel effet caractérise généralement un règlement de l'Union européenne ?", "Il est directement applicable dans les États membres", ["Il doit toujours être retranscrit mot pour mot par une loi nationale", "Il ne concerne que les institutions françaises", "Il constitue un arrêt de la Cour de cassation"], "Le règlement est obligatoire dans tous ses éléments et directement applicable dans les États membres."),
@@ -1840,7 +1841,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit fiscal général - L2",
+    notion: "Droit fiscal général",
     niveau: 2,
     questions: [
       qcuDroit("Quel principe exige une base légale pour établir une imposition ?", "Le principe de légalité de l'impôt", ["Le principe de liberté contractuelle", "Le principe de présomption d'innocence", "Le principe de libre concurrence uniquement"], "Les impositions sont établies et recouvrées selon les règles fixées par les textes, dans le cadre constitutionnel."),
@@ -1852,7 +1853,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Histoire des idées politiques - L2",
+    notion: "Histoire des idées politiques",
     niveau: 2,
     questions: [
       qcuDroit("Quel auteur est associé à la théorie de la séparation des pouvoirs dans De l'esprit des lois ?", "Montesquieu", ["Jean Bodin uniquement", "Auguste Comte", "Émile Durkheim"], "Montesquieu analyse la séparation des pouvoirs comme garantie contre leur concentration."),
@@ -1864,7 +1865,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Histoire de l'Europe - L2",
+    notion: "Histoire de l'Europe",
     niveau: 2,
     questions: [
       qcuDroit("Quel traité fonde la Communauté économique européenne en 1957 ?", "Le traité de Rome", ["Le traité de Maastricht", "Le traité de Lisbonne", "Le traité de Versailles"], "Les traités de Rome de 1957 instituent notamment la Communauté économique européenne."),
@@ -1876,7 +1877,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit du travail - L3",
+    notion: "Droit du travail",
     niveau: 3,
     questions: [
       qcuDroit("Quel critère caractérise classiquement le lien de subordination dans un contrat de travail ?", "Le pouvoir de donner des directives, d'en contrôler l'exécution et de sanctionner", ["Le seul versement d'une somme d'argent", "La détention d'un diplôme professionnel", "La réalisation d'une mission unique"], "La jurisprudence caractérise le lien de subordination par le pouvoir de direction, de contrôle et de sanction de l'employeur."),
@@ -1888,7 +1889,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit des sociétés - L3",
+    notion: "Droit des sociétés",
     niveau: 3,
     questions: [
       qcuDroit("Quel acte fixe notamment les règles de fonctionnement d'une société ?", "Les statuts", ["Le procès-verbal d'une audience pénale", "Le règlement d'une commune", "Le contrat de vente d'un associé"], "Les statuts définissent notamment la forme, l'objet, le capital et les règles de fonctionnement de la société."),
@@ -1900,7 +1901,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Libertés fondamentales - L3",
+    notion: "Libertés fondamentales",
     niveau: 3,
     questions: [
       qcuDroit("Quel texte du Conseil de l'Europe garantit notamment des droits fondamentaux et permet une requête devant la CEDH sous conditions ?", "La Convention européenne des droits de l'homme", ["Le traité de Maastricht uniquement", "Le Code de commerce", "La Charte des Nations unies seule"], "La Convention européenne des droits de l'homme relève du Conseil de l'Europe et fonde le contrôle de la Cour européenne des droits de l'homme."),
@@ -1912,7 +1913,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Régime général des obligations - L3",
+    notion: "Régime général des obligations",
     niveau: 3,
     questions: [
       qcuDroit("Quel mécanisme éteint deux dettes réciproques à hauteur de la plus faible lorsque ses conditions sont réunies ?", "La compensation", ["La novation", "La délégation de pouvoir", "La prescription acquisitive"], "La compensation éteint des obligations réciproques dans les conditions prévues par le Code civil."),
@@ -1924,7 +1925,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit judiciaire - L3",
+    notion: "Droit judiciaire",
     niveau: 3,
     questions: [
       qcuDroit("Quelle juridiction connaît en principe des litiges civils entre personnes privées lorsqu'aucune compétence spécialisée n'est attribuée ?", "Le tribunal judiciaire", ["La cour d'assises", "Le Conseil constitutionnel", "Le tribunal administratif dans tous les cas"], "Le tribunal judiciaire est la juridiction civile de droit commun, sous réserve des compétences attribuées à d'autres juridictions."),
@@ -1936,7 +1937,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Contentieux administratif - L3",
+    notion: "Contentieux administratif",
     niveau: 3,
     questions: [
       qcuDroit("Quel recours vise principalement à obtenir l'annulation d'un acte administratif illégal ?", "Le recours pour excès de pouvoir", ["L'action en divorce", "La demande de brevet", "Le pourvoi pénal dans tous les cas"], "Le recours pour excès de pouvoir demande au juge administratif l'annulation d'un acte administratif pour illégalité."),
@@ -1948,7 +1949,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit international public - L3",
+    notion: "Droit international public",
     niveau: 3,
     questions: [
       qcuDroit("Quel principe impose en règle générale l'exécution de bonne foi des traités en vigueur ?", "Pacta sunt servanda", ["Non bis in idem", "Légalité criminelle", "Force obligatoire du jugement civil uniquement"], "Pacta sunt servanda signifie que les traités en vigueur lient leurs parties et doivent être exécutés de bonne foi."),
@@ -1960,7 +1961,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit privé des biens - L3",
+    notion: "Droit privé des biens",
     niveau: 3,
     questions: [
       qcuDroit("Quels attributs composent classiquement le droit de propriété ?", "L'usus, le fructus et l'abusus", ["La légalité, la compétence et la procédure", "Le suffrage, le mandat et la représentation", "L'offre, l'acceptation et la cause"], "La propriété est classiquement présentée à travers l'usage, la perception des fruits et la disposition du bien."),
@@ -1972,7 +1973,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Histoire de la propriété - L3",
+    notion: "Histoire de la propriété",
     niveau: 3,
     questions: [
       qcuDroit("Quel événement a contribué à remettre en cause les privilèges fonciers de l'Ancien Régime ?", "La nuit du 4 août 1789", ["La signature du traité de Maastricht", "La promulgation de la Constitution de 1958", "La création de la Ve République"], "Les décisions d'août 1789 abolissent les privilèges féodaux dans le contexte révolutionnaire."),
@@ -1984,7 +1985,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Philosophie du droit - L3",
+    notion: "Philosophie du droit",
     niveau: 3,
     questions: [
       qcuDroit("Quelle conception associe la validité d'une règle à son édiction selon les procédures reconnues par un système juridique ?", "Le positivisme juridique", ["Le droit naturel exclusivement", "La sociologie électorale", "Le réalisme économique uniquement"], "Le positivisme juridique étudie la validité des normes au regard des sources et procédures du système juridique."),
@@ -1996,7 +1997,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit des contrats spéciaux - L3",
+    notion: "Droit des contrats spéciaux",
     niveau: 3,
     questions: [
       qcuDroit("Dans un contrat de vente, quelle obligation principale pèse sur le vendeur ?", "Délivrer le bien et garantir l'acheteur selon les règles applicables", ["Rendre une décision de justice", "Payer le prix à la place de l'acheteur", "Créer une société avec l'acheteur"], "Le vendeur est notamment tenu de délivrance et des garanties prévues par la loi et le contrat."),
@@ -2008,7 +2009,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit public des biens - L3",
+    notion: "Droit public des biens",
     niveau: 3,
     questions: [
       qcuDroit("Quel critère caractérise notamment l'appartenance d'un bien au domaine public ?", "Son affectation à l'usage direct du public ou à un service public avec les aménagements requis", ["La seule propriété d'une personne privée", "Le seul fait qu'un bien soit coûteux", "Sa mention dans un contrat de travail"], "Le domaine public suppose notamment une propriété publique et une affectation répondant aux critères légaux."),
@@ -2020,7 +2021,7 @@ const lotsQuestionsProgrammeDroit: LotQuestionsProgrammeDroit[] = [
     ],
   },
   {
-    notion: "Droit de l'environnement - L3",
+    notion: "Droit de l'environnement",
     niveau: 3,
     questions: [
       qcuDroit("Quel principe prévoit que le responsable d'une pollution doit contribuer aux coûts de prévention et de réparation dans les conditions applicables ?", "Le principe pollueur-payeur", ["Le principe de libre circulation", "Le principe de non-rétroactivité pénale", "Le principe d'annualité budgétaire"], "Le principe pollueur-payeur vise l'imputation au pollueur des coûts liés à la prévention et à la lutte contre la pollution."),
@@ -2076,6 +2077,20 @@ const questionsProgrammeLicenceDroit = lotsQuestionsProgrammeDroit.flatMap((lot)
 );
 
 droitQuestions.push(...questionsProgrammeLicenceDroit);
+
+const niveauLicenceParNotionDroit: Record<string, number> = {
+  "Droit administratif": 2,
+  "Droit constitutionnel": 1,
+  "Droit des contrats": 2,
+  "Droit des enfants": 1,
+  "Droit international public": 3,
+  "Droit pénal": 2,
+};
+
+for (const question of droitQuestions) {
+  const niveauLicence = niveauLicenceParNotionDroit[question.notion];
+  if (niveauLicence !== undefined) question.niveau = niveauLicence;
+}
 
 export const droitQuizzes: QuizSeed[] = [
   {
@@ -2160,3 +2175,44 @@ export const quizzesLicenceDroitLaRochelle: QuizSeed[] = lotsQuestionsProgrammeD
 }));
 
 droitQuizzes.push(...quizzesLicenceDroitLaRochelle);
+
+const groupesQuizDroit = [
+  {
+    titre: "Droit civil",
+    notionsIncluses: [
+      "Droit civil - les personnes",
+      "Droit civil - la famille",
+      "Droit des contrats",
+      "Droit des obligations - formation",
+      "Responsabilité civile",
+      "Régime général des obligations",
+      "Droit des contrats spéciaux",
+      "Droit privé des biens",
+      "Histoire de la propriété",
+    ],
+  },
+  {
+    titre: "Droit constitutionnel",
+    notionsIncluses: ["Droit constitutionnel", "Droit constitutionnel - théorie générale", "Droit constitutionnel - Ve République"],
+  },
+  {
+    titre: "Droit administratif",
+    notionsIncluses: ["Droit administratif", "Contentieux administratif"],
+  },
+  {
+    titre: "Droit pénal",
+    notionsIncluses: ["Droit pénal", "Droit pénal général", "Procédure pénale", "Histoire du droit pénal"],
+  },
+  {
+    titre: "Droit européen",
+    notionsIncluses: ["Droit européen - introduction", "Droit de l'Union européenne"],
+  },
+  {
+    titre: "Droit des affaires",
+    notionsIncluses: ["Droit des affaires", "Droit des sociétés"],
+  },
+];
+
+export const quizzesAgregesDroit = creerQuizAgreges(droitQuestions, groupesQuizDroit, droitQuizzes);
+
+droitQuizzes.push(...quizzesAgregesDroit);

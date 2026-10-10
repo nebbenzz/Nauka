@@ -80,3 +80,21 @@ test("les notions des questionnaires de droit sont reliées aux EC du semestre e
     assert.equal(questions.filter((question) => question.type === "qcm").length, 3);
   }
 });
+
+test("les notions de droit partagées avec les programmes Licence ne restent pas étiquetées M1/M2", () => {
+  const niveauxLicence = new Map<string, number>([
+    ["Droit administratif", 2],
+    ["Droit constitutionnel", 1],
+    ["Droit des contrats", 2],
+    ["Droit des enfants", 1],
+    ["Droit international public", 3],
+    ["Droit pénal", 2],
+  ]);
+
+  for (const [notion, niveau] of niveauxLicence) {
+    const questions = droitQuestions.filter((question) => question.notion === notion);
+    assert.ok(questions.length > 0, `Aucune question pour ${notion}`);
+    assert.ok(questions.every((question) => question.niveau === niveau), `Niveau attendu L${niveau} pour ${notion}`);
+  }
+  assert.equal(droitQuestions.filter((question) => question.niveau >= 4).length, 0);
+});

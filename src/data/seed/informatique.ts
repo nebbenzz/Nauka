@@ -1,4 +1,5 @@
 import type { QuestionSeed, QuizSeed } from "./types";
+import { creerQuizAgreges } from "../../lib/quizSeedGroups";
 
 export const informatiqueMatiere = {
   nom: "Informatique",
@@ -3231,3 +3232,66 @@ export const quizzesLicenceInformatiqueLaRochelle: QuizSeed[] = notionsLicenceSa
   }));
 
 informatiqueQuizzes.push(...quizzesLicenceInformatiqueLaRochelle);
+
+const groupesQuizInformatique = [
+  {
+    titre: "Algorithmique",
+    notionsIncluses: ["Algorithmique", "Algorithmes de graphes et complexité"],
+  },
+  {
+    titre: "Architecture des ordinateurs",
+    notionsIncluses: ["Architecture des ordinateurs", "Architecture des ordinateurs avancée - Licence", "Architecture des systèmes numériques - initiation"],
+  },
+  {
+    titre: "Bases de données",
+    notionsIncluses: ["Bases de données", "Base de données avancée", "Bases de données avancées - Licence"],
+  },
+  {
+    titre: "Génie logiciel",
+    notionsIncluses: ["Génie logiciel - initiation", "Génie logiciel - intermédiaire", "Développement web et logiciel"],
+  },
+  {
+    titre: "Mathématiques pour l'IA",
+    notionsIncluses: ["Mathématiques pour l'IA - initiation", "Mathématiques pour l'IA - intermédiaire"],
+  },
+  {
+    titre: "Programmation",
+    notionsIncluses: ["Programmation", "Programmation impérative - initiation", "Programmation impérative - intermédiaire", "Programmation événementielle - Licence"],
+  },
+  {
+    titre: "Programmation fonctionnelle",
+    notionsIncluses: ["Programmation fonctionnelle", "Programmation fonctionnelle - Licence"],
+  },
+  {
+    titre: "Programmation objet",
+    notionsIncluses: ["Programmation orientée objet", "Programmation objet - initiation", "Programmation objet - intermédiaire"],
+  },
+  {
+    titre: "Programmation web",
+    notionsIncluses: ["Web", "Programmation web - initiation", "Programmation web - intermédiaire"],
+  },
+  {
+    titre: "Réseaux",
+    notionsIncluses: ["Réseaux", "Réseaux - Licence", "Réseaux et infrastructures"],
+  },
+  {
+    titre: "Sécurité informatique",
+    notionsIncluses: ["Sécurité informatique", "Cybersécurité", "Sécurité des systèmes - Licence"],
+  },
+  {
+    titre: "Structures de données",
+    notionsIncluses: ["Structures de données", "Structures de données - intermédiaire"],
+  },
+  {
+    titre: "Systèmes d'exploitation",
+    notionsIncluses: ["Systèmes d'exploitation", "Systèmes d'exploitation - initiation", "Systèmes d'exploitation - intermédiaire", "Systèmes répartis"],
+  },
+  {
+    titre: "Analyse de données",
+    notionsIncluses: ["Analyse de données - initiation", "Analyse de données - avancée"],
+  },
+];
+
+export const quizzesAgregesInformatique = creerQuizAgreges(informatiqueQuestions, groupesQuizInformatique, informatiqueQuizzes);
+
+informatiqueQuizzes.push(...quizzesAgregesInformatique);

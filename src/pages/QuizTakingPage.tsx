@@ -10,7 +10,7 @@ import { choisirBrouillonLePlusRecent, clearQuizDraft, getQuestionsFromDraft, re
 import { effacerQuizDraftDistant, lireQuizDraftDistant, sauvegarderQuizDraftDistant } from "../lib/quizDraftCloud";
 import { recompenserParrainage } from "../lib/referral";
 import { supabase } from "../lib/supabaseClient";
-import { filtrerQuestionsParNiveau, melanger, tirerQuestionsAvancees, tirerQuestionsStandard } from "../lib/quizSelection";
+import { filtrerQuestionsParNiveau, filtrerQuestionsParNiveauCible, melanger, tirerQuestionsAvancees, tirerQuestionsStandard } from "../lib/quizSelection";
 
 interface Reponse {
   id: string;
@@ -23,6 +23,7 @@ interface Question {
   intitule: string;
   explication: string | null;
   points: number;
+  niveau: number | null;
   notion_niveau: number | null;
   reponses: Reponse[];
 }
@@ -188,7 +189,7 @@ export default function QuizTakingPage() {
     async function charger() {
       const { data: quiz } = await supabase
         .from("quiz")
-        .select("titre, type, est_avance, duree_secondes")
+        .select("titre, type, est_avance, duree_secondes, niveau_cible")
         .eq("id", quizId)
         .single();
       if (quiz) {
@@ -239,7 +240,7 @@ export default function QuizTakingPage() {
 
       const { data: liaisons } = await supabase
         .from("quiz_questions")
-        .select("ordre, questions(id, type, intitule, explication, points, notions(niveau), reponses(id, texte, est_correcte, ordre))")
+        .select("ordre, questions(id, type, intitule, explication, points, niveau, notions(niveau), reponses(id, texte, est_correcte, ordre))")
         .eq("quiz_id", quizId)
         .order("ordre");
 
@@ -254,13 +255,16 @@ export default function QuizTakingPage() {
             intitule: question.intitule,
             explication: question.explication,
             points: question.points,
+            niveau: question.niveau ?? notion?.niveau ?? null,
             notion_niveau: notion?.niveau ?? null,
             reponses: [...(question.reponses || [])].sort((a, b) => a.ordre - b.ordre),
           }];
         });
-        const questionsAdaptees = quiz?.type === "global"
-          ? filtrerQuestionsParNiveau(qs, niveauUtilisateur)
-          : qs;
+        const questionsAdaptees = typeof quiz?.niveau_cible === "number"
+          ? filtrerQuestionsParNiveauCible(qs, quiz.niveau_cible, niveauUtilisateur)
+          : quiz?.type === "global"
+            ? filtrerQuestionsParNiveau(qs, niveauUtilisateur)
+            : qs;
         let questionsPourSession = questionsAdaptees;
         if (revisionDue) {
           const { data: revisions, error: erreurRevisions } = await supabase

@@ -16,14 +16,29 @@ export function estQuestionStandard(question: QuestionSelection): boolean {
   return question.type === "qcm" || question.type === "qcu";
 }
 
-export function filtrerQuestionsParNiveau<T extends { notion_niveau: number | null }>(
+export function filtrerQuestionsParNiveau<T extends { niveau?: number | null; notion_niveau?: number | null }>(
   questions: T[],
   niveauUtilisateur: number | null
 ): T[] {
   if (niveauUtilisateur === null || niveauUtilisateur <= 0) return questions;
-  return questions.filter((question) =>
-    question.notion_niveau !== null && question.notion_niveau <= niveauUtilisateur
-  );
+  return questions.filter((question) => {
+    const niveauQuestion = question.niveau ?? question.notion_niveau;
+    return typeof niveauQuestion === "number" && niveauQuestion <= niveauUtilisateur;
+  });
+}
+
+export function filtrerQuestionsParNiveauCible<T extends { niveau?: number | null; notion_niveau?: number | null }>(
+  questions: T[],
+  niveauCible: number,
+  niveauUtilisateur: number | null
+): T[] {
+  const contientNiveauxSuperieurs = questions.some((question) => {
+    const niveauQuestion = question.niveau ?? question.notion_niveau;
+    return typeof niveauQuestion === "number" && niveauQuestion > niveauCible;
+  });
+
+  if (contientNiveauxSuperieurs) return filtrerQuestionsParNiveau(questions, niveauUtilisateur);
+  return questions.filter((question) => (question.niveau ?? question.notion_niveau) === niveauCible);
 }
 
 export function eviterMemeTirage<T extends QuestionSelection>(

@@ -27,6 +27,11 @@ export interface QuizSeed {
   titre: string;
   type: "notion" | "global";
   notionFiltre?: string;
+  notionsIncluses?: string[];
+  niveauNotion?: number;
+  niveauCible?: number;
+  niveauPremiereDecouverte?: number;
+  niveauxInclus?: number[];
   questionIds: string[];
   formationCible?: string;
   estAvance?: boolean;

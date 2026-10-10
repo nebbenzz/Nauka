@@ -1,11 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
-import { informatiqueMatiere, informatiqueQuestions, informatiqueQuizzes, quizzesLicenceInformatiqueLaRochelle } from "../src/data/seed/informatique";
-import { droitMatiere, droitQuestions, droitQuizzes, quizzesLicenceDroitLaRochelle } from "../src/data/seed/droit";
+import { informatiqueMatiere, informatiqueQuestions, informatiqueQuizzes, quizzesAgregesInformatique, quizzesLicenceInformatiqueLaRochelle } from "../src/data/seed/informatique";
+import { droitMatiere, droitQuestions, droitQuizzes, quizzesAgregesDroit, quizzesLicenceDroitLaRochelle } from "../src/data/seed/droit";
 import { sciencesVieMatiere, sciencesVieQuestions, sciencesVieQuizzes } from "../src/data/seed/sciences-vie";
 import { btsGestionMatiere, btsGestionQuestions, btsGestionQuizzes } from "../src/data/seed/bts-gestion";
-import type { QuestionSeed, QuizSeed } from "../src/data/seed/types";
 import { btsInformatiqueQuestions, btsInformatiqueQuizzes } from "../src/data/seed/bts-informatique";
+import { creerQuizMatiereParNiveau, creerQuizNotionParNiveau } from "../src/lib/quizSeedGroups";
+import type { QuestionSeed, QuizSeed } from "../src/data/seed/types";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 const MAX_QUESTIONS_PAR_QUIZ = 10;
-const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "bts-gestion"]);
+const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "bts-gestion", "regroupements"]);
 const matiereCible = process.argv[2]?.trim().toLowerCase();
 
 async function upsertMatiere(nom: string, description: string): Promise<string> {
@@ -50,16 +51,59 @@ async function upsertNotion(matiereId: string, nom: string, niveau: number): Pro
   return data.id;
 }
 
+async function chargerIdsQuestionsExistantes(matiereId: string, questions: QuestionSeed[]): Promise<Record<string, string>> {
+  const nomsNotions = [...new Set(questions.map((question) => question.notion))];
+  const { data: notions, error: erreurNotions } = await supabase
+    .from("notions")
+    .select("id, nom")
+    .eq("matiere_id", matiereId)
+    .in("nom", nomsNotions);
+  if (erreurNotions) throw erreurNotions;
+
+  const nomParNotionId = new Map((notions || []).map((notion) => [notion.id as string, notion.nom as string]));
+  if (nomParNotionId.size !== nomsNotions.length) {
+    throw new Error("Certaines notions du pool n'existent pas encore en base ; exécute d'abord le seed de cette matière.");
+  }
+
+  const { data: questionsExistantes, error: erreurQuestions } = await supabase
+    .from("questions")
+    .select("id, intitule, notion_id")
+    .in("notion_id", [...nomParNotionId.keys()]);
+  if (erreurQuestions) throw erreurQuestions;
+
+  const idParContenu = new Map<string, string>();
+  for (const question of questionsExistantes || []) {
+    const notion = nomParNotionId.get(question.notion_id as string);
+    if (notion) idParContenu.set(`${notion}\u0000${question.intitule}`, question.id);
+  }
+
+  const idsParSlug: Record<string, string> = {};
+  for (const question of questions) {
+    const questionId = idParContenu.get(`${question.notion}\u0000${question.intitule}`);
+    if (!questionId) throw new Error(`Question absente de la base pour le pool agrégé : ${question.intitule}`);
+    idsParSlug[question.id] = questionId;
+  }
+  return idsParSlug;
+}
+
 async function seedMatiere(
   matiere: { nom: string; description: string },
   questions: QuestionSeed[],
-  quizzes: QuizSeed[]
+  quizzes: QuizSeed[],
+  seulementGroupes = false,
 ) {
   console.log(`\nMatière : ${matiere.nom}`);
   const matiereId = await upsertMatiere(matiere.nom, matiere.description);
-  const idsParSlug: Record<string, string> = {};
+  const idsParSlug = seulementGroupes
+    ? await chargerIdsQuestionsExistantes(matiereId, questions)
+    : {};
+  const questionsACharger = seulementGroupes ? [] : questions;
+  const notionsAgregees = quizzes.flatMap((quiz) => quiz.notionsIncluses ?? []);
+  const quizNotionsParNiveau = seulementGroupes ? [] : creerQuizNotionParNiveau(questions, notionsAgregees, quizzes);
+  const quizMatiereParNiveau = seulementGroupes ? [] : creerQuizMatiereParNiveau(matiere.nom, questions, quizzes);
+  const tousLesQuiz = [...quizzes, ...quizNotionsParNiveau, ...quizMatiereParNiveau];
 
-  for (const q of questions) {
+  for (const q of questionsACharger) {
     const notionId = await upsertNotion(matiereId, q.notion, q.niveau);
 
     const { data: existante } = await supabase
@@ -72,12 +116,18 @@ async function seedMatiere(
     let questionId: string;
     if (existante) {
       questionId = existante.id;
+      const { error: erreurMiseAJourNiveau } = await supabase
+        .from("questions")
+        .update({ niveau: q.niveau })
+        .eq("id", questionId);
+      if (erreurMiseAJourNiveau) throw erreurMiseAJourNiveau;
       console.log(`  - déjà présente : ${q.intitule}`);
     } else {
       const { data: inserted, error } = await supabase
         .from("questions")
         .insert({
           notion_id: notionId,
+          niveau: q.niveau,
           type: q.type,
           intitule: q.intitule,
           explication: q.explication,
@@ -131,16 +181,22 @@ async function seedMatiere(
     idsParSlug[q.id] = questionId;
   }
 
-  for (const quiz of quizzes) {
+  for (const quiz of tousLesQuiz) {
+    const questionsIncluses = questions.filter((question) =>
+      (quiz.niveauxInclus
+        ? quiz.niveauxInclus.includes(question.niveau)
+        : quiz.niveauCible === undefined || question.niveau === quiz.niveauCible)
+      && (!quiz.notionsIncluses || quiz.notionsIncluses.includes(question.notion)),
+    );
     const questionIds = quiz.type === "global"
-      ? questions.map((question) => question.id)
+      ? questionsIncluses.map((question) => question.id)
       : quiz.notionFiltre
-        ? questions.filter((question) => question.notion === quiz.notionFiltre).map((question) => question.id)
+        ? questionsIncluses.filter((question) => question.notion === quiz.notionFiltre).map((question) => question.id)
         : quiz.questionIds.slice(0, MAX_QUESTIONS_PAR_QUIZ);
     let notionId: string | null = null;
-    if (quiz.type === "notion" && quiz.notionFiltre) {
+    if (quiz.notionFiltre) {
       const questionRef = questions.find((q) => q.notion === quiz.notionFiltre);
-      notionId = await upsertNotion(matiereId, quiz.notionFiltre, questionRef?.niveau ?? 1);
+      notionId = await upsertNotion(matiereId, quiz.notionFiltre, quiz.niveauPremiereDecouverte ?? quiz.niveauNotion ?? questionRef?.niveau ?? 1);
     }
 
     const { data: quizExistant } = await supabase
@@ -172,6 +228,8 @@ async function seedMatiere(
           formation_cible: quiz.formationCible ?? null,
           est_avance: quiz.estAvance ?? false,
           duree_secondes: quiz.dureeSecondes ?? null,
+          niveau_cible: quiz.niveauCible ?? null,
+          niveau_premiere_decouverte: quiz.niveauPremiereDecouverte ?? null,
         })
         .eq("id", quizAActualiser.id);
       if (erreurMiseAJour) throw erreurMiseAJour;
@@ -205,6 +263,8 @@ async function seedMatiere(
         formation_cible: quiz.formationCible ?? null,
         est_avance: quiz.estAvance ?? false,
         duree_secondes: quiz.dureeSecondes ?? null,
+        niveau_cible: quiz.niveauCible ?? null,
+        niveau_premiere_decouverte: quiz.niveauPremiereDecouverte ?? null,
       })
       .select("id")
       .single();
@@ -222,22 +282,34 @@ async function seedMatiere(
   }
 }
 
+function filtrerQuestionsPourQuizzes(questions: QuestionSeed[], quizzes: QuizSeed[]): QuestionSeed[] {
+  const notionsCibles = new Set(quizzes.flatMap((quiz) => [
+    ...(quiz.notionFiltre ? [quiz.notionFiltre] : []),
+    ...(quiz.notionsIncluses ?? []),
+  ]));
+  return questions.filter((question) => notionsCibles.has(question.notion));
+}
+
 async function main() {
   if (matiereCible && !matieresDisponibles.has(matiereCible)) {
     throw new Error(`Matière inconnue : ${matiereCible}. Valeurs possibles : ${[...matieresDisponibles].join(", ")}`);
   }
 
   if (matiereCible === "licence-informatique") {
-    const notionsCibles = new Set(quizzesLicenceInformatiqueLaRochelle.flatMap((quiz) => quiz.notionFiltre ?? []));
-    const questionsCibles = [...informatiqueQuestions, ...btsInformatiqueQuestions]
-      .filter((question) => notionsCibles.has(question.notion));
-    await seedMatiere(informatiqueMatiere, questionsCibles, quizzesLicenceInformatiqueLaRochelle);
+    const quizzesCibles = [...quizzesLicenceInformatiqueLaRochelle, ...quizzesAgregesInformatique];
+    const questionsCibles = filtrerQuestionsPourQuizzes([...informatiqueQuestions, ...btsInformatiqueQuestions], quizzesCibles);
+    await seedMatiere(informatiqueMatiere, questionsCibles, quizzesCibles);
   }
 
   if (matiereCible === "licence-droit") {
-    const notionsCibles = new Set(quizzesLicenceDroitLaRochelle.flatMap((quiz) => quiz.notionFiltre ?? []));
-    const questionsCibles = droitQuestions.filter((question) => notionsCibles.has(question.notion));
-    await seedMatiere(droitMatiere, questionsCibles, quizzesLicenceDroitLaRochelle);
+    const quizzesCibles = [...quizzesLicenceDroitLaRochelle, ...quizzesAgregesDroit];
+    const questionsCibles = filtrerQuestionsPourQuizzes(droitQuestions, quizzesCibles);
+    await seedMatiere(droitMatiere, questionsCibles, quizzesCibles);
+  }
+
+  if (matiereCible === "regroupements") {
+    await seedMatiere(informatiqueMatiere, [...informatiqueQuestions, ...btsInformatiqueQuestions], quizzesAgregesInformatique, true);
+    await seedMatiere(droitMatiere, droitQuestions, quizzesAgregesDroit, true);
   }
 
   if (!matiereCible || matiereCible === "informatique") {
