@@ -5,7 +5,7 @@ export default function CguPage() {
     <LegalLayout titre="Conditions Générales d'Utilisation" majeStamp="6 septembre 2026">
       <h2>Objet</h2>
       <p>
-        Les présentes CGU régissent l'accès et l'utilisation du site Notio, plateforme de révision par
+        Les présentes CGU régissent l'accès et l'utilisation du site Nauka, plateforme de révision par
         questionnaires assistée par intelligence artificielle.
       </p>
 
@@ -18,7 +18,7 @@ export default function CguPage() {
       </p>
 
       <h2>Description du service</h2>
-      <p>Notio propose deux forfaits :</p>
+      <p>Nauka propose deux forfaits :</p>
       <ul>
         <li><strong>Découverte</strong> (gratuit) : accès aux questionnaires existants, limité à 5 questionnaires complétés par jour</li>
         <li><strong>Pro</strong> (payant) : questionnaires illimités, génération de questionnaires personnalisés à partir de documents PDF, correction par IA des zones de code, de schéma et de réponses rédigées</li>
@@ -28,7 +28,7 @@ export default function CguPage() {
       <p>
         Les questionnaires, corrections et explications générés par l'intelligence artificielle sont produits
         automatiquement à partir du contenu que tu fournis ou des données disponibles sur la plateforme. Malgré le
-        soin apporté, ce contenu peut contenir des imprécisions ou des erreurs. Notio ne garantit pas l'exactitude
+        soin apporté, ce contenu peut contenir des imprécisions ou des erreurs. Nauka ne garantit pas l'exactitude
         académique du contenu généré et t'invite à le confronter à tes cours et sources de référence, en
         particulier avant un examen.
       </p>
@@ -50,13 +50,13 @@ export default function CguPage() {
 
       <h2>Résiliation</h2>
       <p>
-        Tu peux supprimer ton compte à tout moment. Notio se réserve le droit de suspendre un compte en cas de
+        Tu peux supprimer ton compte à tout moment. Nauka se réserve le droit de suspendre un compte en cas de
         non-respect des présentes CGU.
       </p>
 
       <h2>Évolution du service</h2>
       <p>
-        Notio est en développement actif : les fonctionnalités, matières et notions disponibles sont amenées à
+        Nauka est en développement actif : les fonctionnalités, matières et notions disponibles sont amenées à
         évoluer. Les présentes CGU peuvent être modifiées ; en cas de changement substantiel, tu en seras informé.
       </p>
     </LegalLayout>

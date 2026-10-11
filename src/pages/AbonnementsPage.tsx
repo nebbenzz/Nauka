@@ -49,7 +49,8 @@ export default function AbonnementsPage() {
       .single()
       .then(({ data }) => {
         if (!data) return;
-        const proActif = data.plan === "pro" && (!data.pro_expires_at || new Date(data.pro_expires_at) > new Date());
+        const estAbonnementActif = data.abonnement_intervalle === "mensuel" || data.abonnement_intervalle === "annuel";
+        const proActif = data.plan === "pro" && (estAbonnementActif || !data.pro_expires_at || new Date(data.pro_expires_at) > new Date());
         setPlan(proActif ? "pro" : "decouverte");
         setAbonnementIntervalle(data.abonnement_intervalle);
         if (data.abonnement_intervalle === "mensuel") {
@@ -197,7 +198,7 @@ export default function AbonnementsPage() {
           <section className="border border-navy bg-navy p-8 text-paper shadow-lg sm:p-10">
             <p className="font-mono text-xs uppercase tracking-widest text-highlight">Pro en préparation</p>
             <h1 className="mt-4 font-display text-3xl font-extrabold">L'abonnement arrive plus tard.</h1>
-            <p className="mt-4 text-sm leading-6 text-paper/70">Notio reste accessible gratuitement pendant sa phase de lancement. Le forfait Pro est prévu pour le {DATE_LANCEMENT_PRO}; son prix et ses fonctionnalités seront confirmés avant son ouverture.</p>
+            <p className="mt-4 text-sm leading-6 text-paper/70">Nauka reste accessible gratuitement pendant sa phase de lancement. Le forfait Pro est prévu pour le {DATE_LANCEMENT_PRO}; son prix et ses fonctionnalités seront confirmés avant son ouverture.</p>
             <p className="mt-4 text-sm leading-6 text-paper/70">En attendant, le parrainage permet de débloquer Pro pendant 7 jours après le premier questionnaire terminé de ami(e) parrainé(e).</p>
             <form onSubmit={handleAlertePro} className="mt-6 flex flex-col gap-2 sm:flex-row">
               <input type="email" required disabled={emailAlerteDejaInscrit} value={emailAlerteDejaInscrit ? "Demande déjà enregistrée" : emailAlerte} onChange={(e) => setEmailAlerte(e.target.value)} placeholder="ton@email.fr" className="min-w-0 flex-1 rounded-md border border-paper/20 bg-paper/10 px-3 py-2.5 text-sm text-paper outline-none placeholder:text-paper/45 focus:border-highlight disabled:cursor-default disabled:text-paper/45" />

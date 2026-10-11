@@ -107,6 +107,14 @@ test("uniformiserTitresQuestionnaires classe aussi les quiz globaux selon leur c
   assert.equal(avance.titreAffiche, "Droit (format avancé) - approfondissement");
 });
 
+test("uniformiserTitresQuestionnaires préserve les titres des quiz personnalisés", () => {
+  const [quiz] = uniformiserTitresQuestionnaires([
+    { id: "personnalise", titre: "Sciences de la Vie", type: "personnalise", est_avance: true, matiere_nom: "Sciences de la Vie", notion_nom: null, notion_niveau: null },
+  ], 3);
+
+  assert.equal(quiz.titreAffiche, "Sciences de la Vie");
+});
+
   test("uniformiserTitresQuestionnaires se base sur la première année de découverte, pas le niveau maximal du pool", () => {
     const [notionDejaVue, nouvelleNotion] = uniformiserTitresQuestionnaires([
       { id: "civil", titre: "Droit civil", type: "global", est_avance: false, matiere_nom: "Droit", notion_nom: "Droit civil", notion_niveau: 1, niveau_cible: 3, niveau_premiere_decouverte: 1, niveau_contenu_max: 3 },

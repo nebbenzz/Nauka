@@ -4,7 +4,7 @@ export default function ConfidentialitePage() {
   return (
     <LegalLayout titre="Politique de confidentialité" majeStamp="6 septembre 2026">
       <p>
-        Cette page explique quelles données sont collectées sur Notio, pourquoi, et comment tu peux exercer tes
+        Cette page explique quelles données sont collectées sur Nauka, pourquoi, et comment tu peux exercer tes
         droits, conformément au Règlement Général sur la Protection des Données (RGPD).
       </p>
 
@@ -14,7 +14,7 @@ export default function ConfidentialitePage() {
         <li>Données de profil (facultatives) : formation, établissement, niveau d'études, matières préférées, objectif de révision, date d'examen</li>
         <li>Contenu des questionnaires : réponses données, résultats, scores, code ou schémas soumis dans les questionnaires avancés</li>
         <li>Documents PDF que tu importes (forfait Pro), utilisés uniquement pour générer ton questionnaire</li>
-        <li>Données de paiement : gérées intégralement par Stripe — Notio ne stocke ni ne voit jamais ton numéro de carte bancaire</li>
+        <li>Données de paiement : gérées intégralement par Stripe — Nauka ne stocke ni ne voit jamais ton numéro de carte bancaire</li>
       </ul>
 
       <h2>Finalités du traitement</h2>
@@ -48,7 +48,7 @@ export default function ConfidentialitePage() {
       <h2>Tes droits</h2>
       <p>
         Conformément au RGPD, tu disposes d'un droit d'accès, de rectification, d'effacement, de limitation, de
-        portabilité et d'opposition sur tes données. Tu peux exercer ces droits en écrivant à notio.service@gmail.com
+        portabilité et d'opposition sur tes données. Tu peux exercer ces droits en écrivant à nauka.serviceapp@gmail.com
         ou directement depuis ton profil pour les informations qui y sont modifiables.
       </p>
       <p>
@@ -58,7 +58,7 @@ export default function ConfidentialitePage() {
 
       <h2>Cookies</h2>
       <p>
-        Notio utilise uniquement des cookies strictement nécessaires au fonctionnement du service (maintien de ta
+        Nauka utilise uniquement des cookies strictement nécessaires au fonctionnement du service (maintien de ta
         session de connexion). Aucun cookie publicitaire ou de suivi tiers n'est utilisé.
       </p>
     </LegalLayout>

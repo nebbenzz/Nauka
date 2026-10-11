@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../hooks/useSession";
 import ProfileBubble from "../components/ProfileBubble";
-import NotioLogo from "../components/NotioLogo";
+import NaukaLogo from "../components/NaukaLogo";
 
 type HeaderProps = {
     isLightTheme?: boolean;
@@ -25,7 +25,7 @@ export default function Header({ isLightTheme = false }: HeaderProps) {
                     style={{ transform: "translateX(calc(24px - max(24px, calc(50vw - 36rem + 24px))))" }}
                     className={`font-display text-xl font-extrabold tracking-tight ${contentColor}`}
                 >
-                    <NotioLogo />
+                    <NaukaLogo />
                 </Link>
 
                 <nav className={`hidden items-center gap-8 text-sm ${mutedContentColor} md:flex`}>

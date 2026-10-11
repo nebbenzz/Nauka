@@ -12,7 +12,7 @@ const etatsCours: Record<EtatCoursProgramme, { libelle: string; classes: string 
   maitrise: { libelle: "Maîtrisé", classes: "bg-sage/15 text-sage" },
   "en-cours": { libelle: "En cours", classes: "bg-highlight/30 text-ink" },
   "a-decouvrir": { libelle: "À découvrir", classes: "bg-navy/10 text-navy" },
-  "non-disponible": { libelle: "Pas encore dans Notio", classes: "bg-paper text-inkmuted" },
+  "non-disponible": { libelle: "Pas encore dans Nauka", classes: "bg-paper text-inkmuted" },
 };
 
 export default function ProgrammeLicenceInformatique({
@@ -39,7 +39,7 @@ export default function ProgrammeLicenceInformatique({
         </a>
       </div>
       <p className="py-3 text-xs leading-5 text-inkmuted">
-        Une EC sans notion associée signale un contenu absent de Notio, pas une matière non maîtrisée. Les choix individuels ne sont pas enregistrés dans ton profil.
+        Une EC sans notion associée signale un contenu absent de Nauka, pas une matière non maîtrisée. Les choix individuels ne sont pas enregistrés dans ton profil.
       </p>
 
       <div className="divide-y divide-line border-y border-line">
@@ -82,13 +82,13 @@ export default function ProgrammeLicenceInformatique({
                                         to={`/questionnaires?recherche=${encodeURIComponent(notion.nom)}`}
                                         className="text-xs text-navy underline underline-offset-2"
                                       >
-                                        Notion Notio : {notion.nom}
+                                        Notion Nauka : {notion.nom}
                                       </Link>
                                     </li>
                                   ))}
                                 </ul>
                               ) : (
-                                <p className="mt-1 text-xs text-inkmuted">Aucune notion de cet EC n’est encore reliée à un questionnaire Notio.</p>
+                                <p className="mt-1 text-xs text-inkmuted">Aucune notion de cet EC n’est encore reliée à un questionnaire Nauka.</p>
                               )}
                             </div>
                             <span className={`w-fit shrink-0 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${etat.classes}`}>

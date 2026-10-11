@@ -5,7 +5,7 @@ export default function CgvPage() {
     <LegalLayout titre="Conditions Générales de Vente" majeStamp="6 septembre 2026">
       <h2>Objet</h2>
       <p>
-        Les présentes CGV s'appliquent à la souscription au forfait Pro de Notio, vendu par [À COMPLÉTER : nom /
+        Les présentes CGV s'appliquent à la souscription au forfait Pro de Nauka, vendu par [À COMPLÉTER : nom /
         dénomination sociale de l'éditeur], [À COMPLÉTER : SIRET].
       </p>
 
@@ -18,7 +18,7 @@ export default function CgvPage() {
 
       <h2>Paiement</h2>
       <p>
-        Le paiement est réalisé par carte bancaire via Stripe, prestataire de paiement sécurisé. Notio ne stocke
+        Le paiement est réalisé par carte bancaire via Stripe, prestataire de paiement sécurisé. Nauka ne stocke
         aucune donnée de carte bancaire. L'abonnement est renouvelé automatiquement à chaque échéance (mensuelle ou
         annuelle selon la formule choisie), jusqu'à résiliation.
       </p>
@@ -41,7 +41,7 @@ export default function CgvPage() {
 
       <h2>Réclamations</h2>
       <p>
-        Pour toute question relative à ta facturation ou ton abonnement : notio.service@gmail.com .
+        Pour toute question relative à ta facturation ou ton abonnement : nauka.serviceapp@gmail.com .
       </p>
     </LegalLayout>
   );

@@ -52,14 +52,30 @@ Deno.serve(async (req) => {
     if (event.type === "customer.subscription.deleted" || event.type === "customer.subscription.updated") {
       const subscription = event.data.object;
       const estActif = ["active", "trialing"].includes(subscription.status);
-      const updateData: Record<string, unknown> = { plan: estActif ? "pro" : "decouverte" };
-      if (!estActif) updateData.abonnement_intervalle = null;
+      const { data: profil, error: erreurProfil } = await supabaseAdmin
+        .from("profiles")
+        .select("pro_expires_at")
+        .eq("stripe_customer_id", subscription.customer)
+        .maybeSingle();
+      if (erreurProfil) throw erreurProfil;
+
+      const bonusParrainageActif = Boolean(profil?.pro_expires_at && new Date(profil.pro_expires_at) > new Date());
+      const proActif = estActif || bonusParrainageActif;
+      const updateData: Record<string, unknown> = { plan: proActif ? "pro" : "decouverte" };
+      if (estActif) {
+        const intervalleStripe = subscription.items?.data?.[0]?.price?.recurring?.interval;
+        if (intervalleStripe === "month") updateData.abonnement_intervalle = "mensuel";
+        else if (intervalleStripe === "year") updateData.abonnement_intervalle = "annuel";
+      } else {
+        updateData.abonnement_intervalle = null;
+      }
+      if (!proActif) updateData.pro_expires_at = null;
       await supabaseAdmin.from("profiles").update(updateData).eq("stripe_customer_id", subscription.customer);
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Erreur stripe-webhook:", err);
-    return new Response(JSON.stringify({ error: err?.message ?? "Erreur inconnue" }), { status: 500 });
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }), { status: 500 });
   }
 });

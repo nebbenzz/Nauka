@@ -1,14 +1,14 @@
-type NotioLogoProps = {
+type NaukaLogoProps = {
     size?: number;
     showText?: boolean;
     className?: string;
 };
 
-export default function NotioLogo({
+export default function NaukaLogo({
     size = 40,
     showText = true,
     className = "",
-}: NotioLogoProps) {
+}: NaukaLogoProps) {
     return (
         <div
             className={className}
@@ -26,9 +26,9 @@ export default function NotioLogo({
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 role="img"
-                aria-labelledby="notio-logo-title"
+                aria-labelledby="nauka-logo-title"
             >
-                <title id="notio-logo-title">Logo Notio</title>
+                <title id="nauka-logo-title">Logo Nauka</title>
 
                 {/* Fond noir permanent */}
                 <rect
@@ -97,7 +97,7 @@ export default function NotioLogo({
                         lineHeight: 1,
                     }}
                 >
-                    notio
+                    Nauka
                 </span>
             )}
         </div>

@@ -16,13 +16,26 @@ const PAGES_MAX_ESTIMEES = 60;
 const MAX_QUESTIONS_PAR_QUIZ = 5;
 
 const requeteSchema = z.object({
-  fichier_id: z.string().uuid(),
+  fichier_id: z.string().uuid().optional(),
+  quiz_id: z.string().uuid().optional(),
+  regeneration: z.enum(["aucune", "selection", "tout"]).optional(),
+  question_ids_a_regenerer: z.array(z.string().uuid()).max(MAX_QUESTIONS_PAR_QUIZ).optional(),
   titre: z.string().max(120).optional(),
-  nombre_questions: z.number().int().min(3).max(MAX_QUESTIONS_PAR_QUIZ),
+  nombre_questions: z.number().int().min(1).max(MAX_QUESTIONS_PAR_QUIZ),
   type_quiz: z.enum(["standard", "avance"]),
   duree_minutes: z.number().int().min(5).max(30).optional(),
-  difficulte: z.enum(["facile", "moyen", "difficile"]).optional(),
+  difficulte: z.enum(["facile", "moyen", "difficile"]).nullable().optional(),
   domaine_utilisateur: z.string().optional(),
+}).superRefine((requete, contexte) => {
+  if (!requete.quiz_id && requete.nombre_questions < 3) {
+    contexte.addIssue({ code: z.ZodIssueCode.custom, path: ["nombre_questions"], message: "Un nouveau questionnaire doit contenir au moins 3 questions." });
+  }
+  if (requete.regeneration === "selection" && (requete.question_ids_a_regenerer?.length !== requete.nombre_questions || !requete.question_ids_a_regenerer?.length)) {
+    contexte.addIssue({ code: z.ZodIssueCode.custom, path: ["question_ids_a_regenerer"], message: "Sélectionne autant de questions à régénérer que le nombre demandé." });
+  }
+  if (requete.regeneration !== "aucune" && !requete.fichier_id) {
+    contexte.addIssue({ code: z.ZodIssueCode.custom, path: ["fichier_id"], message: "Un document source est requis pour générer les questions." });
+  }
 });
 
 const questionIaSchema = z.object({
@@ -32,7 +45,7 @@ const questionIaSchema = z.object({
   explication: z.string().min(1),
   source_page: z.number().int().min(1),
   source_excerpt: z.string().min(10).max(500),
-  reponses: z.array(z.object({ texte: z.string(), correcte: z.boolean() })).optional(),
+  reponses: z.array(z.object({ texte: z.string(), correcte: z.boolean() })).nullable().optional(),
   criteres_evaluation: z
     .object({
       langage: z.string().optional(),
@@ -40,12 +53,14 @@ const questionIaSchema = z.object({
       tests_json: z.any().optional(),
       criteres_ia: z.string().optional(),
     })
+    .nullable()
     .optional(),
 });
 
 const quizIaSchema = z.object({
   titre: z.string().min(3),
   matiere_nom: z.string().min(2),
+  difficulte: z.enum(["facile", "moyen", "difficile"]).nullable().optional(),
   questions: z.array(questionIaSchema),
 });
 
@@ -150,7 +165,8 @@ Deno.serve(async (req) => {
       .select("plan, pro_expires_at, abonnement_intervalle, generations_ia_ce_mois, generations_ia_reset_mois")
       .eq("id", userData.user.id)
       .single();
-    const essaiExpire = profile?.pro_expires_at && new Date(profile.pro_expires_at) <= new Date();
+    const estAbonnementActif = profile?.abonnement_intervalle === "mensuel" || profile?.abonnement_intervalle === "annuel";
+    const essaiExpire = profile?.pro_expires_at && new Date(profile.pro_expires_at) <= new Date() && !estAbonnementActif;
     if (essaiExpire) {
       await supabaseAdmin.from("profiles").update({ plan: "decouverte", abonnement_intervalle: null, pro_expires_at: null }).eq("id", userData.user.id);
     }
@@ -159,6 +175,73 @@ Deno.serve(async (req) => {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    let quizOriginal: { id: string; titre: string; difficulte: string | null; est_avance: boolean; duree_secondes: number | null } | null = null;
+    let ordresARegenerer: number[] | null = null;
+    if (requete.quiz_id) {
+      const { data, error } = await supabaseAdmin
+        .from("quiz")
+        .select("id, titre, difficulte, est_avance, duree_secondes")
+        .eq("id", requete.quiz_id)
+        .eq("created_by", userData.user.id)
+        .eq("type", "personnalise")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        return new Response(JSON.stringify({ error: "Questionnaire personnalisé introuvable." }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      quizOriginal = data;
+
+      const [{ data: liaisons, error: erreurLiaisons }, { data: sources, error: erreurSources }] = await Promise.all([
+        supabaseAdmin.from("quiz_questions").select("question_id, ordre").eq("quiz_id", data.id).order("ordre"),
+        supabaseAdmin.from("quiz_question_sources").select("fichier_id").eq("quiz_id", data.id).limit(1),
+      ]);
+      if (erreurLiaisons) throw erreurLiaisons;
+      if (erreurSources) throw erreurSources;
+
+      if (requete.regeneration === "aucune") {
+        const fichierExistant = sources?.[0]?.fichier_id ?? null;
+        if (
+          requete.nombre_questions !== (liaisons?.length ?? 0)
+          || (requete.fichier_id && requete.fichier_id !== fichierExistant)
+          || requete.type_quiz !== (data.est_avance ? "avance" : "standard")
+          || (requete.type_quiz === "avance" && requete.duree_minutes !== Math.round((data.duree_secondes ?? 0) / 60))
+        ) {
+          return new Response(JSON.stringify({ error: "Le document, le nombre de questions ou le format a changé. Choisis les questions à régénérer ou régénère tout le questionnaire." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const { error: erreurMiseAJour } = await supabaseAdmin.rpc("update_personal_quiz_metadata", {
+          p_quiz_id: data.id,
+          p_user_id: userData.user.id,
+          p_titre: requete.titre?.trim() || data.titre,
+          p_difficulte: requete.difficulte ?? data.difficulte ?? "moyen",
+        });
+        if (erreurMiseAJour) throw erreurMiseAJour;
+        return new Response(JSON.stringify({ quiz_id: data.id }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (requete.regeneration === "selection") {
+        const idsSelectionnes = new Set(requete.question_ids_a_regenerer ?? []);
+        ordresARegenerer = (liaisons ?? [])
+          .filter((liaison) => idsSelectionnes.has(liaison.question_id))
+          .map((liaison) => liaison.ordre);
+        if (ordresARegenerer.length !== idsSelectionnes.size) {
+          return new Response(JSON.stringify({ error: "Une des questions sélectionnées n'appartient pas à ce questionnaire." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
     }
 
     let compteurGenerations = 0;
@@ -178,7 +261,7 @@ Deno.serve(async (req) => {
     const { data: fichier, error: fichierError } = await supabaseAdmin
       .from("fichiers_utilisateur")
       .select("storage_path, nom_fichier")
-      .eq("id", requete.fichier_id)
+      .eq("id", requete.fichier_id!)
       .eq("user_id", userData.user.id)
       .single();
     if (fichierError || !fichier) {
@@ -250,6 +333,7 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après, sans 
 {
   "titre": string,
   "matiere_nom": string,
+  "difficulte": "facile" | "moyen" | "difficile",
   "questions": [
     {
       "notion_nom": string,
@@ -283,6 +367,7 @@ ${requete.type_quiz === "avance"
       }
 - "explication" est obligatoire pour toutes les questions, et doit expliquer la bonne réponse en une ou deux phrases.
 ${requete.difficulte ? `- Niveau de difficulté visé : ${requete.difficulte}.` : ""}
+${requete.difficulte ? `- Renseigne aussi "difficulte" avec la valeur "${requete.difficulte}".` : '- Choisis "difficulte" parmi "facile", "moyen" ou "difficile" selon les questions générées.'}
 ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}".` : "- Choisis un titre court et pertinent pour le questionnaire."}`;
 
     const claudeResponse = await fetch("https://api.anthropic.com/v1/messages", {
@@ -339,6 +424,7 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
 
     const raisonArret = claudeData?.stop_reason;
     if (raisonArret === "max_tokens") {
+      console.warn("Réponse Claude tronquée:", { usage: claudeData?.usage });
       return new Response(JSON.stringify({ error: "La réponse générée est trop longue. Réduis le nombre de questions et réessaie." }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -369,7 +455,13 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
 
     const validation = quizIaSchema.safeParse(parsedJson);
     if (!validation.success) {
-      return new Response(JSON.stringify({ error: validation.error.flatten() }), {
+      const erreurs = validation.error.issues.slice(0, 5).map((issue) => ({
+        chemin: issue.path.map(String).join("."),
+        message: issue.message,
+      }));
+      console.error("Réponse Claude incompatible avec le schéma du questionnaire:", erreurs);
+      const details = erreurs.map((issue) => `${issue.chemin || "réponse"}: ${issue.message}`).join("; ");
+      return new Response(JSON.stringify({ error: `La réponse générée est incompatible avec le format attendu. ${details}` }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -395,7 +487,7 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
     }
 
     const payload = {
-      titre: requete.titre || validation.data.titre,
+      titre: requete.titre?.trim() || `Créé — ${validation.data.titre}`,
       type: "personnalise",
       matiere_id: matiereId,
       est_avance: requete.type_quiz === "avance",
@@ -405,10 +497,12 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
         type: q.type,
         intitule: q.intitule,
         explication: q.explication,
+        source_page: q.source_page,
+        source_excerpt: q.source_excerpt,
         points: q.type === "qcm" || q.type === "qcu" ? 1 : 2,
         ordre: i,
-        reponses: q.reponses,
-        criteres_evaluation: q.criteres_evaluation,
+        reponses: q.reponses ?? undefined,
+        criteres_evaluation: q.criteres_evaluation ?? undefined,
       })),
     };
 
@@ -418,6 +512,13 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
       p_is_public: false,
     });
     if (rpcError) throw rpcError;
+
+    const difficulteFinale = requete.difficulte ?? validation.data.difficulte ?? quizOriginal?.difficulte ?? "moyen";
+    const { error: erreurDifficulte } = await supabaseAdmin
+      .from("quiz")
+      .update({ difficulte: difficulteFinale })
+      .eq("id", quizId);
+    if (erreurDifficulte) throw erreurDifficulte;
 
     const { data: questionsCreees, error: questionsCreeesError } = await supabaseAdmin
       .from("quiz_questions")
@@ -434,13 +535,36 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
       return question ? [{
         quiz_id: quizId,
         question_id: liaison.question_id,
-        fichier_id: requete.fichier_id,
+        fichier_id: requete.fichier_id!,
         page: question.source_page,
         extrait: question.source_excerpt,
       }] : [];
     });
     const { error: erreurSources } = await supabaseAdmin.from("quiz_question_sources").insert(sources);
     if (erreurSources) throw erreurSources;
+
+    let quizFinalId = quizId;
+    if (quizOriginal) {
+      const { error: erreurRemplacement } = await supabaseAdmin.rpc("replace_personal_quiz_questions", {
+        p_quiz_id: quizOriginal.id,
+        p_quiz_genere_id: quizId,
+        p_user_id: userData.user.id,
+        p_ordres_a_remplacer: requete.regeneration === "selection" ? ordresARegenerer : null,
+      });
+      if (erreurRemplacement) throw erreurRemplacement;
+      quizFinalId = quizOriginal.id;
+
+      const [{ error: erreurBrouillon }, { error: erreurRevisions }] = await Promise.all([
+        supabaseAdmin.from("quiz_drafts").delete().eq("quiz_id", quizOriginal.id).eq("user_id", userData.user.id),
+        supabaseAdmin.from("questions_a_revoir").delete().eq("quiz_id", quizOriginal.id).eq("user_id", userData.user.id),
+      ]);
+      if (erreurBrouillon || erreurRevisions) {
+        console.warn("État de session personnalisé non entièrement nettoyé après régénération:", {
+          brouillon: erreurBrouillon?.message,
+          revisions: erreurRevisions?.message,
+        });
+      }
+    }
 
     if (profile.abonnement_intervalle === "mensuel") {
       await supabaseAdmin
@@ -449,7 +573,7 @@ ${requete.titre ? `- Utilise ce titre pour le questionnaire : "${requete.titre}"
         .eq("id", userData.user.id);
     }
 
-    return new Response(JSON.stringify({ quiz_id: quizId }), {
+    return new Response(JSON.stringify({ quiz_id: quizFinalId }), {
       status: 201,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

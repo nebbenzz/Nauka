@@ -7,7 +7,7 @@ import QuestionnaireFilters, { type FiltreQuestionnaire } from "../components/Qu
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { FORMATIONS } from "../data/formations";
-import { dedupliquerQuizParNotion, estQuizCompatibleAvecNiveau, formatDureeQuiz, formatNiveauQuiz, getPreviewNotions, getScorePourcentage, uniformiserTitresQuestionnaires } from "../lib/catalogUtils";
+import { dedupliquerQuizParNotion, estQuizCompatibleAvecNiveau, formatDureeQuiz, formatNiveauQuiz, getScorePourcentage, uniformiserTitresQuestionnaires } from "../lib/catalogUtils";
 
 interface QuizCard {
   id: string;
@@ -17,6 +17,7 @@ interface QuizCard {
   est_avance: boolean;
   duree_secondes: number | null;
   formation_cible: string | null;
+  difficulte: string | null;
   matiere_nom: string;
   notion_nom: string | null;
   notion_niveau: number | null;
@@ -44,12 +45,14 @@ function FiltresAnnee({ annees, comptes, selection, nombreTotal, onChange }: Fil
   return (
     <div className="mt-5 flex flex-wrap items-center gap-3" aria-label="Filtrer les questionnaires par année d'étude">
       <span className="text-xs font-semibold text-inkmuted">Année d'étude</span>
-      <div role="group" aria-label="Année des questionnaires recommandés" className="inline-flex max-w-full flex-wrap gap-1 border border-line bg-white p-1">
+      <div role="group" aria-label="Année des questionnaires recommandés" className="inline-flex max-w-full flex-wrap gap-1 rounded-md border border-line bg-white p-1">
         <button
           type="button"
           aria-pressed={selection === null}
           onClick={() => onChange(null)}
-          className={selection === null ? "min-h-9 bg-navy px-3 text-xs font-bold text-paper" : "min-h-9 px-3 text-xs font-semibold text-inkmuted transition-colors hover:bg-paper hover:text-ink"}
+          className={selection === null
+            ? "min-h-10 rounded-md bg-navy px-3 text-xs font-bold text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-1"
+            : "min-h-10 rounded-md px-3 text-xs font-semibold text-inkmuted transition-colors hover:bg-paper hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-1"}
         >
           Toutes ({nombreTotal})
         </button>
@@ -59,7 +62,9 @@ function FiltresAnnee({ annees, comptes, selection, nombreTotal, onChange }: Fil
             type="button"
             aria-pressed={selection === annee}
             onClick={() => onChange(annee)}
-            className={selection === annee ? "min-h-9 bg-navy px-3 text-xs font-bold text-paper" : "min-h-9 px-3 text-xs font-semibold text-inkmuted transition-colors hover:bg-paper hover:text-ink"}
+            className={selection === annee
+              ? "min-h-10 rounded-md bg-navy px-3 text-xs font-bold text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-1"
+              : "min-h-10 rounded-md px-3 text-xs font-semibold text-inkmuted transition-colors hover:bg-paper hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-1"}
           >
             Année {annee} ({comptes[annee] ?? 0})
           </button>
@@ -86,6 +91,9 @@ export default function QuestionnairesListPage() {
   const [chargement, setChargement] = useState(true);
   const [sidebarReduite, setSidebarReduite] = useState(false);
   const [sectionAnimee, setSectionAnimee] = useState<string | null>(null);
+  const [erreurGestion, setErreurGestion] = useState<string | null>(null);
+  const [quizASupprimer, setQuizASupprimer] = useState<QuizCard | null>(null);
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false);
 
   useEffect(() => {
     async function charger() {
@@ -94,14 +102,15 @@ export default function QuestionnairesListPage() {
       if (session?.user) {
         const { data: profil } = await supabase
           .from("profiles")
-          .select("formation, niveau_formation, plan, pro_expires_at")
+          .select("formation, niveau_formation, plan, pro_expires_at, abonnement_intervalle")
           .eq("id", session.user.id)
           .single();
 
         formationChargee = profil?.formation ?? null;
         niveauFormationChargee = profil?.niveau_formation ?? null;
         setNiveauUtilisateur(niveauFormationChargee);
-        const proActif = profil?.plan === "pro" && (!profil.pro_expires_at || new Date(profil.pro_expires_at) > new Date());
+        const estAbonnementActif = profil?.abonnement_intervalle === "mensuel" || profil?.abonnement_intervalle === "annuel";
+        const proActif = profil?.plan === "pro" && (estAbonnementActif || !profil.pro_expires_at || new Date(profil.pro_expires_at) > new Date());
         setEstPro(proActif);
         if (profil?.formation) {
           const domaine = FORMATIONS.find((f) => f.label === profil.formation)?.domaine ?? null;
@@ -111,14 +120,14 @@ export default function QuestionnairesListPage() {
 
       const { data: quizPublics } = await supabase
         .from("quiz")
-        .select("id, titre, type, est_avance, duree_secondes, formation_cible, niveau_cible, niveau_premiere_decouverte, matieres(nom), notions(nom, niveau), quiz_questions(count)")
+        .select("id, titre, type, est_avance, duree_secondes, formation_cible, difficulte, niveau_cible, niveau_premiere_decouverte, matieres(nom), notions(nom, niveau), quiz_questions(count)")
         .eq("is_public", true);
 
       let quizPersonnels: any[] = [];
       if (session?.user) {
         const { data } = await supabase
           .from("quiz")
-          .select("id, titre, type, est_avance, duree_secondes, formation_cible, niveau_cible, niveau_premiere_decouverte, matieres(nom), notions(nom, niveau), quiz_questions(count)")
+          .select("id, titre, type, est_avance, duree_secondes, formation_cible, difficulte, niveau_cible, niveau_premiere_decouverte, matieres(nom), notions(nom, niveau), quiz_questions(count)")
           .eq("created_by", session.user.id);
         quizPersonnels = data || [];
       }
@@ -190,6 +199,7 @@ export default function QuestionnairesListPage() {
           est_avance: q.est_avance,
           duree_secondes: q.duree_secondes,
           formation_cible: q.formation_cible ?? null,
+          difficulte: q.difficulte ?? null,
           matiere_nom: q.matieres?.nom ?? "",
           notion_nom: q.notions?.nom ?? null,
           notion_niveau: q.notions?.niveau ?? null,
@@ -358,6 +368,23 @@ export default function QuestionnairesListPage() {
     navigate(session?.user ? `/questionnaires/${quizId}` : "/connexion");
   }
 
+  async function supprimerQuiz(quiz: QuizCard) {
+    if (!session?.user) return;
+    setErreurGestion(null);
+    setSuppressionEnCours(true);
+    const { error } = await supabase.functions.invoke("manage-personal-quiz", {
+      body: { action: "delete", quiz_id: quiz.id },
+      headers: { Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ""}` },
+    });
+    setSuppressionEnCours(false);
+    if (error) {
+      setErreurGestion("Impossible de supprimer ce questionnaire. Réessaie.");
+      return;
+    }
+    setQuizzes((actuels) => actuels.filter((actuel) => actuel.id !== quiz.id));
+    setQuizASupprimer(null);
+  }
+
   function naviguerVersSection(cible: string, terme: string) {
     const estMatiereClassique = cible.startsWith("matiere-");
     const estMatiereAvancee = cible.startsWith("avance-matiere-");
@@ -379,44 +406,31 @@ export default function QuestionnairesListPage() {
 
   function Carte({ q }: { q: QuizCard }) {
     const scoreActuel = getScorePourcentage(q.dernier_score, q.dernier_score_max);
-    const apercuNotions = getPreviewNotions(q.notions_couvertes);
     const niveau = formatNiveauQuiz(q);
-    const typeLibelle = q.est_avance || (q.type === "global" && !q.notion_nom) ? "Matière" : "Notion";
+    const estPersonnalise = q.type === "personnalise";
+    const typeLibelle = estPersonnalise ? "Notion créée" : q.est_avance || (q.type === "global" && !q.notion_nom) ? "Matière" : "Notion";
     const niveauEtiquette = q.type === "notion" ? niveau : q.notion_nom && q.notion_niveau ? `niv. ${q.notion_niveau}` : "";
-    const etiquetteType = niveauEtiquette ? `${typeLibelle} • ${niveauEtiquette}` : typeLibelle;
-    const estCarteMatiere = q.type === "global" || q.est_avance;
-    const texteApercu = apercuNotions.length > 0 ? apercuNotions.join(" • ") : q.notion_nom ?? "Couverture globale de la matière";
+    const difficulteEtiquette = q.difficulte === "facile" ? "facile" : q.difficulte === "difficile" ? "dif." : q.difficulte === "moyen" ? "moy." : "";
+    const etiquetteType = estPersonnalise
+      ? `${typeLibelle}${difficulteEtiquette ? ` • ${difficulteEtiquette}` : ""}`
+      : niveauEtiquette ? `${typeLibelle} • ${niveauEtiquette}` : typeLibelle;
 
     return (
-      <button
-        type="button"
-        onClick={() => handleClic(q.id)}
-        className={q.est_avance
+      <article className={estPersonnalise
+        ? "flex min-h-52 flex-col border border-sage/35 border-l-4 border-l-sage bg-[#F3F6F0] p-5 text-left transition-colors hover:border-sage/60 hover:bg-[#EEF3E9]"
+        : q.est_avance
           ? "flex min-h-52 flex-col border border-navy/25 border-l-4 border-l-navy bg-[#F1F4F7] p-5 text-left transition-colors hover:border-navy hover:bg-[#EAF0F5]"
-          : "flex min-h-52 flex-col border border-line bg-[#FCFBF7] p-5 text-left transition-colors hover:border-navy/40 hover:bg-white"}
-      >
+          : "flex min-h-52 flex-col border border-line bg-[#FCFBF7] p-5 text-left transition-colors hover:border-navy/40 hover:bg-white"}>
         <div className="flex items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-[0.16em] text-inkmuted">
           <span>{etiquetteType}</span>
-          {estCarteMatiere ? (
-            <div className="group/preview relative flex items-center justify-end">
-              <span
-                className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-navy/20 bg-gradient-to-br from-highlight/40 via-white to-sage/10 text-navy shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-navy/40 hover:shadow-md"
-                title="Aperçu du questionnaire"
-                aria-label="Voir l'aperçu du questionnaire"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
-                  <path d="M9 18h6" />
-                  <path d="M10 22h4" />
-                  <path d="M12 2.5A4.5 4.5 0 0 0 7.5 7v2.2A7.8 7.8 0 0 1 12 8a7.8 7.8 0 0 1 4.5 1.2V7A4.5 4.5 0 0 0 12 2.5Z" />
-                  <path d="M6.5 9.5A5.5 5.5 0 0 0 12 15a5.5 5.5 0 0 0 5.5-5.5" />
-                </svg>
-              </span>
-              <div className="pointer-events-none absolute right-0 bottom-full z-20 mb-2 w-52 scale-95 rounded-2xl border border-line bg-white p-2.5 text-left opacity-0 shadow-[0_12px_30px_rgba(29,53,87,0.14)] transition-all duration-150 group-hover/preview:scale-100 group-hover/preview:opacity-100">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-inkmuted">Aperçu</p>
-                <p className="mt-1 text-[11px] leading-5 text-ink">{texteApercu}</p>
-              </div>
+          {estPersonnalise && (
+            <div className="flex items-center gap-2 normal-case tracking-normal">
+              <button type="button" onClick={() => navigate(`/creer-questionnaire?quiz_id=${q.id}`)} className="text-xs font-semibold text-navy underline underline-offset-2">Modifier</button>
+              <button type="button" onClick={() => setQuizASupprimer(q)} aria-label={`Supprimer ${q.titreAffiche}`} title="Supprimer le questionnaire" className="inline-flex h-8 w-8 items-center justify-center border border-line text-inkmuted transition-colors hover:border-red-300 hover:text-red-700">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="m19 6-1 14H6L5 6" /><path d="M10 11v5M14 11v5" /></svg>
+              </button>
             </div>
-          ) : null}
+          )}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-inkmuted">
@@ -425,9 +439,9 @@ export default function QuestionnairesListPage() {
           )}
         </div>
 
-        <div className="flex flex-1 items-center py-4">
-          <h3 className="line-clamp-2 text-left font-display text-lg font-extrabold leading-snug text-ink">{q.titreAffiche}</h3>
-        </div>
+        <button type="button" onClick={() => handleClic(q.id)} className="flex flex-1 items-center py-4 text-left">
+          <h3 className="line-clamp-2 font-display text-lg font-extrabold leading-snug text-ink">{q.titreAffiche}</h3>
+        </button>
 
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-4 text-xs text-inkmuted">
           <span>{q.nombre_questions} questions</span>
@@ -440,11 +454,11 @@ export default function QuestionnairesListPage() {
               {formatDureeQuiz(q.duree_secondes)}
             </span>
           ) : (
-            <span className="font-semibold text-navy transition-colors group-hover:text-ink">Ouvrir <span aria-hidden="true">→</span></span>
+            <button type="button" onClick={() => handleClic(q.id)} className="font-semibold text-navy transition-colors hover:text-ink">Ouvrir <span aria-hidden="true">→</span></button>
           )}
         </div>
         {!session?.user && <p className="mt-3 text-[11px] font-semibold text-navy">Connexion requise pour commencer</p>}
-      </button>
+      </article>
     );
   }
 
@@ -472,7 +486,7 @@ export default function QuestionnairesListPage() {
               <button
                 type="button"
                 onClick={() => navigate("/creer-questionnaire")}
-                className="inline-flex items-center gap-2 border border-navy bg-navy px-4 py-2.5 text-sm font-bold text-paper transition-colors hover:bg-ink"
+                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-navy bg-navy px-4 py-2.5 text-sm font-bold text-paper transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"
               >
                 <span className="text-lg leading-none">+</span>
                 Créer un questionnaire
@@ -496,7 +510,7 @@ export default function QuestionnairesListPage() {
                   setAnneeAvanceeSelectionnee(null);
                 }
               }}
-              className="w-full border border-line bg-white py-3 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-inkmuted/70 focus:border-navy focus:ring-2 focus:ring-highlight/40"
+              className="min-h-11 w-full rounded-md border border-line bg-white py-3 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-inkmuted/70 focus:border-navy focus:ring-2 focus:ring-highlight/50 focus:ring-offset-1"
             />
           </div>
 
@@ -508,6 +522,8 @@ export default function QuestionnairesListPage() {
             onMatiereChange={setMatiereFiltre}
           />
 
+          {erreurGestion && <p role="alert" className="mt-4 text-sm text-red-700">{erreurGestion}</p>}
+
           {chargement ? (
             <p className="mt-8 text-sm text-inkmuted">Chargement...</p>
           ) : (
@@ -517,13 +533,13 @@ export default function QuestionnairesListPage() {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-inkmuted ">Espace personnel</p>
                   <h2 className="mt-2 border-b border-line pb-5 font-display text-2xl font-extrabold">Mes questionnaires</h2>
                   {mesQuestionnaires.length === 0 ? (
-                    <div className="mt-5 rounded-[1.5rem] border border-dashed border-line bg-white px-6 py-10 text-center">
+                    <div className="mt-5 rounded-md border border-dashed border-line bg-white px-6 py-10 text-center">
                       <p className="font-display text-lg font-bold">Rien par ici pour l'instant.</p>
                       <p className="mt-2 text-sm text-inkmuted">Génère ton premier questionnaire à partir d'un de tes documents.</p>
                       <button
                         type="button"
                         onClick={() => navigate("/creer-questionnaire")}
-                        className="mt-5 rounded-md bg-navy px-5 py-2.5 text-sm font-bold text-paper hover:bg-ink transition-colors"
+                        className="mt-5 inline-flex min-h-10 items-center justify-center rounded-md bg-navy px-5 py-2.5 text-sm font-bold text-paper transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"
                       >
                         Créer mon premier questionnaire
                       </button>
@@ -698,6 +714,18 @@ export default function QuestionnairesListPage() {
         </main>
       </div>
       <Footer sidebarReduite={sidebarReduite} />
+      {quizASupprimer && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40 px-6">
+          <section role="dialog" aria-modal="true" aria-labelledby="titre-suppression-questionnaire" className="w-full max-w-sm rounded-md border border-line bg-white p-6 shadow-xl">
+            <h2 id="titre-suppression-questionnaire" className="font-display text-lg font-bold">Supprimer ce questionnaire ?</h2>
+            <p className="mt-2 text-sm text-inkmuted">« {quizASupprimer.titreAffiche} » sera supprimé. Cette action est définitive.</p>
+            <div className="mt-6 flex gap-3">
+              <button type="button" onClick={() => setQuizASupprimer(null)} disabled={suppressionEnCours} className="min-h-10 flex-1 rounded-md border border-line px-4 py-2.5 text-sm font-medium transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 disabled:opacity-60">Annuler</button>
+              <button type="button" onClick={() => void supprimerQuiz(quizASupprimer)} disabled={suppressionEnCours} className="min-h-10 flex-1 rounded-md bg-red-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60">{suppressionEnCours ? "Suppression..." : "Supprimer"}</button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

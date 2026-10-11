@@ -10,7 +10,7 @@ export default function Footer({ sidebarReduite }: Props) {
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-10 sm:grid-cols-[1fr_auto_auto]">
           <div>
-            <span className="font-display text-lg font-extrabold tracking-tight text-paper">Notio</span>
+            <span className="font-display text-lg font-extrabold tracking-tight text-paper">Nauka</span>
             <p className="mt-2 text-sm text-paper/60">
               Révision assistée par IA, notion par notion.
             </p>
@@ -34,7 +34,7 @@ export default function Footer({ sidebarReduite }: Props) {
         </div>
 
         <div className="mt-10 border-t border-paper/10 pt-6 text-xs text-paper/45">
-          © {new Date().getFullYear()} Notio. Tous droits réservés.
+          © {new Date().getFullYear()} Nauka. Tous droits réservés.
         </div>
       </div>
     </footer>

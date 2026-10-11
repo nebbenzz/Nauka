@@ -5,11 +5,11 @@ export default function MentionsLegalesPage() {
     <LegalLayout titre="Mentions légales" majeStamp="6 septembre 2026">
       <h2>Éditeur du site</h2>
       <p>
-        Le site Notio est édité par DUJARDIN Benjamin (entreprise), [À COMPLÉTER : statut —
+        Le site Nauka est édité par DUJARDIN Benjamin (entreprise), [À COMPLÉTER : statut —
         entrepreneur individuel / auto-entrepreneur / société], immatriculé sous le numéro SIRET [À COMPLÉTER],
         dont le siège est situé [À COMPLÉTER : adresse].
       </p>
-      <p>Adresse e-mail de contact : notio.service@gmail.com</p>
+      <p>Adresse e-mail de contact : nauka.serviceapp@gmail.com</p>
       <p>Directeur de la publication : DUJARDIN Benjamin</p>
 
       <h2>Hébergement</h2>
@@ -23,7 +23,7 @@ export default function MentionsLegalesPage() {
 
       <h2>Propriété intellectuelle</h2>
       <p>
-        L'ensemble des éléments du site Notio (structure, textes, identité visuelle) est protégé par le droit de la
+        L'ensemble des éléments du site Nauka (structure, textes, identité visuelle) est protégé par le droit de la
         propriété intellectuelle. Toute reproduction non autorisée est interdite.
       </p>
       <p>
@@ -32,7 +32,7 @@ export default function MentionsLegalesPage() {
       </p>
 
       <h2>Contact</h2>
-      <p>Pour toute question relative au site : <a href="/contact">nous contacter</a> ou envoyer un email à notio.service@gmail.com</p>
+      <p>Pour toute question relative au site : <a href="/contact">nous contacter</a> ou envoyer un email à nauka.serviceapp@gmail.com</p>
     </LegalLayout>
   );
 }

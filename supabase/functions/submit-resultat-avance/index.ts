@@ -115,8 +115,9 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: profil } = await supabaseAdmin.from("profiles").select("plan, pro_expires_at").eq("id", userData.user.id).single();
-    if (profil?.plan === "pro" && profil.pro_expires_at && new Date(profil.pro_expires_at) <= new Date()) {
+    const { data: profil } = await supabaseAdmin.from("profiles").select("plan, pro_expires_at, abonnement_intervalle").eq("id", userData.user.id).single();
+    const estAbonnementActif = profil?.abonnement_intervalle === "mensuel" || profil?.abonnement_intervalle === "annuel";
+    if (profil?.plan === "pro" && profil.pro_expires_at && new Date(profil.pro_expires_at) <= new Date() && !estAbonnementActif) {
       await supabaseAdmin.from("profiles").update({ plan: "decouverte", abonnement_intervalle: null, pro_expires_at: null }).eq("id", userData.user.id);
     }
 

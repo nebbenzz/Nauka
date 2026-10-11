@@ -5,10 +5,10 @@ import FormationCombobox from "../components/FormationCombobox";
 import TagInput from "../components/TagInput";
 import PasswordChecklist, { motDePasseValide } from "../components/PasswordChecklist";
 import type { Formation } from "../data/formations";
-import { enregistrerCodeParrainage, enregistrerParrainageEnAttente } from "../lib/referral";
+import { enregistrerCodeParrainage, enregistrerParrainageEnAttente, obtenirCodeParrainageMemorise, signalerErreurParrainage } from "../lib/referral";
 
 function obtenirCodeParrainageInitial() {
-  return new URLSearchParams(window.location.search).get("parrain") ?? window.localStorage.getItem("notio-referral-code");
+  return new URLSearchParams(window.location.search).get("parrain") ?? obtenirCodeParrainageMemorise();
 }
 
 export default function AuthPage() {
@@ -54,7 +54,8 @@ export default function AuthPage() {
         : error.message);
       return;
     }
-    await enregistrerParrainageEnAttente();
+    const erreurParrainage = await enregistrerParrainageEnAttente();
+    if (erreurParrainage) signalerErreurParrainage(erreurParrainage);
     navigate("/app");
   }
 
@@ -88,12 +89,15 @@ export default function AuthPage() {
         : error.message);
       return;
     }
+    if (codeParrainage) enregistrerCodeParrainage(codeParrainage);
     if (data.session) {
-      if (codeParrainage) enregistrerCodeParrainage(codeParrainage);
-      await enregistrerParrainageEnAttente();
+      const erreurParrainage = await enregistrerParrainageEnAttente();
+      if (erreurParrainage) signalerErreurParrainage(erreurParrainage);
       navigate("/app");
     } else {
-      setMessage("Compte créé. Vérifie ta boîte mail pour confirmer ton adresse avant de te connecter.");
+      setMessage(codeParrainage
+        ? "Compte créé. Vérifie ta boîte mail pour confirmer ton adresse. Ton code de parrainage est conservé et sera associé après ta première connexion."
+        : "Compte créé. Vérifie ta boîte mail pour confirmer ton adresse avant de te connecter.");
     }
   }
 
@@ -103,7 +107,7 @@ export default function AuthPage() {
       <div className="relative grid w-full max-w-5xl overflow-hidden border border-paper/20 bg-paper shadow-2xl md:grid-cols-[0.85fr_1.15fr]">
         <aside className="hidden flex-col justify-between bg-navy p-8 text-paper md:flex lg:p-12">
           <div>
-            <p className="font-display text-2xl font-extrabold tracking-tight">NOTIO<span className="text-highlight">.</span></p>
+            <p className="font-display text-2xl font-extrabold tracking-tight">NAUKA<span className="text-highlight">.</span></p>
             <p className="mt-16 max-w-xs font-display text-4xl font-extrabold leading-none lg:text-5xl">Révise moins au hasard<span className="text-highlight">.</span></p>
             <p className="mt-6 max-w-xs text-sm leading-6 text-paper/65">Transforme tes cours en entraînements ciblés et garde une progression visible, notion par notion.</p>
           </div>
@@ -112,7 +116,7 @@ export default function AuthPage() {
 
         <main className={mode === "inscription" ? "relative w-full p-6 sm:p-10" : "relative w-full p-6 sm:p-10 md:p-12"}>
           <div className="mb-8 md:hidden">
-            <p className="font-display text-xl font-extrabold tracking-tight text-navy">NOTIO<span className="text-highlight">.</span></p>
+            <p className="font-display text-xl font-extrabold tracking-tight text-navy">NAUKA<span className="text-highlight">.</span></p>
           </div>
           <h1 className="font-display text-2xl font-extrabold text-ink">
             {mode === "connexion" ? "Se connecter" : "Créer un compte"}

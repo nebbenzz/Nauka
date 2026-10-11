@@ -31,6 +31,10 @@ function deleteStorageItem(storage: StorageLike, key: string) {
 }
 
 export function getDraftStorageKey(quizId: string, userId: string): string {
+  return `nauka:quiz:draft:${userId}:${quizId}`;
+}
+
+function getLegacyDraftStorageKey(quizId: string, userId: string): string {
   return `notio:quiz:draft:${userId}:${quizId}`;
 }
 
@@ -74,6 +78,7 @@ export function saveQuizDraft(
 ) {
   try {
     writeStorageItem(storage, getDraftStorageKey(quizId, userId), JSON.stringify(draft));
+    deleteStorageItem(storage, getLegacyDraftStorageKey(quizId, userId));
   } catch {
     // Ignore when the browser blocks local storage.
   }
@@ -85,8 +90,14 @@ export function readQuizDraft(
   storage: StorageLike = globalThis.localStorage
 ): QuizDraft | null {
   try {
-    const value = readStorageItem(storage, getDraftStorageKey(quizId, userId));
+    const key = getDraftStorageKey(quizId, userId);
+    const legacyKey = getLegacyDraftStorageKey(quizId, userId);
+    const value = readStorageItem(storage, key) ?? readStorageItem(storage, legacyKey);
     if (!value) return null;
+    if (readStorageItem(storage, key) === null) {
+      writeStorageItem(storage, key, value);
+      deleteStorageItem(storage, legacyKey);
+    }
     return normaliserQuizDraft(JSON.parse(value));
   } catch {
     return null;
@@ -116,6 +127,7 @@ export function clearQuizDraft(
 ) {
   try {
     deleteStorageItem(storage, getDraftStorageKey(quizId, userId));
+    deleteStorageItem(storage, getLegacyDraftStorageKey(quizId, userId));
   } catch {
     // Ignore when the browser blocks local storage.
   }

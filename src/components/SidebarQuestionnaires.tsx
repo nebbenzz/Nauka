@@ -22,7 +22,7 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
         type="button"
         onClick={() => onToggle(false)}
         aria-label="Ouvrir le menu"
-        className="fixed left-0 top-20 z-10 m-4 rounded-md border border-navy/20 bg-paper p-2 text-navy shadow-sm transition-colors hover:border-navy hover:bg-white"
+        className="fixed left-0 top-20 z-10 m-4 inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-navy/20 bg-paper p-2 text-navy shadow-sm transition-colors hover:border-navy hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
           <line x1="4" y1="7" x2="20" y2="7" />
@@ -56,7 +56,7 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
                 onClick={() => {
                   onNaviguer("mes-questionnaires", "");
                 }}
-                className="flex w-full items-center gap-2 rounded-lg border border-highlight/60 bg-highlight/20 px-3 py-2.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-highlight/35"
+                className="flex min-h-10 w-full items-center gap-2 rounded-md border border-highlight/60 bg-highlight/20 px-3 py-2.5 text-left text-sm font-semibold text-ink transition-colors hover:bg-highlight/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                   <path d="M12 5v14M5 12h14" />
@@ -72,10 +72,10 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
         <div className="border-t border-line pt-5">
           <p className="px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-inkmuted">Questionnaires</p>
           <div className="mt-2 space-y-1">
-            <button type="button" onClick={() => onNaviguer("pour-vous", "")} className="flex w-full items-center gap-3 border-l-2 border-highlight bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-navy hover:bg-navy/5">
+            <button type="button" onClick={() => onNaviguer("pour-vous", "")} className="flex min-h-10 w-full items-center gap-3 rounded-md border-l-2 border-highlight bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-navy hover:bg-navy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
               Pour vous
             </button>
-            <button type="button" onClick={() => toggleMatiere("classiques-decouvrir")} className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-white hover:text-navy">
+            <button type="button" onClick={() => toggleMatiere("classiques-decouvrir")} className="flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-white hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
               <span className="flex items-center gap-3"><span className="flex h-6 w-6 items-center justify-center border border-line text-xs text-inkmuted">+</span>Découvrez aussi</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={ouvertes["classiques-decouvrir"] ? "h-4 w-4 rotate-90 transition-transform" : "h-4 w-4 transition-transform"}><polyline points="9 18 15 12 9 6" /></svg>
             </button>
@@ -88,10 +88,10 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
         <div className="border-t border-line pt-5">
           <p className="px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-inkmuted">Questionnaires avancés</p>
           <div className="mt-2 space-y-1">
-            <button type="button" onClick={() => onNaviguer("avances-pour-vous", "")} className="flex w-full items-center gap-3 border-l-2 border-sage bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-navy hover:bg-navy/5">
+            <button type="button" onClick={() => onNaviguer("avances-pour-vous", "")} className="flex min-h-10 w-full items-center gap-3 rounded-md border-l-2 border-sage bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-navy hover:bg-navy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
               Pour vous
             </button>
-            <button type="button" onClick={() => toggleMatiere("avances-decouvrir")} className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-white hover:text-navy">
+            <button type="button" onClick={() => toggleMatiere("avances-decouvrir")} className="flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-white hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
               <span className="flex items-center gap-3"><span className="flex h-6 w-6 items-center justify-center border border-line text-xs text-inkmuted">+</span>Découvrez aussi</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={ouvertes["avances-decouvrir"] ? "h-4 w-4 rotate-90 transition-transform" : "h-4 w-4 transition-transform"}><polyline points="9 18 15 12 9 6" /></svg>
             </button>

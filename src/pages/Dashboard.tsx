@@ -171,13 +171,14 @@ export default function Dashboard() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("prenom, formation, niveau_formation, etablissement, plan, pro_expires_at, quiz_completes_today, quiz_completes_reset_date, objectif_revision, date_examen, sessions_par_semaine, duree_session_minutes")
+          .select("prenom, formation, niveau_formation, etablissement, plan, pro_expires_at, abonnement_intervalle, quiz_completes_today, quiz_completes_reset_date, objectif_revision, date_examen, sessions_par_semaine, duree_session_minutes")
           .eq("id", userId)
           .single();
         if (error || !data) throw error ?? new Error("Profil introuvable");
 
         setPrenom(data.prenom || "");
-        const proActif = data.plan === "pro" && (!data.pro_expires_at || new Date(data.pro_expires_at) > new Date());
+        const estAbonnementActif = data.abonnement_intervalle === "mensuel" || data.abonnement_intervalle === "annuel";
+        const proActif = data.plan === "pro" && (estAbonnementActif || !data.pro_expires_at || new Date(data.pro_expires_at) > new Date());
         setPlan(proActif ? "pro" : "decouverte");
         setObjectifRevision(data.objectif_revision);
         setDateExamen(data.date_examen);
@@ -526,7 +527,7 @@ export default function Dashboard() {
             ) : (
               <>
                 <h2 id="prochaine-revision" className="mt-2 font-display text-xl font-extrabold text-ink">Choisis ton premier questionnaire</h2>
-                <p className="mt-1 text-sm text-inkmuted">Après une première session, Notio pourra te proposer les notions à revoir en priorité.</p>
+                <p className="mt-1 text-sm text-inkmuted">Après une première session, Nauka pourra te proposer les notions à revoir en priorité.</p>
               </>
             )}
           </div>

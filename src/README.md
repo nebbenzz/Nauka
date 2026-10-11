@@ -1,6 +1,6 @@
-## Bienvenue sur Notio !
+## Bienvenue sur Nauka !
 
-Notio est un site internet dédié aux étudiant pour leurs révisions. Grâce à des questionnaires créés sur mesure ou bien par la présence de l'intelligence artificielle, ils leurs permettent de boosté leurs révisions et de s'entrainer dans leur domaines d'études ou d'en découvrir de nouveaux ! 
+Nauka est un site internet dédié aux étudiant pour leurs révisions. Grâce à des questionnaires créés sur mesure ou bien par la présence de l'intelligence artificielle, ils leurs permettent de boosté leurs révisions et de s'entrainer dans leur domaines d'études ou d'en découvrir de nouveaux !
 
 ## Lancement du projet 
 
@@ -15,21 +15,18 @@ Le choix de l'ia s'est porté sur Claude (Claude API). Il parrait performant pou
 ## TAF
 
 - Finir en PRIORITE le passage à 10 questions par questionnaire
-- Ajout de sous formation (licence, BTS,...) + BTS Gestion et Informatique 
-- Une fois Notio publié en ligne, ajouter DIRECTEMENT les informations DNS de Resend pour l'envoi des mails. 
+- Une fois Nauka publié en ligne, ajouter DIRECTEMENT les informations DNS de Resend pour l'envoi des mails.
 - Vérifier le passage en abo pro pour l'envoyeur et/ou destinataire lors du parrainage. 
 
 - Mise en place du système de flash card IA (pro)
 - Ajouts questions et questionnaires tout niveaux
-- Pousser Notio sur Vercel 
-- Uniformiser les intitulés des cartes de niveaux 
-- Classer les cartes à partir des L2 (plusieurs niv car plusieurs années)
+- Pousser Nauka sur Vercel
 
-- Logo Notio + insertion dans Header + onglet 
-- Achat nom de domaine Notio (Notio.fr)(mdr plus dispo)
+- Logo Nauka + insertion dans Header + onglet
+- Achat nom de domaine Nauka
 
 - Création compte Insta/X ? 
-- Vidéo présentation Notio pour les réseaux 
+- Vidéo présentation Nauka pour les réseaux
 
 ## Et après ?? 
 

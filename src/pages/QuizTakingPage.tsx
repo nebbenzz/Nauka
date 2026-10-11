@@ -9,6 +9,7 @@ import { useSession } from "../hooks/useSession";
 import { choisirBrouillonLePlusRecent, clearQuizDraft, getQuestionsFromDraft, readQuizDraft, saveQuizDraft, type QuizDraft } from "../lib/quizDraft";
 import { effacerQuizDraftDistant, lireQuizDraftDistant, sauvegarderQuizDraftDistant } from "../lib/quizDraftCloud";
 import { recompenserParrainage } from "../lib/referral";
+import { getQuizSessionState, setQuizSessionState } from "../lib/quizSessionState";
 import { supabase } from "../lib/supabaseClient";
 import { filtrerQuestionsParNiveau, filtrerQuestionsParNiveauCible, melanger, tirerQuestionsAvancees, tirerQuestionsStandard } from "../lib/quizSelection";
 
@@ -50,7 +51,7 @@ interface SourceQuestion {
 
 function lireTiragePrecedent(quizId: string): string[] {
   try {
-    const tirage = sessionStorage.getItem(`notio:quiz:${quizId}:dernier-tirage`);
+    const tirage = getQuizSessionState(`${quizId}:dernier-tirage`);
     return tirage ? JSON.parse(tirage) as string[] : [];
   } catch {
     return [];
@@ -59,8 +60,8 @@ function lireTiragePrecedent(quizId: string): string[] {
 
 function enregistrerTirage(quizId: string, questions: Question[]) {
   try {
-    sessionStorage.setItem(
-      `notio:quiz:${quizId}:dernier-tirage`,
+    setQuizSessionState(
+      `${quizId}:dernier-tirage`,
       JSON.stringify(questions.map((question) => question.id))
     );
   } catch {
@@ -104,6 +105,9 @@ export default function QuizTakingPage() {
   const [erreurSource, setErreurSource] = useState<string | null>(null);
   const [verificationSourceRequise, setVerificationSourceRequise] = useState(false);
   const [sourceVerifiee, setSourceVerifiee] = useState(false);
+  const [sourceConfirmationValidee, setSourceConfirmationValidee] = useState(false);
+  const [reponsesRevelees, setReponsesRevelees] = useState<Record<string, boolean>>({});
+  const [questionEnAttenteDeRevelation, setQuestionEnAttenteDeRevelation] = useState<string | null>(null);
   const [questionSignalee, setQuestionSignalee] = useState<string | null>(null);
   const [detailsSignalement, setDetailsSignalement] = useState("");
   const [envoiSignalement, setEnvoiSignalement] = useState(false);
@@ -131,6 +135,22 @@ export default function QuizTakingPage() {
   useEffect(() => {
     if (!chargementSession && !session) navigate("/connexion");
   }, [chargementSession, session, navigate]);
+
+  useEffect(() => {
+    if (!id || !session?.user.id) return;
+    let effetActif = true;
+    queueMicrotask(() => {
+      if (!effetActif) return;
+      try {
+        setSourceVerifiee(getQuizSessionState(`${id}:source-verifiee:${session.user.id}`) === "true");
+        setReponsesRevelees(JSON.parse(getQuizSessionState(`${id}:reponses-revelees:${session.user.id}`) || "{}"));
+      } catch {
+        setSourceVerifiee(false);
+        setReponsesRevelees({});
+      }
+    });
+    return () => { effetActif = false; };
+  }, [id, session?.user.id]);
 
   useEffect(() => {
     if (!id || !session?.user.id || !questions.length || resultat || resultatAvance || !brouillonPret) return;
@@ -337,6 +357,28 @@ export default function QuizTakingPage() {
     });
   }
 
+  function changerSourceVerifiee(verifiee: boolean) {
+    setSourceVerifiee(verifiee);
+    if (!id || !session?.user.id) return;
+    try {
+      setQuizSessionState(`${id}:source-verifiee:${session.user.id}`, String(verifiee));
+    } catch {
+      // La confirmation reste utilisable même si le stockage local est indisponible.
+    }
+  }
+
+  function confirmerRevelation(questionId: string) {
+    const prochainesReponses = { ...reponsesRevelees, [questionId]: true };
+    setReponsesRevelees(prochainesReponses);
+    setQuestionEnAttenteDeRevelation(null);
+    if (!id || !session?.user.id) return;
+    try {
+      setQuizSessionState(`${id}:reponses-revelees:${session.user.id}`, JSON.stringify(prochainesReponses));
+    } catch {
+      // Le dévoilement reste valable pour la session courante.
+    }
+  }
+
   function handleReprendreBrouillon() {
     if (!brouillon) return;
     setBrouillonSynchronise(false);
@@ -467,7 +509,7 @@ export default function QuizTakingPage() {
       return;
     }
 
-    const nom = [profil?.prenom, profil?.nom].filter(Boolean).join(" ") || "Étudiant Notio";
+    const nom = [profil?.prenom, profil?.nom].filter(Boolean).join(" ") || "Étudiant Nauka";
     const message = [
       `Signalement du quiz « ${titre} » (ID : ${id})`,
       `Question : ${question.intitule.slice(0, 700)}`,
@@ -634,7 +676,7 @@ export default function QuizTakingPage() {
     );
   }
 
-  if (verificationSourceRequise && !sourceVerifiee && !revisionDue) {
+  if (verificationSourceRequise && !sourceConfirmationValidee && !revisionDue) {
     return (
       <div className="min-h-screen bg-paper">
         <Header />
@@ -668,6 +710,19 @@ export default function QuizTakingPage() {
                     </div>
                     <p className="mt-2 text-sm font-medium text-ink">{question.intitule}</p>
                     <blockquote className="mt-2 border-l border-line pl-3 text-sm italic leading-6 text-inkmuted">« {source.extrait} »</blockquote>
+                    {reponsesRevelees[question.id] ? (
+                      <details className="mt-3 rounded-md border border-line bg-white px-4 py-3">
+                        <summary className="cursor-pointer text-sm font-semibold text-navy">Réponses révélées</summary>
+                        <ul className="mt-2 space-y-1 text-sm">
+                          {question.reponses.filter((reponse) => reponse.est_correcte).map((reponse) => <li key={reponse.id}>{reponse.texte}</li>)}
+                        </ul>
+                        {question.explication && <p className="mt-2 text-xs leading-5 text-inkmuted">{question.explication}</p>}
+                      </details>
+                    ) : question.reponses.length > 0 ? (
+                      <button type="button" onClick={() => setQuestionEnAttenteDeRevelation(question.id)} className="mt-3 text-xs font-semibold text-navy underline underline-offset-2">
+                        Afficher la réponse
+                      </button>
+                    ) : null}
                   </article>
                 );
               })}
@@ -677,14 +732,27 @@ export default function QuizTakingPage() {
 
           {erreurSource && <p className="mt-4 text-sm text-red-600">{erreurSource}</p>}
           <label className="mt-5 flex items-start gap-3 text-sm leading-6 text-ink">
-            <input type="checkbox" checked={sourceVerifiee} onChange={(event) => setSourceVerifiee(event.target.checked)} disabled={!urlDocumentSource} className="mt-1 h-4 w-4 accent-navy" />
+            <input type="checkbox" checked={sourceVerifiee} onChange={(event) => changerSourceVerifiee(event.target.checked)} disabled={!urlDocumentSource} className="mt-1 h-4 w-4 accent-navy" />
             J'ai vérifié les extraits et les pages dans le document source.
           </label>
           <div className="mt-6 flex flex-wrap gap-3">
             <button type="button" onClick={() => navigate("/questionnaires")} className="border border-line px-5 py-3 text-sm font-semibold text-ink hover:border-ink">Retour au catalogue</button>
-            <button type="button" onClick={() => setSourceVerifiee(true)} disabled={!sourceVerifiee || !urlDocumentSource || !!erreurSource} className="bg-navy px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50">Confirmer et commencer</button>
+            <button type="button" onClick={() => setSourceConfirmationValidee(true)} disabled={!sourceVerifiee || !urlDocumentSource || !!erreurSource} className="bg-navy px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50">Confirmer et commencer</button>
           </div>
         </main>
+        {questionEnAttenteDeRevelation && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink/50 px-5" role="presentation">
+            <section role="dialog" aria-modal="true" aria-labelledby="titre-confirmation-reponse" className="w-full max-w-md border border-line bg-white p-6 shadow-xl">
+              <p className="font-mono text-xs font-semibold uppercase tracking-widest text-navy">Réponse masquée</p>
+              <h2 id="titre-confirmation-reponse" className="mt-2 font-display text-xl font-extrabold">Afficher la réponse ?</h2>
+              <p className="mt-2 text-sm leading-6 text-inkmuted">La bonne réponse et son explication seront révélées sous cette question.</p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button type="button" onClick={() => setQuestionEnAttenteDeRevelation(null)} className="border border-line px-4 py-2.5 text-sm font-semibold text-ink hover:border-ink">Annuler</button>
+                <button type="button" onClick={() => confirmerRevelation(questionEnAttenteDeRevelation)} className="bg-navy px-4 py-2.5 text-sm font-semibold text-paper hover:bg-ink">Confirmer et révéler</button>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     );
   }

@@ -20,6 +20,7 @@ interface Profil {
   niveau_formation: number | null;
   etablissement: string | null;
   pro_expires_at: string | null;
+  abonnement_intervalle: string | null;
 }
 
 export default function ProfilePage() {
@@ -39,7 +40,7 @@ export default function ProfilePage() {
     if (!session?.user) return;
     supabase
       .from("profiles")
-      .select("email, nom, prenom, formation, preferences, plan, niveau_formation, etablissement, pro_expires_at")
+      .select("email, nom, prenom, formation, preferences, plan, niveau_formation, etablissement, pro_expires_at, abonnement_intervalle")
       .eq("id", session.user.id)
       .single()
       .then(({ data }) => {
@@ -118,11 +119,11 @@ export default function ProfilePage() {
             <p className="mt-1 break-all text-sm text-inkmuted">{profil.email}</p>
           </div>
           <span className={profil.plan === "pro" ? "w-fit rounded-md bg-highlight/30 px-3 py-1.5 text-xs font-semibold text-ink" : "w-fit rounded-md bg-paper px-3 py-1.5 text-xs font-semibold text-inkmuted"}>
-            {profil.plan === "pro" ? (profil.pro_expires_at ? "Pro offert" : "Forfait Pro") : "Forfait Découverte"}
+            {profil.plan === "pro" ? (profil.abonnement_intervalle === "mensuel" || profil.abonnement_intervalle === "annuel" ? "Forfait Pro" : profil.pro_expires_at ? "Pro offert" : "Forfait Pro") : "Forfait Découverte"}
           </span>
         </section>
 
-        {profil.plan === "pro" && profil.pro_expires_at && (
+        {profil.plan === "pro" && profil.abonnement_intervalle !== "mensuel" && profil.abonnement_intervalle !== "annuel" && profil.pro_expires_at && (
           <section className="mt-4 rounded-lg border border-highlight/60 bg-highlight/20 px-5 py-4 text-sm text-ink">
             <p className="font-semibold">Ton accès Pro offert est actif.</p>
             <p className="mt-1 text-inkmuted">

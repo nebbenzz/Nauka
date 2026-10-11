@@ -19,7 +19,7 @@ test("le niveau du profil limite la couverture aux semestres déjà concernés",
   assert.deepEqual(construireSemestresProgramme(programmeLicenceInformatiqueLaRochelle, 3, catalogue).map((semestre) => semestre.numero), [1, 2, 3, 4, 5, 6]);
 });
 
-test("une EC distingue une notion maîtrisée d'une EC sans contenu Notio associé", () => {
+test("une EC distingue une notion maîtrisée d'une EC sans contenu Nauka associé", () => {
   const semestres = construireSemestresProgramme(programmeLicenceInformatiqueLaRochelle, 2, [
     { nom: "Bases de données", matiere_nom: "Informatique", etat: "maitrise" },
   ]);

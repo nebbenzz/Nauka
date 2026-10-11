@@ -30,8 +30,8 @@ export default function QuestionnaireFilters({
                   type="button"
                   onClick={() => onChange(filtre.valeur)}
                   className={valeur === filtre.valeur
-                    ? "rounded-full bg-navy px-4 py-2 text-xs font-bold text-paper transition-colors"
-                    : "rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-inkmuted transition-colors hover:border-navy/40 hover:text-navy"}
+                    ? "min-h-10 rounded-md border border-navy bg-navy px-4 py-2 text-xs font-bold text-paper transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"
+                    : "min-h-10 rounded-md border border-line bg-white px-4 py-2 text-xs font-semibold text-inkmuted transition-colors hover:border-navy/40 hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"}
                 >
                   {filtre.label}
                 </button>
@@ -46,7 +46,7 @@ export default function QuestionnaireFilters({
                 id="filtre-matiere"
                 value={matiereSelectionnee}
                 onChange={(e) => onMatiereChange(e.target.value)}
-                className="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-navy focus:ring-2 focus:ring-highlight/50"
+                className="min-h-10 rounded-md border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-navy focus:ring-2 focus:ring-highlight/50"
               >
                 <option value="">Toutes les matières</option>
                 {matieres.map((matiere) => (

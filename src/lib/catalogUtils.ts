@@ -61,6 +61,20 @@ export function uniformiserTitresQuestionnaires<T extends QuizTitreLike>(
   quizzes: T[],
   niveauUtilisateur: number | null,
 ): Array<T & { titreAffiche: string }> {
+  const quizStandards = quizzes.map((quiz) => quiz.type === "personnalise" ? null : quiz);
+  const indicesStandards = quizStandards.flatMap((quiz, index) => quiz ? [index] : []);
+  if (indicesStandards.length !== quizzes.length) {
+    const titresStandards = uniformiserTitresQuestionnaires(
+      indicesStandards.map((index) => quizzes[index]),
+      niveauUtilisateur,
+    );
+    const titreParIndex = new Map(indicesStandards.map((index, standardIndex) => [index, titresStandards[standardIndex].titreAffiche]));
+    return quizzes.map((quiz, index) => ({
+      ...quiz,
+      titreAffiche: quiz.type === "personnalise" ? quiz.titre : titreParIndex.get(index) ?? quiz.titre,
+    }));
+  }
+
   const bases = quizzes.map(normaliserBaseTitreQuiz);
   const premieresDecouvertesParBase = new Map<string, number>();
   quizzes.forEach((quiz, index) => {

@@ -118,7 +118,7 @@ export default function ParametresPage() {
             <h1 className="font-display text-3xl font-extrabold text-black">Paramètres</h1>
           </div>
 
-          <p className="mt-2 max-w-xl text-sm leading-6 text-inkmuted">Gère tes accès et les données associées à ton compte Notio.</p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-inkmuted">Gère tes accès et les données associées à ton compte Nauka.</p>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
@@ -157,7 +157,7 @@ export default function ParametresPage() {
             <div className="flex items-start gap-4 border-b border-line pb-5">
               <Etiquette numero="02" />
               <div>
-                <h2 className="font-display text-xl font-bold">Ta couleur Notio</h2>
+                <h2 className="font-display text-xl font-bold">Ta couleur Nauka</h2>
                 <p className="mt-1 max-w-xl text-sm leading-6 text-inkmuted">
                   Choisis une couleur dominante pour personnaliser les éléments principaux de l'application.
                 </p>

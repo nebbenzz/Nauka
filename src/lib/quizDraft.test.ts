@@ -11,7 +11,7 @@ import {
 } from "./quizDraft";
 
 test("getDraftStorageKey scopes the draft to the user and quiz", () => {
-  assert.equal(getDraftStorageKey("quiz-42", "user-7"), "notio:quiz:draft:user-7:quiz-42");
+  assert.equal(getDraftStorageKey("quiz-42", "user-7"), "nauka:quiz:draft:user-7:quiz-42");
 });
 
 test("choisirBrouillonLePlusRecent selects the newest synchronized copy", () => {
@@ -35,6 +35,23 @@ test("saveQuizDraft and readQuizDraft round-trip a draft payload", () => {
 
   saveQuizDraft("quiz-42", "user-7", saved, storage as unknown as Storage);
   assert.deepEqual(readQuizDraft("quiz-42", "user-7", storage as unknown as Storage), saved);
+});
+
+test("readQuizDraft migrates a draft stored under the previous brand key", () => {
+  const storage = new Map<string, string>();
+  const saved = {
+    selections: { q1: ["a"] },
+    reponsesAvancees: {},
+    questionsIds: ["q1"],
+    updatedAt: "2026-10-05T12:00:00.000Z",
+  };
+  const previousKey = "notio:quiz:draft:user-7:quiz-42";
+  const currentKey = getDraftStorageKey("quiz-42", "user-7");
+  storage.set(previousKey, JSON.stringify(saved));
+
+  assert.deepEqual(readQuizDraft("quiz-42", "user-7", storage as unknown as Storage), saved);
+  assert.equal(storage.get(currentKey), JSON.stringify(saved));
+  assert.equal(storage.has(previousKey), false);
 });
 
 test("clearQuizDraft removes the stored data", () => {

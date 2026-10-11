@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 export const COULEUR_PAR_DEFAUT = "#1D3557";
-const CLE_LOCAL_STORAGE = "notio-theme-color";
+const CLE_LOCAL_STORAGE = "nauka-theme-color";
+const ANCIENNE_CLE_LOCAL_STORAGE = "notio-theme-color";
 const FORMAT_HEX = /^#[0-9A-Fa-f]{6}$/;
 
 export const COULEURS_PREDEFINIES = [
@@ -30,15 +31,28 @@ function couleurValide(couleur: string | null | undefined) {
   return couleur && FORMAT_HEX.test(couleur) ? couleur : COULEUR_PAR_DEFAUT;
 }
 
+function lireCouleurStockee(): string | null {
+  const couleur = localStorage.getItem(CLE_LOCAL_STORAGE);
+  if (couleur !== null) return couleur;
+
+  const ancienneCouleur = localStorage.getItem(ANCIENNE_CLE_LOCAL_STORAGE);
+  if (ancienneCouleur !== null) {
+    localStorage.setItem(CLE_LOCAL_STORAGE, ancienneCouleur);
+    localStorage.removeItem(ANCIENNE_CLE_LOCAL_STORAGE);
+  }
+  return ancienneCouleur;
+}
+
 export function appliquerCouleur(couleur: string) {
   document.documentElement.style.setProperty("--color-navy", couleur);
   localStorage.setItem(CLE_LOCAL_STORAGE, couleur);
+  localStorage.removeItem(ANCIENNE_CLE_LOCAL_STORAGE);
 }
 
 export function useThemeColor() {
   const [couleur, setCouleur] = useState(() => {
     if (typeof window === "undefined") return COULEUR_PAR_DEFAUT;
-    return couleurValide(localStorage.getItem(CLE_LOCAL_STORAGE));
+    return couleurValide(lireCouleurStockee());
   });
 
   useEffect(() => {
@@ -62,6 +76,7 @@ export function useThemeColor() {
       if (event === "SIGNED_OUT") {
         setCouleur(COULEUR_PAR_DEFAUT);
         localStorage.removeItem(CLE_LOCAL_STORAGE);
+        localStorage.removeItem(ANCIENNE_CLE_LOCAL_STORAGE);
         return;
       }
       appliquerCouleurCompte(nouvelleSession?.user.user_metadata?.theme_color);

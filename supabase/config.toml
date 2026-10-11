@@ -21,6 +21,11 @@ entrypoint = "./functions/generate-quiz-ia/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/generate-quiz-ia/*.html" ]
 
+[functions.manage-personal-quiz]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/manage-personal-quiz/index.ts"
+
 [functions.submit-resultat]
 enabled = true
 verify_jwt = false
@@ -53,5 +58,5 @@ additional_redirect_urls = ["http://localhost:5173"]
 enable_confirmations = true
 
 [auth.email.template.confirmation]
-subject = "Confirme ton adresse e-mail | Notio"
+subject = "Confirme ton adresse e-mail | Nauka"
 content_path = "./supabase/templates/confirmation.html"

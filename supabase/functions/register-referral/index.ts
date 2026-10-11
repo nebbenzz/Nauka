@@ -37,9 +37,24 @@ Deno.serve(async (req) => {
       if (profileError) throw profileError;
       if (profile.referral_code) return new Response(JSON.stringify({ code: profile.referral_code }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       const code = await genererCodeUnique(admin);
-      const { error: updateError } = await admin.from("profiles").update({ referral_code: code }).eq("id", userData.user.id);
+      const { data: profileUpdated, error: updateError } = await admin
+        .from("profiles")
+        .update({ referral_code: code })
+        .eq("id", userData.user.id)
+        .is("referral_code", null)
+        .select("referral_code")
+        .maybeSingle();
       if (updateError) throw updateError;
-      return new Response(JSON.stringify({ code }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (profileUpdated?.referral_code) {
+        return new Response(JSON.stringify({ code: profileUpdated.referral_code }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { data: codeFinal, error: erreurCodeFinal } = await admin
+        .from("profiles")
+        .select("referral_code")
+        .eq("id", userData.user.id)
+        .single();
+      if (erreurCodeFinal) throw erreurCodeFinal;
+      return new Response(JSON.stringify({ code: codeFinal.referral_code }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (parsed.data.action === "reward") {
@@ -56,8 +71,34 @@ Deno.serve(async (req) => {
     if (!code) throw new Error("Code de parrainage manquant");
     const { data: referrer } = await admin.from("profiles").select("id").eq("referral_code", code).maybeSingle();
     if (!referrer || referrer.id === userData.user.id) throw new Error("Code de parrainage invalide");
+
+    const { data: parrainageExistant, error: erreurParrainageExistant } = await admin
+      .from("referrals")
+      .select("referrer_id")
+      .eq("referred_id", userData.user.id)
+      .maybeSingle();
+    if (erreurParrainageExistant) throw erreurParrainageExistant;
+    if (parrainageExistant) {
+      if (parrainageExistant.referrer_id !== referrer.id) {
+        throw new Error("Un autre code de parrainage est déjà associé à ce compte.");
+      }
+      return new Response(JSON.stringify({ registered: true, existing: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { error } = await admin.from("referrals").insert({ referrer_id: referrer.id, referred_id: userData.user.id, code });
-    if (error && error.code !== "23505") throw error;
+    if (error?.code === "23505") {
+      const { data: attributionConcurrente, error: erreurLecture } = await admin
+        .from("referrals")
+        .select("referrer_id")
+        .eq("referred_id", userData.user.id)
+        .maybeSingle();
+      if (erreurLecture) throw erreurLecture;
+      if (attributionConcurrente?.referrer_id !== referrer.id) {
+        throw new Error("Un autre code de parrainage est déjà associé à ce compte.");
+      }
+    } else if (error) {
+      throw error;
+    }
     return new Response(JSON.stringify({ registered: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     const message = error instanceof Error

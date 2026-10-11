@@ -4,7 +4,7 @@ import { z } from "https://esm.sh/zod@3.23.8";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
-const emailDestination = "notio.service@gmail.com";
+const emailDestination = "nauka.serviceapp@gmail.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,10 +90,10 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: "Notio <onboarding@resend.dev>",
+          from: "Nauka <onboarding@resend.dev>",
           to: [emailDestination],
           reply_to: parsed.data.email,
-          subject: `[Notio] ${LABELS_SUJET[parsed.data.sujet]} — ${parsed.data.nom}`,
+          subject: `[Nauka] ${LABELS_SUJET[parsed.data.sujet]} — ${parsed.data.nom}`,
           text: `Nouveau ticket #${ticket.id}\n\nDe : ${parsed.data.nom} (${parsed.data.email})\nSujet : ${LABELS_SUJET[parsed.data.sujet]}\n\n${parsed.data.message}`,
         }),
       });

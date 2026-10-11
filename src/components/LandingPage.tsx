@@ -237,14 +237,14 @@ export default function LandingPage() {
               Mieux réviser, <span className="text-highlight">retenir plus longtemps.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-paper/70">
-              Notio transforme vos cours en questionnaires ciblés, notion par notion. Répondez, comprenez vos erreurs et construisez une progression qui vous ressemble.
+              Nauka transforme vos cours en questionnaires ciblés, notion par notion. Répondez, comprenez vos erreurs et construisez une progression qui vous ressemble.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
                 <button type="button" onClick={() => goToAppOuConnexion("/app")} className="rounded-md bg-highlight px-6 py-3 text-sm font-bold text-ink transition-colors hover:bg-paper">
                 Créer un compte gratuit
               </button>
               <a href="#fonctionnement" className="rounded-md border border-paper/30 px-6 py-3 text-sm font-medium text-paper transition-colors hover:border-paper">
-                Découvrir Notio
+                Découvrir Nauka
               </a>
             </div>
             <p className="mt-5 text-xs text-paper/50">5 questionnaires gratuits par jour · Sans engagement</p>
@@ -346,7 +346,7 @@ export default function LandingPage() {
 
       <section id="fonctionnement" data-scroll-reveal className="bg-paper">
         <div className="mx-auto max-w-6xl px-6 py-24">
-        <p className="font-mono text-xs uppercase tracking-widest text-navy">Le principe Notio</p>
+        <p className="font-mono text-xs uppercase tracking-widest text-navy">Le principe Nauka</p>
         <h2 className="mt-3 max-w-xl font-display text-3xl font-extrabold">Un parcours simple, pensé pour apprendre vraiment.</h2>
         <div className="mt-12 grid gap-10 md:grid-cols-3">
           {[
@@ -389,7 +389,7 @@ export default function LandingPage() {
             <p className="font-mono text-xs uppercase tracking-widest text-navy">Garder le fil</p>
             <h2 className="mt-3 max-w-md font-display text-3xl font-extrabold">Une séance interrompue n’efface pas tes progrès.</h2>
             <p className="mt-4 max-w-md text-sm leading-6 text-inkmuted">
-              Notio accompagne aussi ce qui se passe entre deux questionnaires : reprendre, consolider, puis revenir à son rythme.
+              Nauka accompagne aussi ce qui se passe entre deux questionnaires : reprendre, consolider, puis revenir à son rythme.
             </p>
           </div>
           <div className="divide-y divide-line border-y border-line">
