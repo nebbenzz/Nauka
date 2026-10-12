@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: "Nauka <onboarding@resend.dev>",
+          from: "Nauka <notifications@send.nauka.fr>",
           to: [emailDestination],
           reply_to: parsed.data.email,
           subject: `[Nauka] ${LABELS_SUJET[parsed.data.sujet]} — ${parsed.data.nom}`,
