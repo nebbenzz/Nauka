@@ -100,28 +100,28 @@ const typesDeQuestions = [
   {
     tag: "QCM / QCU",
     titre: "Choix multiples",
-    texte: "Une ou plusieurs bonnes réponses, pour valider rapidement une notion.",
+    texte: "Une ou plusieurs réponses à trouver. Rapide, mais pas au hasard.",
     badgeClass: "bg-highlight/25 text-ink",
     icon: <IconListe />,
   },
   {
     tag: "LIBRE",
     titre: "Réponse rédigée",
-    texte: "Formulez votre réponse librement, sans indices de choix.",
+    texte: "Explique avec tes mots. Pas de menu déroulant pour sauver ta copie.",
     badgeClass: "bg-navy/10 text-navy",
     icon: <IconPlume />,
   },
   {
     tag: "CODE",
     titre: "Zone de code",
-    texte: "Écrivez et testez une fonction directement dans le questionnaire, avec pénalité si le résultat est incorrect.",
+    texte: "Écris et teste une fonction directement dans le questionnaire. Le compilateur ne juge pas, lui.",
     badgeClass: "bg-ink/10 text-ink",
     icon: <IconCode />,
   },
   {
     tag: "DESSIN",
     titre: "Zone de schéma",
-    texte: "Dessinez un schéma à main levée, analysé et noté automatiquement.",
+    texte: "Trace ton schéma à main levée : il est analysé et noté automatiquement.",
     badgeClass: "bg-sage/15 text-sage",
     icon: <IconSchema />,
   },
@@ -234,10 +234,10 @@ export default function LandingPage() {
           <div>
             <p className="font-mono text-xs uppercase tracking-widest text-highlight">La plateforme de révision pour l'enseignement supérieur</p>
             <h1 className="mt-5 max-w-2xl font-display text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl">
-              Mieux réviser, <span className="text-highlight">retenir plus longtemps.</span>
+              Mieux réviser, <span className="text-highlight">pour retenir plus longtemps.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-paper/70">
-              Nauka transforme vos cours en questionnaires ciblés, notion par notion. Répondez, comprenez vos erreurs et construisez une progression qui vous ressemble.
+              Nauka transforme tes cours en questionnaires ciblés, notion par notion. Réponds, comprends tes erreurs et construis une progression qui te ressemble.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
                 <button type="button" onClick={() => goToAppOuConnexion("/app")} className="rounded-md bg-highlight px-6 py-3 text-sm font-bold text-ink transition-colors hover:bg-paper">
@@ -256,7 +256,7 @@ export default function LandingPage() {
               <div className="border border-line bg-white p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4 border-b border-line pb-5">
                   <div>
-                    <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-navy">Mini-quiz gratuit</p>
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-navy">Envie de se tester ?</p>
                     <p className="mt-2 font-display text-lg font-extrabold">
                       {demoTerminee ? "Ta séance est terminée" : ficheActuelle.tag.split(" · ")[0]}
                     </p>
@@ -279,7 +279,7 @@ export default function LandingPage() {
                       Créer un compte et suivre mes progrès
                     </button>
                     <button type="button" onClick={recommencerDemo} className="mt-3 text-sm font-semibold text-navy underline underline-offset-4">
-                      Refaire le mini-quiz
+                      Refaire le mini-questionnaire
                     </button>
                   </div>
                 ) : (
@@ -332,159 +332,233 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-y border-highlight/40 bg-highlight/15">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-6 py-8 text-center font-display text-lg font-extrabold text-ink">
-          <span>Révisez à votre rythme.</span>
-          <span className="text-ink/25">·</span>
-          <span>Des questionnaires pour chaque niveau.</span>
-          <span className="text-ink/25">·</span>
-          <span>Une progression visible, notion par notion.</span>
-          <span className="text-ink/25">·</span>
-          <span>Vos cours deviennent vos entraînements.</span>
+      <section aria-label="L'essentiel sur Nauka" className="border-y border-highlight/50 bg-highlight text-ink">
+        <div className="mx-auto grid max-w-6xl gap-4 px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-8">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]">Nauka, en bref</p>
+          <p className="font-display text-base font-extrabold sm:text-lg">
+            Tu t'entraînes sur tes cours. Tu repères ce qui coince. Tu sais quoi revoir.
+          </p>
         </div>
       </section>
 
-      <section id="fonctionnement" data-scroll-reveal className="bg-paper">
-        <div className="mx-auto max-w-6xl px-6 py-24">
-        <p className="font-mono text-xs uppercase tracking-widest text-navy">Le principe Nauka</p>
-        <h2 className="mt-3 max-w-xl font-display text-3xl font-extrabold">Un parcours simple, pensé pour apprendre vraiment.</h2>
-        <div className="mt-12 grid gap-10 md:grid-cols-3">
-          {[
-            { n: "01", titre: "Trouvez votre prochain quiz", texte: "Parcourez le catalogue public, recherchez une matière ou une notion et retrouvez les questionnaires adaptés à votre parcours." },
-            { n: "02", titre: "Répondez dans le bon format", texte: "QCM, QCU, réponse libre, code ou schéma : chaque questionnaire peut s'adapter à la façon dont la notion se vérifie." },
-            { n: "03", titre: "Comprenez vos résultats", texte: "Consultez vos scores, les corrections détaillées et vos niveaux par notion pour savoir exactement quoi retravailler." },
-          ].map((step) => (
-            <div key={step.n} data-reveal-item style={{ transitionDelay: `${Number(step.n) * 80}ms` }} className="group transition-transform duration-300 hover:-translate-y-1">
-              <p className="font-mono text-sm text-inkmuted transition-colors group-hover:text-navy">{step.n}</p>
-              <h3 className="mt-3 font-display text-xl font-bold transition-colors group-hover:text-navy">{step.titre}</h3>
-              <p className="mt-2 text-sm text-inkmuted">{step.texte}</p>
+      <section id="fonctionnement" data-scroll-reveal className="relative overflow-hidden bg-paper">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-24 top-16 h-72 w-72 rounded-full border-[36px] border-highlight/20" />
+        <div className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24">
+          <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-end md:gap-16">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-navy">Le principe Nauka</p>
+              <h2 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+                Relire, c'est bien. <span className="text-navy">Savoir ce qui est resté, c'est mieux.</span>
+              </h2>
             </div>
-          ))}
-        </div>
+            <div className="border-l-2 border-highlight pl-5">
+              <p className="text-base leading-7 text-inkmuted">
+                Nauka transforme tes cours en entraînements ciblés. Tu réponds, tu comprends tes erreurs et tu avances notion par notion. Le stabilo peut souffler.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-14 grid gap-4 md:grid-cols-3">
+            {[
+              { numero: "01", titre: "Pars de ton programme", texte: "Choisis une matière, un niveau ou une notion. Le catalogue t'aide à trouver un questionnaire adapté à ce que tu étudies." },
+              { numero: "02", titre: "Fais travailler ta mémoire", texte: "Réponds à des questions ciblées au lieu de relire la même page en espérant un déclic mystique." },
+              { numero: "03", titre: "Transforme tes erreurs en plan", texte: "Lis les corrections, repère les notions à revoir et reprends là où tu en étais." },
+            ].map((etape, index) => (
+              <article
+                key={etape.numero}
+                data-scroll-reveal-item
+                style={{ transitionDelay: `${index * 100}ms` }}
+                className={`group relative min-h-64 overflow-hidden border p-6 transition-transform duration-300 hover:-translate-y-1 sm:p-8 ${index === 1 ? "border-navy bg-navy text-paper" : "border-line bg-white text-ink"}`}
+              >
+                <span className={`font-mono text-xs font-bold tracking-widest ${index === 1 ? "text-highlight" : "text-navy"}`}>{etape.numero} / 03</span>
+                <h3 className="mt-12 max-w-xs font-display text-2xl font-extrabold leading-tight">{etape.titre}</h3>
+                <p className={`mt-3 max-w-sm text-sm leading-6 ${index === 1 ? "text-paper/70" : "text-inkmuted"}`}>{etape.texte}</p>
+                <span aria-hidden="true" className={`absolute -bottom-10 -right-2 font-display text-8xl font-extrabold leading-none transition-transform duration-300 group-hover:-translate-y-2 ${index === 1 ? "text-paper/5" : "text-navy/5"}`}>
+                  {etape.numero}
+                </span>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section id="types" data-scroll-reveal className="border-y border-paper/10 bg-navy text-paper">
-        <div className="mx-auto max-w-6xl px-6 py-24">
-          <p className="font-mono text-xs uppercase tracking-widest text-highlight">Des formats qui varient</p>
-          <h2 className="mt-3 font-display text-3xl font-extrabold">Un format pour chaque matière</h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {typesDeQuestions.map((type) => (
-              <div key={type.tag} data-reveal-item style={{ transitionDelay: `${typesDeQuestions.indexOf(type) * 90}ms` }} className="group rounded-xl border border-paper/20 bg-paper/10 p-6 text-paper transition-all duration-300 hover:-translate-y-1 hover:border-highlight/60 hover:bg-paper/15 hover:shadow-lg">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${type.badgeClass}`}>
+      <section id="types" data-scroll-reveal className="overflow-hidden bg-navy text-paper">
+        <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
+          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-highlight">Pas tous les examens sont des QCM</p>
+              <h2 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+                Alors tes révisions ne devraient pas l'être non plus.
+              </h2>
+            </div>
+            <p className="max-w-xs text-sm leading-6 text-paper/65 md:pb-1">
+              Chaque matière a ses codes. Choisis le format qui te fait vraiment réfléchir.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {typesDeQuestions.map((type, index) => (
+              <article
+                key={type.tag}
+                data-scroll-reveal-item
+                style={{ transitionDelay: `${index * 80}ms` }}
+                className="group flex min-h-64 flex-col border border-paper/20 bg-paper/[0.04] p-6 transition-colors duration-300 hover:border-highlight/70 hover:bg-paper/[0.08] sm:p-7"
+              >
+                <div className={`flex h-12 w-12 items-center justify-center ${type.badgeClass}`}>
                   {type.icon}
                 </div>
-                <p className="mt-4 font-mono text-xs uppercase tracking-widest text-highlight/55">{type.tag}</p>
-                <h3 className="mt-1 font-display text-lg font-bold">{type.titre}</h3>
-                <p className="mt-2 text-sm text-paper/65">{type.texte}</p>
-              </div>
+                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-highlight/70">{type.tag}</p>
+                <h3 className="mt-2 font-display text-xl font-extrabold">{type.titre}</h3>
+                <p className="mt-2 text-sm leading-6 text-paper/65">{type.texte}</p>
+                <span aria-hidden="true" className="mt-auto self-end pt-5 font-mono text-xs text-paper/30 transition-colors group-hover:text-highlight">N° 0{index + 1}</span>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="suivi" data-scroll-reveal className="border-b border-line bg-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[0.8fr_1.2fr] md:gap-16 md:py-24">
+      <section id="suivi" data-scroll-reveal className="bg-white">
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:py-24 md:grid-cols-[0.85fr_1.15fr] md:items-center md:gap-20">
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-navy">Garder le fil</p>
-            <h2 className="mt-3 max-w-md font-display text-3xl font-extrabold">Une séance interrompue n’efface pas tes progrès.</h2>
-            <p className="mt-4 max-w-md text-sm leading-6 text-inkmuted">
-              Nauka accompagne aussi ce qui se passe entre deux questionnaires : reprendre, consolider, puis revenir à son rythme.
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-navy">La vie arrive. Tes progrès restent.</p>
+            <h2 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+              Une séance interrompue, ce n'est pas retour à la case départ.
+            </h2>
+            <p className="mt-5 max-w-lg text-base leading-7 text-inkmuted">
+              Nauka garde le fil entre tes sessions : tu peux reprendre ton questionnaire, retrouver les questions à revoir et garder un rythme qui colle à ta vraie vie.
             </p>
           </div>
-          <div className="divide-y divide-line border-y border-line">
+          <div className="border-y border-line">
             {[
-              { numero: "01", titre: "Reprendre où tu en étais", texte: "Tes réponses et le lot de questions restent enregistrés si tu quittes une séance en cours." },
-              { numero: "02", titre: "Revoir au bon moment", texte: "Les questions à retravailler réapparaissent sur le tableau de bord quand leur rappel est dû." },
-              { numero: "03", titre: "Tenir un rythme réaliste", texte: "Fixe un objectif hebdomadaire, une durée de séance et une échéance d’examen, puis suis tes séances terminées." },
-            ].map((fonctionnalite) => (
-              <div key={fonctionnalite.numero} data-reveal-item style={{ transitionDelay: `${Number(fonctionnalite.numero) * 80}ms` }} className="group grid gap-3 px-3 py-5 transition-colors duration-200 hover:bg-paper/60 sm:grid-cols-[3rem_1fr] sm:gap-5">
-                <span className="font-mono text-xs text-inkmuted transition-colors group-hover:text-navy">{fonctionnalite.numero}</span>
+              { numero: "01", titre: "Tu reprends où tu en étais", texte: "Tes réponses et les questions de ta session restent enregistrées." },
+              { numero: "02", titre: "Tu revois ce qui mérite un deuxième round", texte: "Les questions à retravailler réapparaissent quand leur rappel est dû." },
+              { numero: "03", titre: "Tu avances à ton rythme", texte: "Définis un objectif hebdomadaire, une durée de session et une date d'examen." },
+            ].map((fonctionnalite, index) => (
+              <article
+                key={fonctionnalite.numero}
+                data-scroll-reveal-item
+                style={{ transitionDelay: `${index * 90}ms` }}
+                className="group grid gap-3 border-b border-line px-2 py-6 last:border-0 sm:grid-cols-[3.5rem_1fr] sm:gap-5"
+              >
+                <span className="font-mono text-xs font-bold text-inkmuted transition-colors group-hover:text-navy">{fonctionnalite.numero}</span>
                 <div>
-                  <h3 className="font-display text-lg font-bold text-ink transition-colors group-hover:text-navy">{fonctionnalite.titre}</h3>
+                  <h3 className="font-display text-lg font-extrabold text-ink">{fonctionnalite.titre}</h3>
                   <p className="mt-1 text-sm leading-6 text-inkmuted">{fonctionnalite.texte}</p>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="maitrise" data-scroll-reveal className="border-b border-paper/10 bg-navy text-paper">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[0.8fr_1.2fr] md:gap-16 md:py-24">
+      <section id="maitrise" data-scroll-reveal className="bg-paper">
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:py-24 md:grid-cols-[0.9fr_1.1fr] md:items-center md:gap-20">
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-highlight">Du programme aux progrès</p>
-            <h2 className="mt-3 max-w-md font-display text-3xl font-extrabold">Un score prend son sens dans la durée.</h2>
-            <p className="mt-4 max-w-md text-sm leading-6 text-paper/70">
-              Retrouve les notions de ta formation et de ton niveau, repère celles qui restent à découvrir et vois quand une estimation de maîtrise mérite d’être confirmée.
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-navy">Pas juste une note. Un repère.</p>
+            <h2 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+              Tu vois ce que tu sais. Et ce qu'il te reste à travailler.
+            </h2>
+            <p className="mt-5 max-w-lg text-base leading-7 text-inkmuted">
+              Ta progression se construit par notion, avec des statuts pensés pour te guider — pas pour te coller une étiquette après un seul quiz.
             </p>
-            <p className="mt-5 font-mono text-xs leading-5 text-paper/55">
-              Les quiz par matière mélangent plusieurs notions de ton domaine ; les tirages restent adaptés à ton niveau d’études.
+            <p className="mt-5 font-mono text-xs leading-5 text-inkmuted">
+              Les questionnaires par matière mélangent plusieurs notions et restent adaptés à ton niveau d'études.
             </p>
           </div>
-          <div className="divide-y divide-paper/20 border-y border-paper/20">
-            {[
-              { etat: "À découvrir", texte: "Aucune réponse enregistrée pour cette notion." },
-              { etat: "En cours", texte: "Tu as commencé à travailler la notion ; les réponses récentes aident à suivre tes progrès." },
-              { etat: "Maîtrisé", texte: "Au moins 10 réponses sur les 90 derniers jours et un score récent d’au moins 70 %." },
-            ].map((etape) => (
-              <div key={etape.etat} data-reveal-item style={{ transitionDelay: `${["À découvrir", "En cours", "Maîtrisé"].indexOf(etape.etat) * 90}ms` }} className="group grid gap-2 px-3 py-5 transition-colors duration-200 hover:bg-paper/5 sm:grid-cols-[10rem_1fr] sm:gap-6">
-                <h3 className="font-display text-lg font-bold text-paper transition-colors group-hover:text-highlight">{etape.etat}</h3>
-                <p className="text-sm leading-6 text-paper/65">{etape.texte}</p>
+          <div className="border border-line bg-white p-6 sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+              <div>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-inkmuted">Ton tableau de bord</p>
+                <h3 className="mt-2 font-display text-2xl font-extrabold">Chaque notion a son étape.</h3>
               </div>
-            ))}
+              <span className="bg-highlight px-3 py-1.5 font-mono text-xs font-bold text-ink">EN COURS</span>
+            </div>
+            <div className="mt-5 divide-y divide-line">
+              {[
+                { etat: "À découvrir", texte: "Pas encore de réponse enregistrée.", couleur: "bg-line" },
+                { etat: "En cours", texte: "Tu t'entraînes : tes réponses récentes font avancer le suivi.", couleur: "bg-highlight" },
+                { etat: "Maîtrisé", texte: "Au moins 10 réponses sur 90 jours et un score récent d'au moins 70 %.", couleur: "bg-sage" },
+              ].map((etape, index) => (
+                <article
+                  key={etape.etat}
+                  data-scroll-reveal-item
+                  style={{ transitionDelay: `${index * 90}ms` }}
+                  className="grid gap-2 py-5 sm:grid-cols-[10rem_1fr] sm:gap-5"
+                >
+                  <h4 className="flex items-center gap-2 font-display font-extrabold">
+                    <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full ${etape.couleur}`} />
+                    {etape.etat}
+                  </h4>
+                  <p className="text-sm leading-6 text-inkmuted">{etape.texte}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="tarifs" data-scroll-reveal className="border-y border-line bg-paper">
-        <div className="mx-auto max-w-6xl px-6 py-24">
-          <p className="font-mono text-xs uppercase tracking-widest text-navy">Choisissez votre rythme</p>
-          <div className="mt-4 grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
-            <div className="flex flex-col justify-between">
-              <div>
-                <h2 className="max-w-md font-display text-3xl font-extrabold text-ink">Commencez gratuitement, allez plus loin quand vous êtes prêt.</h2>
-                <p className="mt-5 max-w-sm text-sm leading-6 text-inkmuted">Un espace simple pour commencer aujourd'hui, puis des outils plus puissants quand vos révisions le demanderont.</p>
-              </div>
-              <div className="mt-8 border-l-2 border-line pl-5 md:mt-16">
-                <h3 className="font-display text-xl font-bold">Découverte</h3>
-                <p className="mt-1 text-sm text-inkmuted">Gratuit, sans limite de temps</p>
-                <ul className="mt-6 space-y-3 text-sm text-inkmuted">
-                  <li>5 questionnaires par jour</li>
-                  <li>Accès aux questionnaires publics</li>
-                  <li>Filtre par matière, niveau et notion</li>
-                  <li>Suivi de progression par notion</li>
-                </ul>
-                <button type="button" onClick={() => goToAppOuConnexion("/app")} className="mt-8 rounded-md border border-line px-6 py-3 text-sm font-medium text-ink transition-colors hover:border-ink">
-                  Commencer gratuitement
-                </button>
-              </div>
+      <section id="tarifs" data-scroll-reveal className="border-y border-paper/10 bg-navy text-paper">
+        <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
+          <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-highlight">Choisis ton rythme</p>
+              <h2 className="mt-5 max-w-2xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+                Tu peux commencer sans sortir la carte bleue.
+              </h2>
             </div>
-            <div className="border-l border-navy bg-navy p-8 text-paper md:p-10">
+            <p className="max-w-xs text-sm leading-6 text-paper/65">
+              Commence gratuitement. Tu verras ensuite si tu veux passer la vitesse Nauka Pro.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-4 lg:grid-cols-2">
+            <article data-scroll-reveal-item className="flex flex-col border border-paper/20 bg-paper p-7 text-ink sm:p-9">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-widest text-highlight">Bientôt disponible</p>
-                  <h3 className="mt-3 font-display text-2xl font-bold">Pro</h3>
-                  <p className="mt-1 text-sm text-paper/65">Pour construire ses propres révisions</p>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-navy">Pour bien démarrer</p>
+                  <h3 className="mt-3 font-display text-3xl font-extrabold">Découverte</h3>
                 </div>
+                <span className="bg-highlight px-3 py-1.5 font-mono text-xs font-bold">0 €</span>
               </div>
+              <p className="mt-3 text-sm text-inkmuted">Gratuit, sans limite de temps. Oui, vraiment.</p>
+              <ul className="mt-8 grid gap-3 text-sm text-inkmuted sm:grid-cols-2">
+                <li>5 questionnaires par jour</li>
+                <li>Questionnaires publics</li>
+                <li>Filtres par matière, niveau et notion</li>
+                <li>Suivi de progression par notion</li>
+              </ul>
+              <button type="button" onClick={() => goToAppOuConnexion("/app")} className="mt-9 w-fit border border-ink px-5 py-3 text-sm font-bold text-ink transition-colors hover:bg-ink hover:text-paper">
+                Commencer gratuitement
+              </button>
+            </article>
+
+            <article data-scroll-reveal-item style={{ transitionDelay: "100ms" }} className="relative flex flex-col border border-highlight/40 bg-paper/[0.04] p-7 sm:p-9">
+              <div aria-hidden="true" className="absolute right-0 top-0 h-1 w-24 bg-highlight" />
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-highlight">Pour aller plus loin</p>
+                  <h3 className="mt-3 font-display text-3xl font-extrabold">Pro</h3>
+                </div>
+                <span className="border border-paper/20 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-paper/70">Bientôt</span>
+              </div>
+              <p className="mt-3 text-sm text-paper/65">Construis des révisions sur mesure et pousse l'entraînement plus loin.</p>
               <ul className="mt-8 grid gap-3 text-sm text-paper/75 sm:grid-cols-2">
                 <li>Questionnaires sans limite quotidienne</li>
-                <li>Génération IA à partir de vos PDF</li>
+                <li>Génération IA à partir de tes PDF</li>
                 <li>Questionnaires avancés chronométrés</li>
                 <li>Correction IA des réponses libres, du code et des schémas</li>
               </ul>
               <p className="mt-8 border-t border-paper/15 pt-5 text-sm leading-6 text-paper/70">
-                Le Pro est en préparation et devrait être disponible le {DATE_LANCEMENT_PRO}. En attendant, le parrainage permet de découvrir ses fonctions pendant 7 jours.
+                Prévu pour le {DATE_LANCEMENT_PRO}. En attendant, le parrainage te permet de découvrir ses fonctions pendant 7 jours.
               </p>
               <form onSubmit={handleAlertePro} className="mt-5 flex flex-col gap-2 sm:flex-row">
-                <input type="email" required disabled={emailProDejaInscrit || inscriptionPro} value={emailProDejaInscrit ? "Demande déjà enregistrée" : emailPro} onChange={(e) => setEmailPro(e.target.value)} placeholder="ton@email.fr" aria-label="Adresse email pour être prévenu du lancement du Pro" className="min-w-0 flex-1 rounded-md border border-paper/20 bg-paper/10 px-3 py-2.5 text-sm text-paper outline-none placeholder:text-paper/45 focus:border-highlight disabled:cursor-default disabled:text-paper/45" />
-                <button type="submit" disabled={emailProDejaInscrit || inscriptionPro} className="rounded-md bg-highlight px-4 py-2.5 text-sm font-bold text-ink transition-colors hover:bg-paper disabled:opacity-60">
-                  {inscriptionPro ? "Inscription..." : emailProDejaInscrit ? "Demande enregistrée" : "Être prévenu"}
+                <input type="email" required disabled={emailProDejaInscrit || inscriptionPro} value={emailProDejaInscrit ? "Demande déjà enregistrée" : emailPro} onChange={(e) => setEmailPro(e.target.value)} placeholder="ton@email.fr" aria-label="Adresse e-mail pour être prévenu du lancement de Pro" className="min-w-0 flex-1 border border-paper/20 bg-paper/10 px-3 py-2.5 text-sm text-paper outline-none placeholder:text-paper/45 focus:border-highlight disabled:cursor-default disabled:text-paper/45" />
+                <button type="submit" disabled={emailProDejaInscrit || inscriptionPro} className="bg-highlight px-4 py-2.5 text-sm font-bold text-ink transition-colors hover:bg-paper disabled:opacity-60">
+                  {inscriptionPro ? "Inscription..." : emailProDejaInscrit ? "Demande enregistrée" : "Me prévenir"}
                 </button>
               </form>
               {messagePro && <p className="mt-2 text-xs text-paper/70">{messagePro}</p>}
-            </div>
+            </article>
           </div>
         </div>
       </section>
