@@ -5,6 +5,8 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")!;
 const siteUrl = Deno.env.get("SITE_URL")!;
+const stripePriceMensuel = Deno.env.get("STRIPE_PRICE_MENSUEL");
+const stripePriceAnnuel = Deno.env.get("STRIPE_PRICE_ANNUEL");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +14,6 @@ const corsHeaders = {
 };
 
 const requeteSchema = z.object({
-  price_id: z.string().min(1),
   intervalle: z.enum(["mensuel", "annuel"]),
 });
 
@@ -48,6 +49,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    const priceId = parsed.data.intervalle === "mensuel" ? stripePriceMensuel : stripePriceAnnuel;
+    if (!priceId) {
+      throw new Error(`Le tarif Stripe ${parsed.data.intervalle} n'est pas configuré côté serveur.`);
+    }
+
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: profil } = await supabaseAdmin
@@ -79,7 +85,7 @@ Deno.serve(async (req) => {
     paramsSession.set("mode", "subscription");
     paramsSession.set("customer", stripeCustomerId!);
     paramsSession.set("client_reference_id", userData.user.id);
-    paramsSession.set("line_items[0][price]", parsed.data.price_id);
+    paramsSession.set("line_items[0][price]", priceId);
     paramsSession.set("line_items[0][quantity]", "1");
     paramsSession.set("success_url", `${siteUrl}/paiement-recapitulatif?statut=succes`);
     paramsSession.set("cancel_url", `${siteUrl}/abonnements?statut=annule`);

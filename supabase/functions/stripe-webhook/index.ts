@@ -3,6 +3,20 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
+const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")!;
+const stripePriceMensuel = Deno.env.get("STRIPE_PRICE_MENSUEL");
+const stripePriceAnnuel = Deno.env.get("STRIPE_PRICE_ANNUEL");
+
+async function obtenirAbonnementStripe(subscriptionId: string) {
+  const response = await fetch(`https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+    headers: { Authorization: `Bearer ${stripeSecretKey}` },
+  });
+  const abonnement = await response.json();
+  if (!response.ok) {
+    throw new Error(`Impossible de vérifier l'abonnement Stripe (${response.status}).`);
+  }
+  return abonnement;
+}
 
 async function verifierSignature(payload: string, signatureHeader: string, secret: string): Promise<boolean> {
   const parts = Object.fromEntries(signatureHeader.split(",").map((p) => p.split("=") as [string, string]));
@@ -32,21 +46,41 @@ Deno.serve(async (req) => {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const userId = session.client_reference_id || session.metadata?.user_id;
-      const intervalle = session.metadata?.intervalle ?? null;
-      if (userId) {
-        await supabaseAdmin
-          .from("profiles")
-          .update({
-            plan: "pro",
-            stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
-            abonnement_intervalle: intervalle,
-            generations_ia_ce_mois: 0,
-            generations_ia_reset_mois: new Date().toISOString().slice(0, 10),
-          })
-          .eq("id", userId);
+      const userId = session.client_reference_id;
+      const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
+      if (!userId || session.metadata?.user_id !== userId || !subscriptionId || session.mode !== "subscription") {
+        throw new Error("La session Stripe ne contient pas de références d'abonnement valides.");
       }
+
+      const abonnement = await obtenirAbonnementStripe(subscriptionId);
+      const elements = abonnement.items?.data ?? [];
+      if (elements.length !== 1 || abonnement.customer !== session.customer) {
+        throw new Error("L'abonnement Stripe ne correspond pas à la session de paiement.");
+      }
+
+      const prix = elements[0].price;
+      const intervalleStripe = prix?.recurring?.interval;
+      const intervalle = prix?.id === stripePriceMensuel && intervalleStripe === "month"
+        ? "mensuel"
+        : prix?.id === stripePriceAnnuel && intervalleStripe === "year"
+          ? "annuel"
+          : null;
+      if (!intervalle) {
+        throw new Error("Le prix réel de l'abonnement ne correspond à aucun tarif Nauka configuré.");
+      }
+
+      const { error } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          plan: "pro",
+          stripe_customer_id: session.customer,
+          stripe_subscription_id: subscriptionId,
+          abonnement_intervalle: intervalle,
+          generations_ia_ce_mois: 0,
+          generations_ia_reset_mois: new Date().toISOString().slice(0, 10),
+        })
+        .eq("id", userId);
+      if (error) throw error;
     }
 
     if (event.type === "customer.subscription.deleted" || event.type === "customer.subscription.updated") {

@@ -416,15 +416,6 @@ export default function QuizTakingPage() {
   }
 
   async function handleValider() {
-    let score = 0;
-    let scoreMax = 0;
-    for (const q of questions) {
-      scoreMax += q.points;
-      const idsCorrects = q.reponses.filter((r) => r.est_correcte).map((r) => r.id).sort();
-      const idsChoisis = (selections[q.id] || []).slice().sort();
-      if (JSON.stringify(idsCorrects) === JSON.stringify(idsChoisis)) score += q.points;
-    }
-
     setEnvoi(true);
     setErreur(null);
     const token = await obtenirToken();
@@ -435,7 +426,11 @@ export default function QuizTakingPage() {
     }
 
     const { data, error } = await supabase.functions.invoke("submit-resultat", {
-      body: { quiz_id: id, score, score_max: scoreMax, reponses_json: selections, revision: estModeRelecture },
+      body: {
+        quiz_id: id,
+        reponses_json: Object.fromEntries(questions.map((question) => [question.id, selections[question.id] || []])),
+        revision: estModeRelecture,
+      },
       headers: { Authorization: `Bearer ${token}` },
     });
     setEnvoi(false);
@@ -448,9 +443,13 @@ export default function QuizTakingPage() {
       setErreur(data.error);
       return;
     }
+    if (typeof data?.score !== "number" || typeof data?.score_max !== "number") {
+      setErreur("Le résultat reçu est invalide. Réessaie.");
+      return;
+    }
     if (id && session?.user.id) effacerBrouillonUtilisateur(id, session.user.id);
     if (id) void recompenserParrainage(id);
-    setResultat({ score, scoreMax });
+    setResultat({ score: data.score, scoreMax: data.score_max });
   }
 
   async function handleValiderAvance() {

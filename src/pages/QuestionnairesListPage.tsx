@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../includes/Header";
 import Footer from "../includes/Footer";
 import SidebarQuestionnaires from "../components/SidebarQuestionnaires";
@@ -493,6 +493,18 @@ export default function QuestionnairesListPage() {
               </button>
             )}
           </div>
+
+          <aside aria-label="Informations sur les formations et contact" className="mb-8 flex flex-col gap-4 border border-line border-l-4 border-l-highlight bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div>
+              <h2 className="font-display text-lg font-bold">La bibliothèque va s'agrandir.</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-inkmuted">
+                Davantage de formations seront bientôt couvertes par des questionnaires. Tu as rencontré un problème ou une remarque à nous faire remonter ? N'hésite pas à nous écrire.
+              </p>
+            </div>
+            <Link to="/contact" className="inline-flex min-h-10 shrink-0 items-center justify-center border border-navy px-4 py-2 text-sm font-bold text-navy transition-colors hover:bg-navy hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
+              Formulaire de contact
+            </Link>
+          </aside>
 
           <div className="relative max-w-2xl">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">

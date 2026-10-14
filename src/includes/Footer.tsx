@@ -6,7 +6,7 @@ interface Props {
 
 export default function Footer({ sidebarReduite }: Props) {
   return (
-    <footer className={sidebarReduite === undefined ? "border-t border-paper/10 bg-navy text-paper" : sidebarReduite ? "ml-16 border-t border-paper/10 bg-navy text-paper transition-all" : "ml-64 border-t border-paper/10 bg-navy text-paper transition-all"}>
+    <footer className={sidebarReduite === undefined ? "border-t border-paper/10 bg-navy text-paper" : sidebarReduite ? "border-t border-paper/10 bg-navy text-paper transition-all" : "ml-64 border-t border-paper/10 bg-navy text-paper transition-all"}>
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-10 sm:grid-cols-[1fr_auto_auto]">
           <div>

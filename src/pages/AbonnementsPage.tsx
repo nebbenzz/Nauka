@@ -78,10 +78,8 @@ export default function AbonnementsPage() {
       return;
     }
 
-    const priceId = periode === "mensuel" ? import.meta.env.VITE_STRIPE_PRICE_MENSUEL : import.meta.env.VITE_STRIPE_PRICE_ANNUEL;
-
     const { data, error } = await supabase.functions.invoke("create-checkout-session", {
-      body: { price_id: priceId, intervalle: periode },
+      body: { intervalle: periode },
       headers: { Authorization: `Bearer ${token}` },
     });
 

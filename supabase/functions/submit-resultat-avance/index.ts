@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { actualiserQuestionsARevoir, verifierQuestionsEnRevision } from "../shared/questions-a-revoir.ts";
+import { enregistrerCompletionQuizParrainage } from "../shared/referral-quiz-completion.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -19,8 +20,13 @@ const reponseSchema = z.object({
 
 const payloadSchema = z.object({
   quiz_id: z.string().uuid(),
-  reponses: z.array(reponseSchema).min(1),
+  reponses: z.array(reponseSchema).min(1).max(5),
   revision: z.boolean().default(false),
+}).superRefine((payload, contexte) => {
+  const ids = payload.reponses.map((reponse) => reponse.question_id);
+  if (new Set(ids).size !== ids.length) {
+    contexte.addIssue({ code: z.ZodIssueCode.custom, path: ["reponses"], message: "Une question ne peut apparaître qu'une fois." });
+  }
 });
 
 type Verdict = { statut: "correct" | "partiel" | "incorrect"; feedback: string };
@@ -143,18 +149,91 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: quiz, error: quizError } = await supabaseAdmin
+      .from("quiz")
+      .select("type, est_avance, created_by, is_public")
+      .eq("id", parsed.data.quiz_id)
+      .maybeSingle();
+    if (quizError) throw quizError;
+    if (
+      !quiz
+      || !quiz.est_avance
+      || (!quiz.is_public && !(quiz.type === "personnalise" && quiz.created_by === userData.user.id))
+    ) {
+      return new Response(JSON.stringify({ error: "Questionnaire avancé introuvable ou inaccessible." }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: liaisons, error: liaisonsError } = await supabaseAdmin
+      .from("quiz_questions")
+      .select("question_id, questions(id, type, points, criteres_evaluation(langage, code_reference, tests_json, criteres_ia), reponses(id, texte, est_correcte))")
+      .eq("quiz_id", parsed.data.quiz_id);
+    if (liaisonsError) throw liaisonsError;
+    const questions = (liaisons ?? []).flatMap((liaison) => {
+      const question = Array.isArray(liaison.questions) ? liaison.questions[0] : liaison.questions;
+      return question ? [question] : [];
+    });
+    const questionsParId = new Map(questions.map((question) => [question.id, question]));
+    const reponsesParQuestion = new Map<string, string[]>();
+
+    for (const reponse of parsed.data.reponses) {
+      const question = questionsParId.get(reponse.question_id);
+      if (!question || question.type !== reponse.type) {
+        return new Response(JSON.stringify({ error: "Une réponse ne correspond pas à ce questionnaire." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (reponse.type === "qcm" || reponse.type === "qcu") {
+        let idsChoisisJson: unknown;
+        try {
+          idsChoisisJson = reponse.contenu ? JSON.parse(reponse.contenu) : [];
+        } catch {
+          return new Response(JSON.stringify({ error: "Une réponse à choix multiples est invalide." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const resultatValidation = z.array(z.string().uuid()).safeParse(idsChoisisJson);
+        if (!resultatValidation.success) {
+          return new Response(JSON.stringify({ error: "Une réponse à choix multiples est invalide." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const idsChoisis = resultatValidation.data;
+        const reponsesValides = new Set((question.reponses ?? []).map((reponseQuestion) => reponseQuestion.id));
+        if (
+          idsChoisis.some((id) => !reponsesValides.has(id))
+          || new Set(idsChoisis).size !== idsChoisis.length
+        ) {
+          return new Response(JSON.stringify({ error: "Une réponse à choix multiples ne correspond pas aux choix proposés." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        reponsesParQuestion.set(reponse.question_id, idsChoisis);
+      }
+    }
+
+    if (!parsed.data.revision) {
+      const typesFermees = parsed.data.reponses.filter((reponse) => reponse.type === "qcm" || reponse.type === "qcu").length;
+      if (parsed.data.reponses.length !== 5 || typesFermees !== 3) {
+        return new Response(JSON.stringify({ error: "Une épreuve avancée doit contenir trois questions à choix et deux questions développées." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     let score = 0;
     let scoreMax = 0;
     const details: any[] = [];
 
     for (const r of parsed.data.reponses) {
-      const { data: question } = await supabaseAdmin
-        .from("questions")
-        .select("points, criteres_evaluation(langage, code_reference, tests_json, criteres_ia)")
-        .eq("id", r.question_id)
-        .single();
-
-      if (!question) continue;
+      const question = questionsParId.get(r.question_id)!;
       const points = question.points ?? 1;
       scoreMax += points;
 
@@ -166,13 +245,9 @@ Deno.serve(async (req) => {
       let correction: string | null = null;
 
       if (r.type === "qcm" || r.type === "qcu") {
-        const { data: reponses } = await supabaseAdmin
-          .from("reponses")
-          .select("id, texte, est_correcte")
-          .eq("question_id", r.question_id);
-
-        const idsCorrects = (reponses || []).filter((x) => x.est_correcte).map((x) => x.id).sort();
-        const idsChoisis: string[] = r.contenu ? JSON.parse(r.contenu) : [];
+        const reponses = question.reponses ?? [];
+        const idsCorrects = reponses.filter((x) => x.est_correcte).map((x) => x.id).sort();
+        const idsChoisis = reponsesParQuestion.get(r.question_id) ?? [];
         const choisisSorted = idsChoisis.slice().sort();
 
         if (JSON.stringify(idsCorrects) === JSON.stringify(choisisSorted)) {
@@ -185,7 +260,7 @@ Deno.serve(async (req) => {
               ? { statut: "partiel", feedback: "Une partie des bonnes réponses a été sélectionnée, mais pas toutes." }
               : { statut: "incorrect", feedback: "La ou les réponses sélectionnées ne sont pas correctes." };
         }
-        correction = (reponses || []).filter((x) => x.est_correcte).map((x) => x.texte).join(", ");
+        correction = reponses.filter((x) => x.est_correcte).map((x) => x.texte).join(", ");
       } else if (r.contenu.trim() === "") {
         verdict = { statut: "incorrect", feedback: "Aucune réponse n'a été fournie pour cette question." };
         correction = r.type === "code" ? criteres?.code_reference ?? null : criteres?.criteres_ia ?? null;
@@ -239,6 +314,15 @@ Deno.serve(async (req) => {
       questionsCorrectes,
       parsed.data.revision,
     );
+
+    const reponsesCompletes = parsed.data.reponses.every((reponse) =>
+      reponse.type === "qcm" || reponse.type === "qcu"
+        ? (reponsesParQuestion.get(reponse.question_id)?.length ?? 0) > 0
+        : reponse.contenu.trim().length > 0
+    );
+    if (!parsed.data.revision && reponsesCompletes) {
+      await enregistrerCompletionQuizParrainage(supabaseAdmin, userData.user.id, parsed.data.quiz_id, resultat.id);
+    }
 
     return new Response(JSON.stringify({ resultat_id: resultat.id, score, score_max: scoreMax, details }), {
       status: 201,

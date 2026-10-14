@@ -420,7 +420,7 @@ export default function LandingPage() {
       <section id="suivi" data-scroll-reveal className="bg-white">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 sm:py-24 md:grid-cols-[0.85fr_1.15fr] md:items-center md:gap-20">
           <div>
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-navy">La vie arrive. Tes progrès restent.</p>
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-navy">Le temps passe, les progrès restent.</p>
             <h2 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
               Une séance interrompue, ce n'est pas retour à la case départ.
             </h2>
@@ -471,7 +471,6 @@ export default function LandingPage() {
                 <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-inkmuted">Ton tableau de bord</p>
                 <h3 className="mt-2 font-display text-2xl font-extrabold">Chaque notion a son étape.</h3>
               </div>
-              <span className="bg-highlight px-3 py-1.5 font-mono text-xs font-bold text-ink">EN COURS</span>
             </div>
             <div className="mt-5 divide-y divide-line">
               {[

@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { actualiserQuestionsARevoir, verifierQuestionsEnRevision } from "../shared/questions-a-revoir.ts";
+import { enregistrerCompletionQuizParrainage } from "../shared/referral-quiz-completion.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -12,9 +13,7 @@ const corsHeaders = {
 
 const resultatSchema = z.object({
   quiz_id: z.string().uuid(),
-  score: z.number(),
-  score_max: z.number(),
-  reponses_json: z.record(z.any()).default({}),
+  reponses_json: z.record(z.string().uuid(), z.array(z.string().uuid())).default({}),
   revision: z.boolean().default(false),
 });
 
@@ -83,55 +82,142 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: quiz, error: quizError } = await supabaseAdmin
+      .from("quiz")
+      .select("type, est_avance, niveau_cible, created_by, is_public")
+      .eq("id", parsed.data.quiz_id)
+      .maybeSingle();
+    if (quizError) throw quizError;
+    if (
+      !quiz
+      || quiz.est_avance
+      || (!quiz.is_public && !(quiz.type === "personnalise" && quiz.created_by === userData.user.id))
+    ) {
+      return new Response(JSON.stringify({ error: "Questionnaire introuvable ou inaccessible." }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: liaisons, error: liaisonsError } = await supabaseAdmin
+      .from("quiz_questions")
+      .select("question_id, questions(id, type, points, niveau, notions(niveau), reponses(id, est_correcte))")
+      .eq("quiz_id", parsed.data.quiz_id)
+      .order("ordre");
+    if (liaisonsError) throw liaisonsError;
+
+    const questions = (liaisons ?? []).flatMap((liaison) => {
+      const question = Array.isArray(liaison.questions) ? liaison.questions[0] : liaison.questions;
+      return question ? [question] : [];
+    });
+    const questionsParId = new Map(questions.map((question) => [question.id, question]));
+    const questionIdsSoumis = Object.keys(parsed.data.reponses_json);
+    if (questionIdsSoumis.length === 0 || questionIdsSoumis.some((id) => !questionsParId.has(id))) {
+      return new Response(JSON.stringify({ error: "Les réponses ne correspondent pas à ce questionnaire." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let niveauUtilisateur: number | null = null;
+    if (quiz.type === "global") {
+      const { data: profilNiveau, error: erreurNiveau } = await supabaseAdmin
+        .from("profiles")
+        .select("niveau_formation")
+        .eq("id", userData.user.id)
+        .maybeSingle();
+      if (erreurNiveau) throw erreurNiveau;
+      niveauUtilisateur = profilNiveau?.niveau_formation ?? null;
+    }
+
+    const niveauQuestion = (question: (typeof questions)[number]) => {
+      const notion = Array.isArray(question.notions) ? question.notions[0] : question.notions;
+      return question.niveau ?? notion?.niveau ?? null;
+    };
+    const contientNiveauSuperieur = typeof quiz.niveau_cible === "number"
+      && questions.some((question) => {
+        const niveau = niveauQuestion(question);
+        return niveau !== null && niveau > quiz.niveau_cible!;
+      });
+    const questionsAdaptees = typeof quiz.niveau_cible === "number"
+      ? contientNiveauSuperieur
+        ? niveauUtilisateur === null || niveauUtilisateur <= 0
+          ? questions
+          : questions.filter((question) => {
+            const niveau = niveauQuestion(question);
+            return niveau !== null && niveau <= niveauUtilisateur!;
+          })
+        : questions.filter((question) => niveauQuestion(question) === quiz.niveau_cible)
+      : quiz.type === "global" && niveauUtilisateur !== null && niveauUtilisateur > 0
+        ? questions.filter((question) => {
+          const niveau = niveauQuestion(question);
+          return niveau !== null && niveau <= niveauUtilisateur!;
+        })
+        : questions;
+    const questionsStandard = questionsAdaptees.filter((question) => question.type === "qcm" || question.type === "qcu");
+
+    if (!parsed.data.revision) {
+      const nombreAttendu = Math.min(5, questionsStandard.length);
+      if (nombreAttendu === 0 || questionIdsSoumis.length !== nombreAttendu || questionIdsSoumis.some((id) => !questionsStandard.some((question) => question.id === id))) {
+        return new Response(JSON.stringify({ error: "La tentative ne contient pas toutes les questions attendues." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    for (const questionId of questionIdsSoumis) {
+      const question = questionsParId.get(questionId)!;
+      const reponsesValides = new Set((question.reponses ?? []).map((reponse) => reponse.id));
+      const reponsesSoumises = parsed.data.reponses_json[questionId];
+      if (
+        !["qcm", "qcu"].includes(question.type)
+        || new Set(reponsesSoumises).size !== reponsesSoumises.length
+        || reponsesSoumises.some((reponseId) => !reponsesValides.has(reponseId))
+      ) {
+        return new Response(JSON.stringify({ error: "Une réponse ne correspond pas au format attendu." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    let score = 0;
+    let scoreMax = 0;
+    const questionsIncorrectes: string[] = [];
+    const questionsCorrectes: string[] = [];
+    for (const questionId of questionIdsSoumis) {
+      const question = questionsParId.get(questionId)!;
+      const points = question.points ?? 1;
+      scoreMax += points;
+
+      const idsCorrects = (question.reponses ?? [])
+        .filter((reponse) => reponse.est_correcte)
+        .map((reponse) => reponse.id)
+        .sort();
+      const idsChoisis = parsed.data.reponses_json[questionId].slice().sort();
+      const estCorrecte = idsCorrects.length > 0 && JSON.stringify(idsCorrects) === JSON.stringify(idsChoisis);
+      if (estCorrecte) {
+        score += points;
+        questionsCorrectes.push(questionId);
+      } else {
+        questionsIncorrectes.push(questionId);
+      }
+    }
+
     const { data: resultat, error: insertError } = await supabaseAdmin
       .from("resultats")
       .insert({
         user_id: userData.user.id,
         quiz_id: parsed.data.quiz_id,
-        score: parsed.data.score,
-        score_max: parsed.data.score_max,
+        score,
+        score_max: scoreMax,
         reponses_json: parsed.data.reponses_json,
       })
       .select("id")
       .single();
 
     if (insertError) throw insertError;
-
-    const questionIdsSoumis = Object.keys(parsed.data.reponses_json);
-    let questionIds: string[] = [];
-    if (questionIdsSoumis.length > 0) {
-      const { data: liaisons, error: liaisonsError } = await supabaseAdmin
-        .from("quiz_questions")
-        .select("question_id")
-        .eq("quiz_id", parsed.data.quiz_id)
-        .in("question_id", questionIdsSoumis);
-      if (liaisonsError) throw liaisonsError;
-      questionIds = (liaisons || []).map((liaison: { question_id: string }) => liaison.question_id);
-    }
-    let reponsesCorrectes: { id: string; question_id: string; est_correcte: boolean }[] = [];
-    if (questionIds.length > 0) {
-      const { data, error } = await supabaseAdmin
-        .from("reponses")
-        .select("id, question_id, est_correcte")
-        .in("question_id", questionIds);
-      if (error) throw error;
-      reponsesCorrectes = data || [];
-    }
-
-    const questionsIncorrectes: string[] = [];
-    const questionsCorrectes: string[] = [];
-    for (const questionId of questionIds) {
-      const idsCorrects = reponsesCorrectes
-        .filter((reponse) => reponse.question_id === questionId && reponse.est_correcte)
-        .map((reponse) => reponse.id)
-        .sort();
-      const reponseSoumise = parsed.data.reponses_json[questionId];
-      const idsChoisis = Array.isArray(reponseSoumise)
-        ? reponseSoumise.filter((id): id is string => typeof id === "string").sort()
-        : [];
-      const estCorrecte = idsCorrects.length > 0 && JSON.stringify(idsCorrects) === JSON.stringify(idsChoisis);
-      (estCorrecte ? questionsCorrectes : questionsIncorrectes).push(questionId);
-    }
 
     await actualiserQuestionsARevoir(
       supabaseAdmin,
@@ -142,7 +228,12 @@ Deno.serve(async (req) => {
       parsed.data.revision,
     );
 
-    return new Response(JSON.stringify({ resultat_id: resultat.id }), {
+    const reponsesCompletes = questionIdsSoumis.every((questionId) => parsed.data.reponses_json[questionId].length > 0);
+    if (!parsed.data.revision && reponsesCompletes) {
+      await enregistrerCompletionQuizParrainage(supabaseAdmin, userData.user.id, parsed.data.quiz_id, resultat.id);
+    }
+
+    return new Response(JSON.stringify({ resultat_id: resultat.id, score, score_max: scoreMax }), {
       status: 201,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

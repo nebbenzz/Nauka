@@ -46,11 +46,11 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
         </button>
       </div>
 
-      <nav className="mt-5 space-y-5">
-        <div>
-          <p className="px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-inkmuted">Espace personnel</p>
-          <div className="mt-2 space-y-1">
-            {estPro && (
+      {estPro && (
+        <nav className="mt-5 space-y-5">
+          <div>
+            <p className="px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-inkmuted">Espace personnel</p>
+            <div className="mt-2 space-y-1">
               <button
                 type="button"
                 onClick={() => {
@@ -63,10 +63,10 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
                 </svg>
                 Mes questionnaires
               </button>
-            )}
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
 
       <nav className="mt-5 space-y-5">
         <div className="border-t border-line pt-5">
