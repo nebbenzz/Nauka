@@ -15,15 +15,12 @@ Le choix de l'ia s'est porté sur Claude (Claude API). Il parrait performant pou
 ## TAF
 
 - Finir en PRIORITE le passage à 10 questions par questionnaire
-- Une fois Nauka publié en ligne, ajouter DIRECTEMENT les informations DNS de Resend pour l'envoi des mails.
 - Vérifier le passage en abo pro pour l'envoyeur et/ou destinataire lors du parrainage. 
 
 - Mise en place du système de flash card IA (pro)
 - Ajouts questions et questionnaires tout niveaux
-- Pousser Nauka sur Vercel
 
 - Logo Nauka + insertion dans Header + onglet
-- Achat nom de domaine Nauka
 
 - Création compte Insta/X ? 
 - Vidéo présentation Nauka pour les réseaux

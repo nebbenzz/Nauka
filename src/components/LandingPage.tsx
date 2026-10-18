@@ -391,9 +391,6 @@ export default function LandingPage() {
                 Alors tes révisions ne devraient pas l'être non plus.
               </h2>
             </div>
-            <p className="max-w-xs text-sm leading-6 text-paper/65 md:pb-1">
-              Chaque matière a ses codes. Choisis le format qui te fait vraiment réfléchir.
-            </p>
           </div>
 
           <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -505,9 +502,6 @@ export default function LandingPage() {
                 Tu peux commencer sans sortir la carte bleue.
               </h2>
             </div>
-            <p className="max-w-xs text-sm leading-6 text-paper/65">
-              Commence gratuitement. Tu verras ensuite si tu veux passer la vitesse Nauka Pro.
-            </p>
           </div>
 
           <div className="mt-12 grid gap-4 lg:grid-cols-2">
