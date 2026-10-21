@@ -1,3 +1,131 @@
+import { FORMATIONS } from "../data/formations";
+
+export interface DomaineCatalogue<T> {
+  id: string;
+  nom: string;
+  formationCible: string | null;
+  quizs: T[];
+}
+
+export interface FormationCatalogue<T> {
+  id: string;
+  nom: string;
+  ciblesFormation: Array<string | null>;
+  domaines: DomaineCatalogue<T>[];
+  quizs: T[];
+}
+
+export interface GroupeCatalogue<T> {
+  type: string;
+  formations: FormationCatalogue<T>[];
+}
+
+interface QuizCatalogue {
+  formation_cible: string | null;
+  matiere_nom: string;
+  niveau_cible?: number | null;
+  notion_niveau?: number | null;
+  niveau_contenu_max?: number | null;
+}
+
+const ordreTypesFormation = ["Licence", "Master", "BTS", "BUT", "Prépa", "Autres formations"];
+
+function slugifier(valeur: string): string {
+  return valeur
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function determinerTypeFormation(quiz: QuizCatalogue): string {
+  const { formation_cible: formationCible } = quiz;
+  if (!formationCible) {
+    const niveau = quiz.niveau_cible ?? quiz.notion_niveau ?? quiz.niveau_contenu_max ?? 1;
+    return niveau >= 4 ? "Master" : "Licence";
+  }
+
+  const formation = FORMATIONS.find((item) => item.label === formationCible);
+  const type = formation?.type
+    ?? (/^BTS\b/i.test(formationCible) ? "BTS"
+      : /^BUT\b/i.test(formationCible) ? "BUT"
+        : /^(?:L[1-3]|Licence)\b/i.test(formationCible) ? "Licence"
+          : /^(?:M[1-2]|Master)\b/i.test(formationCible) ? "Master"
+          : /^(?:CPGE|Prépa)\b/i.test(formationCible) ? "Prépa"
+            : null);
+
+  if (type === "Licence" || type === "Master") return type;
+  if (type === "BTS" || type === "BUT") return type;
+  if (type === "Prépa") return "Prépa";
+  return "Autres formations";
+}
+
+export function grouperQuizParFormation<T extends QuizCatalogue>(quizs: T[]): GroupeCatalogue<T>[] {
+  const groupes = new Map<string, {
+    type: string;
+    formations: Map<string, {
+      id: string;
+      nom: string;
+      ciblesFormation: Array<string | null>;
+      domaines: Map<string, DomaineCatalogue<T>>;
+      quizs: T[];
+    }>;
+  }>();
+
+  for (const quiz of quizs) {
+    const type = determinerTypeFormation(quiz);
+    const matiere = quiz.matiere_nom || "Autres";
+    const formationUniversitaire = type === "Licence" || type === "Master";
+    const nomFormation = formationUniversitaire ? matiere : quiz.formation_cible ?? matiere;
+    const groupeType = groupes.get(type) ?? { type, formations: new Map() };
+    const groupeFormation = groupeType.formations.get(nomFormation) ?? {
+      id: [type, nomFormation].map(slugifier).join("--"),
+      nom: nomFormation,
+      ciblesFormation: [],
+      domaines: new Map(),
+      quizs: [],
+    };
+    if (!groupeFormation.ciblesFormation.includes(quiz.formation_cible)) {
+      groupeFormation.ciblesFormation.push(quiz.formation_cible);
+    }
+    if (formationUniversitaire) {
+      groupeFormation.quizs.push(quiz);
+      groupeType.formations.set(nomFormation, groupeFormation);
+      groupes.set(type, groupeType);
+      continue;
+    }
+
+    const cleDomaine = JSON.stringify([quiz.formation_cible, matiere]);
+    const domaine = groupeFormation.domaines.get(cleDomaine) ?? {
+      id: [type, nomFormation, matiere].map(slugifier).join("--"),
+      nom: matiere,
+      formationCible: quiz.formation_cible,
+      quizs: [],
+    };
+
+    domaine.quizs.push(quiz);
+    groupeFormation.domaines.set(cleDomaine, domaine);
+    groupeType.formations.set(nomFormation, groupeFormation);
+    groupes.set(type, groupeType);
+  }
+
+  return Array.from(groupes.values())
+    .sort((a, b) => ordreTypesFormation.indexOf(a.type) - ordreTypesFormation.indexOf(b.type) || a.type.localeCompare(b.type, "fr"))
+    .map((groupeType) => ({
+      type: groupeType.type,
+      formations: Array.from(groupeType.formations.values())
+        .sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
+        .map((groupeFormation) => ({
+          id: groupeFormation.id,
+          nom: groupeFormation.nom,
+          ciblesFormation: groupeFormation.ciblesFormation,
+          domaines: Array.from(groupeFormation.domaines.values()).sort((a, b) => a.nom.localeCompare(b.nom, "fr")),
+          quizs: groupeFormation.quizs,
+        })),
+    }));
+}
+
 export interface NiveauQuizLike {
   type?: string | null;
   notion_niveau?: number | null;

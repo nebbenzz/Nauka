@@ -714,34 +714,40 @@ export const btsGestionQuizzes: QuizSeed[] = [
     type: "notion",
     notionFiltre: "Comptabilité générale",
     questionIds: ["cg1", "cg2", "cg3", "cg4", "cg5"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
   {
     titre: "Fiscalité",
     type: "notion",
     notionFiltre: "Fiscalité",
     questionIds: ["fisc1", "fisc2", "fisc3", "fisc4", "fisc5"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
   {
     titre: "Gestion financière",
     type: "notion",
     notionFiltre: "Gestion financière",
     questionIds: ["gf1", "gf2", "gf3", "gf4", "gf5"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
   {
     titre: "Contrôle de gestion",
     type: "notion",
     notionFiltre: "Contrôle de gestion",
     questionIds: ["cdg1", "cdg2", "cdg3", "cdg4", "cdg5"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
   {
     titre: "BTS Comptabilité et Gestion — panorama général",
     type: "global",
     questionIds: ["cg1", "fisc2", "gf3", "cdg4", "cg5"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
   {
     titre: "Comptabilité et fiscalité — entraînement",
     type: "global",
     questionIds: ["cg6", "cg7", "fisc6", "fisc7"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
   {
     titre: "Gestion financière et contrôle — approfondissement",
@@ -749,5 +755,6 @@ export const btsGestionQuizzes: QuizSeed[] = [
     estAvance: true,
     dureeSecondes: 900,
     questionIds: ["gf6", "gf7", "cdg6", "cdg7"],
+    formationCible: "BTS Comptabilité et Gestion",
   },
 ];

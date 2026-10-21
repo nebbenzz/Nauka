@@ -1,15 +1,108 @@
 import { useState } from "react";
+import type { GroupeCatalogue } from "../lib/catalogUtils";
 
 interface Props {
   reduit: boolean;
   onToggle: (v: boolean) => void;
-  onNaviguer: (cible: string, terme: string) => void;
-  matieresClassiques: string[];
-  matieresAvancees: string[];
+  onNaviguer: (cible: string, terme: string, ciblesFormation?: Array<string | null>, formationCible?: string) => void;
+  groupesClassiques: GroupeCatalogue<{ id: string }>[];
+  groupesAvances: GroupeCatalogue<{ id: string }>[];
   estPro?: boolean;
 }
 
-export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, matieresClassiques, matieresAvancees, estPro }: Props) {
+interface ListeCatalogueProps {
+  groupes: GroupeCatalogue<{ id: string }>[];
+  prefixe: "matiere" | "avance-matiere";
+  onNaviguer: Props["onNaviguer"];
+}
+
+function ListeCatalogue({ groupes, prefixe, onNaviguer }: ListeCatalogueProps) {
+  const survolSousMenu = prefixe === "avance-matiere"
+    ? "hover:bg-sage/20 hover:text-ink"
+    : "hover:bg-highlight/10 hover:text-navy";
+  const survolType = prefixe === "avance-matiere"
+    ? "hover:border-sage/60 hover:bg-sage/5"
+    : "hover:border-highlight/60 hover:bg-highlight/5";
+  const couleurPoint = prefixe === "avance-matiere" ? "bg-sage/80" : "bg-highlight/70";
+
+  return (
+    <div className="ml-2 space-y-1 border-l border-line pl-2">
+      {groupes.map((groupe) => {
+        const nombreQuiz = groupe.formations.reduce(
+          (total, formation) => total + formation.quizs.length + formation.domaines.reduce((sousTotal, domaine) => sousTotal + domaine.quizs.length, 0),
+          0,
+        );
+
+        return (
+          <details key={groupe.type} className="group/type">
+            <summary className={`flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-md border border-line/70 bg-white/60 px-2.5 py-2 text-xs font-bold text-ink marker:hidden transition-colors ${survolType}`}>
+              <span>{groupe.type}</span>
+              <span className="flex items-center gap-2 rounded-full bg-paper px-1.5 py-0.5 text-[10px] font-medium text-inkmuted">
+                {nombreQuiz}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 transition-transform group-open/type:rotate-90" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+              </span>
+            </summary>
+            <div className="ml-2 space-y-1 border-l border-line pl-2">
+              {groupe.formations.map((formation) => {
+                const nombreQuizFormation = formation.quizs.length + formation.domaines.reduce((total, domaine) => total + domaine.quizs.length, 0);
+                const ouvrirTouteLaFormation = groupe.type === "BTS" || groupe.type === "BUT";
+                return (
+                  formation.domaines.length === 0 || ouvrirTouteLaFormation ? (
+                    <button
+                      key={formation.id}
+                      type="button"
+                      onClick={() => onNaviguer(
+                        `${prefixe}-${formation.id}`,
+                        formation.nom,
+                        formation.ciblesFormation,
+                        ouvrirTouteLaFormation ? formation.nom : undefined,
+                      )}
+                      className={`flex min-h-9 w-full items-center justify-between gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-semibold text-inkmuted transition-colors ${survolSousMenu}`}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${couleurPoint}`} aria-hidden="true" />
+                        <span>{formation.nom}</span>
+                      </span>
+                      <span className="shrink-0 rounded-full bg-paper px-1.5 py-0.5 text-[10px]">{nombreQuizFormation}</span>
+                    </button>
+                  ) : (
+                    <details key={formation.id} className="group/formation">
+                      <summary className={`flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-semibold text-inkmuted marker:hidden transition-colors ${survolSousMenu}`}>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${couleurPoint}`} aria-hidden="true" />
+                          <span>{formation.nom}</span>
+                        </span>
+                        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-paper px-1.5 py-0.5 text-[10px]">
+                          {nombreQuizFormation}
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 transition-transform group-open/formation:rotate-90" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                        </span>
+                      </summary>
+                      <div className="ml-2 space-y-1 border-l border-line pl-2">
+                        {formation.domaines.map((domaine) => (
+                          <button
+                            key={domaine.id}
+                            type="button"
+                            onClick={() => onNaviguer(`${prefixe}-${domaine.id}`, domaine.nom, [domaine.formationCible])}
+                            className={`flex min-h-8 w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[11px] text-inkmuted transition-colors ${survolSousMenu}`}
+                          >
+                            <span>{domaine.nom}</span>
+                            <span className="shrink-0 text-[10px] text-inkmuted/80">{domaine.quizs.length}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  )
+                );
+              })}
+            </div>
+          </details>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, groupesClassiques, groupesAvances, estPro }: Props) {
   const [ouvertes, setOuvertes] = useState<Record<string, boolean>>({});
 
   function toggleMatiere(cle: string) {
@@ -71,33 +164,39 @@ export default function SidebarQuestionnaires({ reduit, onToggle, onNaviguer, ma
       <nav className="mt-5 space-y-5">
         <div className="border-t border-line pt-5">
           <p className="px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-inkmuted">Questionnaires</p>
-          <div className="mt-2 space-y-1">
-            <button type="button" onClick={() => onNaviguer("pour-vous", "")} className="flex min-h-10 w-full items-center gap-3 rounded-md border-l-2 border-highlight bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-navy hover:bg-navy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
+          <div className="mt-2 space-y-2">
+            <button type="button" onClick={() => onNaviguer("pour-vous", "")} className="flex min-h-10 w-full items-center gap-3 rounded-md border border-highlight/30 border-l-2 border-l-highlight bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-highlight/60 hover:bg-highlight/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
               Pour vous
             </button>
-            <button type="button" onClick={() => toggleMatiere("classiques-decouvrir")} className="flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-white hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
-              <span className="flex items-center gap-3"><span className="flex h-6 w-6 items-center justify-center border border-line text-xs text-inkmuted">+</span>Découvrez aussi</span>
+            <button type="button" aria-expanded={ouvertes["classiques-decouvrir"] ?? false} aria-controls="catalogue-classiques-sidebar" onClick={() => toggleMatiere("classiques-decouvrir")} className="flex min-h-10 w-full items-center justify-between gap-3 rounded-md border border-highlight/30 bg-highlight/10 px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:border-highlight/60 hover:bg-highlight/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
+              <span className="flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-navy" aria-hidden="true">{ouvertes["classiques-decouvrir"] ? "−" : "+"}</span>
+                Découvrez aussi
+              </span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={ouvertes["classiques-decouvrir"] ? "h-4 w-4 rotate-90 transition-transform" : "h-4 w-4 transition-transform"}><polyline points="9 18 15 12 9 6" /></svg>
             </button>
-            {ouvertes["classiques-decouvrir"] && <div className="ml-6 space-y-1 border-l border-line pl-3">
-              {matieresClassiques.map((matiere) => <button key={`classique-${matiere}`} type="button" onClick={() => onNaviguer(`matiere-${matiere}`, matiere)} className="block w-full rounded px-2 py-1.5 text-left text-xs text-inkmuted hover:bg-white hover:text-navy">{matiere}</button>)}
-            </div>}
+            <div id="catalogue-classiques-sidebar" hidden={!ouvertes["classiques-decouvrir"]}>
+              <ListeCatalogue groupes={groupesClassiques} prefixe="matiere" onNaviguer={onNaviguer} />
+            </div>
           </div>
         </div>
 
         <div className="border-t border-line pt-5">
           <p className="px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-inkmuted">Questionnaires avancés</p>
-          <div className="mt-2 space-y-1">
-            <button type="button" onClick={() => onNaviguer("avances-pour-vous", "")} className="flex min-h-10 w-full items-center gap-3 rounded-md border-l-2 border-sage bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-navy hover:bg-navy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
+          <div className="mt-2 space-y-2">
+            <button type="button" onClick={() => onNaviguer("avances-pour-vous", "")} className="flex min-h-10 w-full items-center gap-3 rounded-md border border-sage/35 border-l-2 border-l-sage bg-white px-3 py-2.5 text-left text-sm font-bold text-ink transition-colors hover:border-sage/60 hover:bg-sage/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
               Pour vous
             </button>
-            <button type="button" onClick={() => toggleMatiere("avances-decouvrir")} className="flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:bg-white hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
-              <span className="flex items-center gap-3"><span className="flex h-6 w-6 items-center justify-center border border-line text-xs text-inkmuted">+</span>Découvrez aussi</span>
+            <button type="button" aria-expanded={ouvertes["avances-decouvrir"] ?? false} aria-controls="catalogue-avances-sidebar" onClick={() => toggleMatiere("avances-decouvrir")} className="flex min-h-10 w-full items-center justify-between gap-3 rounded-md border border-sage/35 bg-sage/10 px-3 py-2 text-left text-sm font-semibold text-ink transition-colors hover:border-sage/60 hover:bg-sage/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2">
+              <span className="flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-sage" aria-hidden="true">{ouvertes["avances-decouvrir"] ? "−" : "+"}</span>
+                Découvrez aussi
+              </span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={ouvertes["avances-decouvrir"] ? "h-4 w-4 rotate-90 transition-transform" : "h-4 w-4 transition-transform"}><polyline points="9 18 15 12 9 6" /></svg>
             </button>
-            {ouvertes["avances-decouvrir"] && <div className="ml-6 space-y-1 border-l border-line pl-3">
-              {matieresAvancees.map((matiere) => <button key={`avance-${matiere}`} type="button" onClick={() => onNaviguer(`avance-matiere-${matiere}`, matiere)} className="block w-full rounded px-2 py-1.5 text-left text-xs text-inkmuted hover:bg-white hover:text-navy">{matiere}</button>)}
-            </div>}
+            <div id="catalogue-avances-sidebar" hidden={!ouvertes["avances-decouvrir"]}>
+              <ListeCatalogue groupes={groupesAvances} prefixe="avance-matiere" onNaviguer={onNaviguer} />
+            </div>
           </div>
         </div>
       </nav>

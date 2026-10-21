@@ -7,7 +7,7 @@ import QuestionnaireFilters, { type FiltreQuestionnaire } from "../components/Qu
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { FORMATIONS } from "../data/formations";
-import { dedupliquerQuizParNotion, estQuizCompatibleAvecNiveau, formatDureeQuiz, formatNiveauQuiz, getScorePourcentage, uniformiserTitresQuestionnaires } from "../lib/catalogUtils";
+import { dedupliquerQuizParNotion, estQuizCompatibleAvecNiveau, formatDureeQuiz, formatNiveauQuiz, getScorePourcentage, grouperQuizParFormation, uniformiserTitresQuestionnaires } from "../lib/catalogUtils";
 
 interface QuizCard {
   id: string;
@@ -32,6 +32,12 @@ interface QuizCard {
 }
 
 type SelectionAnnee = number | null;
+
+interface FiltreSidebar {
+  matiere: string;
+  ciblesFormation: Array<string | null>;
+  formationCible?: string;
+}
 
 interface FiltresAnneeProps {
   annees: number[];
@@ -78,14 +84,17 @@ export default function QuestionnairesListPage() {
   const { session } = useSession();
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState<QuizCard[]>([]);
+  const [formationUtilisateur, setFormationUtilisateur] = useState<string | null>(null);
   const [domaineUtilisateur, setDomaineUtilisateur] = useState<string | null>(null);
   const [niveauUtilisateur, setNiveauUtilisateur] = useState<number | null>(null);
   const [estPro, setEstPro] = useState(false);
   const [recherche, setRecherche] = useState(() => new URLSearchParams(window.location.search).get("recherche") ?? "");
   const [filtre, setFiltre] = useState<FiltreQuestionnaire>("tous");
+  const [typeFormationFiltre, setTypeFormationFiltre] = useState("");
+  const [formationCatalogueFiltre, setFormationCatalogueFiltre] = useState("");
   const [matiereFiltre, setMatiereFiltre] = useState("");
-  const [matiereSidebarClassique, setMatiereSidebarClassique] = useState("");
-  const [matiereSidebarAvancee, setMatiereSidebarAvancee] = useState("");
+  const [filtreSidebarClassique, setFiltreSidebarClassique] = useState<FiltreSidebar | null>(null);
+  const [filtreSidebarAvancee, setFiltreSidebarAvancee] = useState<FiltreSidebar | null>(null);
   const [anneeSelectionnee, setAnneeSelectionnee] = useState<SelectionAnnee>(null);
   const [anneeAvanceeSelectionnee, setAnneeAvanceeSelectionnee] = useState<SelectionAnnee>(null);
   const [chargement, setChargement] = useState(true);
@@ -117,6 +126,7 @@ export default function QuestionnairesListPage() {
           setDomaineUtilisateur(domaine);
         }
       }
+      setFormationUtilisateur(formationChargee);
 
       const { data: quizPublics } = await supabase
         .from("quiz")
@@ -154,14 +164,7 @@ export default function QuestionnairesListPage() {
         ...(quizPublics || []).map((q: any) => ({ ...q, est_a_moi: false })),
         ...quizPersonnels.map((q: any) => ({ ...q, est_a_moi: true })),
       ];
-      const formationCibleDisponible = formationChargee
-        ? quizCharges.some((q: any) => !q.est_a_moi && q.formation_cible === formationChargee)
-        : false;
-      const tousLesQuiz = quizCharges.filter((q: any) => {
-        if (q.est_a_moi) return true;
-        if (formationCibleDisponible) return q.formation_cible === formationChargee;
-        return !q.formation_cible;
-      });
+      const tousLesQuiz = quizCharges;
 
       if (tousLesQuiz.length === 0) {
         setChargement(false);
@@ -229,7 +232,11 @@ export default function QuestionnairesListPage() {
     q.notions_couvertes.some((n) => n.toLowerCase().includes(rechercheLower));
 
   const estPourVous = (q: QuizCard) => {
-    if (!domaineUtilisateur || q.matiere_nom !== domaineUtilisateur) return false;
+    if (q.formation_cible) {
+      if (q.formation_cible !== formationUtilisateur) return false;
+    } else if (!domaineUtilisateur || q.matiere_nom !== domaineUtilisateur) {
+      return false;
+    }
     return estQuizCompatibleAvecNiveau(
       {
         type: q.type,
@@ -244,21 +251,47 @@ export default function QuestionnairesListPage() {
     );
   };
 
-  const matieresDisponibles = Array.from(new Set(quizzes.filter((q) => !q.est_a_moi).map((q) => q.matiere_nom).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const quizsPublics = quizzes.filter((q) => !q.est_a_moi);
+  const groupesCatalogueDisponibles = grouperQuizParFormation(quizsPublics);
+  const formationParQuiz = new Map<string, { type: string; formationId: string }>();
+  groupesCatalogueDisponibles.forEach((groupe) => {
+    groupe.formations.forEach((formation) => {
+      [...formation.quizs, ...formation.domaines.flatMap((domaine) => domaine.quizs)].forEach((quiz) => {
+        formationParQuiz.set(quiz.id, { type: groupe.type, formationId: formation.id });
+      });
+    });
+  });
+  const typesFormationDisponibles = groupesCatalogueDisponibles.map((groupe) => groupe.type);
+  const formationsDisponibles = groupesCatalogueDisponibles
+    .find((groupe) => groupe.type === typeFormationFiltre)
+    ?.formations.map(({ id, nom }) => ({ id, nom })) ?? [];
+  const matieresDisponibles = Array.from(new Set(quizsPublics
+    .filter((quiz) => {
+      const formationQuiz = formationParQuiz.get(quiz.id);
+      return (!typeFormationFiltre || formationQuiz?.type === typeFormationFiltre)
+        && (!formationCatalogueFiltre || formationQuiz?.formationId === formationCatalogueFiltre);
+    })
+    .map((quiz) => quiz.matiere_nom)
+    .filter(Boolean))).sort((a, b) => a.localeCompare(b, "fr"));
+  const correspondAuxFiltres = (q: QuizCard) => {
+    if (matiereFiltre && q.matiere_nom !== matiereFiltre) return false;
+    const formationQuiz = formationParQuiz.get(q.id);
+    if (typeFormationFiltre && formationQuiz?.type !== typeFormationFiltre) return false;
+    if (formationCatalogueFiltre && formationQuiz?.formationId !== formationCatalogueFiltre) return false;
+    if (filtre === "classiques") return !q.est_avance;
+    if (filtre === "avances") return q.est_avance;
+    return true;
+  };
   const standardsDisponibles = quizzes.filter((q) => !q.est_a_moi && !q.est_avance);
   const avancesDisponibles = quizzes.filter((q) => !q.est_a_moi && q.est_avance);
-  const matieresSidebarClassiques = Array.from(new Set(
-    (domaineUtilisateur ? standardsDisponibles.filter((q) => !estPourVous(q)) : standardsDisponibles)
-      .map((q) => q.matiere_nom)
-      .filter(Boolean),
-  )).sort((a, b) => a.localeCompare(b));
-  const matieresSidebarAvancees = Array.from(new Set(
-    (domaineUtilisateur ? avancesDisponibles.filter((q) => !estPourVous(q)) : avancesDisponibles)
-      .map((q) => q.matiere_nom)
-      .filter(Boolean),
-  )).sort((a, b) => a.localeCompare(b));
+  const groupesSidebarClassiques = grouperQuizParFormation(
+    domaineUtilisateur ? standardsDisponibles.filter((q) => !estPourVous(q)) : standardsDisponibles,
+  );
+  const groupesSidebarAvances = grouperQuizParFormation(
+    domaineUtilisateur ? avancesDisponibles.filter((q) => !estPourVous(q)) : avancesDisponibles,
+  );
   const resultatsRecherche = quizzes.filter(correspond);
-  const publics = resultatsRecherche.filter((q) => !q.est_a_moi);
+  const publics = resultatsRecherche.filter((q) => !q.est_a_moi && correspondAuxFiltres(q));
   const mesQuestionnaires = resultatsRecherche.filter((q) => q.est_a_moi);
 
   const standards = publics.filter((q) => !q.est_avance);
@@ -266,13 +299,6 @@ export default function QuestionnairesListPage() {
 
   const pourVous = domaineUtilisateur ? standards.filter(estPourVous) : [];
   const avancesPourVous = domaineUtilisateur ? avances.filter(estPourVous) : [];
-
-  const correspondAuxFiltres = (q: QuizCard) => {
-    if (matiereFiltre && q.matiere_nom !== matiereFiltre) return false;
-    if (filtre === "classiques") return !q.est_avance;
-    if (filtre === "avances") return q.est_avance;
-    return true;
-  };
 
   const prioriteType = (q: QuizCard) => {
     if (q.type === "global") return q.est_avance ? 1 : 0;
@@ -348,21 +374,27 @@ export default function QuestionnairesListPage() {
 
   const decouvrezAussi = (domaineUtilisateur ? standards.filter((q) => !estPourVous(q)) : standards)
     .filter(correspondAuxFiltres)
-    .filter((q) => !matiereSidebarClassique || q.matiere_nom === matiereSidebarClassique);
+    .filter((q) => !filtreSidebarClassique || (filtreSidebarClassique.formationCible
+      ? q.formation_cible === filtreSidebarClassique.formationCible
+      : q.matiere_nom === filtreSidebarClassique.matiere
+        && filtreSidebarClassique.ciblesFormation.includes(q.formation_cible)));
   const avancesDecouvrezAussi = (domaineUtilisateur ? avances.filter((q) => !estPourVous(q)) : avances)
     .filter(correspondAuxFiltres)
-    .filter((q) => !matiereSidebarAvancee || q.matiere_nom === matiereSidebarAvancee);
+    .filter((q) => !filtreSidebarAvancee || (filtreSidebarAvancee.formationCible
+      ? q.formation_cible === filtreSidebarAvancee.formationCible
+      : q.matiere_nom === filtreSidebarAvancee.matiere
+        && filtreSidebarAvancee.ciblesFormation.includes(q.formation_cible)));
 
   const sectionsPourVous = regrouperParMatiere(pourVous);
   const groupesPourVousParAnnee = regrouperParAnnee(filtrerParAnnee(pourVous, anneeSelectionnee));
   const anneesPourVous = Object.keys(compterParAnnee(pourVous)).map(Number).sort((a, b) => a - b);
   const comptesPourVous = compterParAnnee(pourVous);
-  const sectionsDecouvrezAussi = regrouperParMatiere(decouvrezAussi);
+  const sectionsDecouvrezAussi = grouperQuizParFormation(decouvrezAussi);
   const sectionsAvancesPourVous = regrouperParMatiere(avancesPourVous);
   const groupesAvancesPourVousParAnnee = regrouperParAnnee(filtrerParAnnee(avancesPourVous, anneeAvanceeSelectionnee));
   const anneesAvanceesPourVous = Object.keys(compterParAnnee(avancesPourVous)).map(Number).sort((a, b) => a - b);
   const comptesAvancesPourVous = compterParAnnee(avancesPourVous);
-  const sectionsAvancesDecouvrezAussi = regrouperParMatiere(avancesDecouvrezAussi);
+  const sectionsAvancesDecouvrezAussi = grouperQuizParFormation(avancesDecouvrezAussi);
 
   function handleClic(quizId: string) {
     navigate(session?.user ? `/questionnaires/${quizId}` : "/connexion");
@@ -385,18 +417,25 @@ export default function QuestionnairesListPage() {
     setQuizASupprimer(null);
   }
 
-  function naviguerVersSection(cible: string, terme: string) {
+  function naviguerVersSection(
+    cible: string,
+    terme: string,
+    ciblesFormation: Array<string | null> = [null],
+    formationCible?: string,
+  ) {
     const estMatiereClassique = cible.startsWith("matiere-");
     const estMatiereAvancee = cible.startsWith("avance-matiere-");
     setRecherche(estMatiereClassique || estMatiereAvancee ? "" : terme);
     setFiltre("tous");
+    setTypeFormationFiltre("");
+    setFormationCatalogueFiltre("");
     setMatiereFiltre("");
     if (cible === "pour-vous") setAnneeSelectionnee(null);
     if (cible === "avances-pour-vous") setAnneeAvanceeSelectionnee(null);
-    if (estMatiereClassique) setMatiereSidebarClassique(terme);
-    if (estMatiereAvancee) setMatiereSidebarAvancee(terme);
-    if (cible === "pour-vous") setMatiereSidebarClassique("");
-    if (cible === "avances-pour-vous") setMatiereSidebarAvancee("");
+    if (estMatiereClassique) setFiltreSidebarClassique({ matiere: terme, ciblesFormation, formationCible });
+    if (estMatiereAvancee) setFiltreSidebarAvancee({ matiere: terme, ciblesFormation, formationCible });
+    if (cible === "pour-vous") setFiltreSidebarClassique(null);
+    if (cible === "avances-pour-vous") setFiltreSidebarAvancee(null);
     setSectionAnimee(cible);
     window.setTimeout(() => {
       document.getElementById(cible)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -462,6 +501,83 @@ export default function QuestionnairesListPage() {
     );
   }
 
+  function rendreSectionsCatalogue(
+    groupes: ReturnType<typeof grouperQuizParFormation<QuizCard>>,
+    prefixe: "matiere" | "avance-matiere",
+  ) {
+    const filtreActif = prefixe === "matiere" ? filtreSidebarClassique : filtreSidebarAvancee;
+    const ouvrirTouteLaFormation = (type: string) => type === "BTS" || type === "BUT";
+    return (
+      <div className="mt-6 border-t border-line pt-2">
+        {groupes.map((groupe) => {
+          return (
+            <section key={groupe.type}>
+              <div>
+                {groupe.formations.map((formation) => {
+                  const quizsFormation = ouvrirTouteLaFormation(groupe.type)
+                    ? formation.domaines.flatMap((domaine) => domaine.quizs)
+                    : formation.quizs;
+                  const nombreQuizFormation = formation.quizs.length + formation.domaines.reduce((total, domaine) => total + domaine.quizs.length, 0);
+                  const formationSelectionnee = filtreActif?.formationCible === formation.nom
+                    || formation.quizs.some((quiz) =>
+                      quiz.matiere_nom === filtreActif?.matiere
+                      && filtreActif.ciblesFormation.includes(quiz.formation_cible)
+                    );
+                  const domaineSelectionne = formation.domaines.some((domaine) =>
+                    domaine.nom === filtreActif?.matiere
+                    && filtreActif.ciblesFormation.includes(domaine.formationCible)
+                  );
+                  return (
+                    <details
+                      key={formation.id}
+                      className="group border-b border-line"
+                      open={formationSelectionnee || domaineSelectionne}
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 marker:hidden hover:text-navy">
+                        <span className="font-display text-base font-bold text-ink">
+                          {groupe.type} {formation.nom}
+                        </span>
+                        <span className="flex shrink-0 items-center gap-2 text-xs text-inkmuted">
+                          {nombreQuizFormation} questionnaire{nombreQuizFormation === 1 ? "" : "s"}
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                        </span>
+                      </summary>
+                      <div className="space-y-5 pb-5 pt-1">
+                        {formation.domaines.length > 0 && !ouvrirTouteLaFormation(groupe.type)
+                          ? formation.domaines.map((domaine) => (
+                            <section key={domaine.id} id={`${prefixe}-${domaine.id}`} className="scroll-mt-24">
+                              <div className="mb-3 flex items-center justify-between gap-3">
+                                <h4 className="font-display text-sm font-bold text-ink">{domaine.nom}</h4>
+                                <span className="text-[11px] text-inkmuted">{domaine.quizs.length} questionnaire{domaine.quizs.length === 1 ? "" : "s"}</span>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                {[...domaine.quizs]
+                                  .sort((a, b) => prioriteType(a) - prioriteType(b) || a.titre.localeCompare(b.titre, "fr"))
+                                  .map((quiz) => <Carte key={quiz.id} q={quiz} />)}
+                              </div>
+                            </section>
+                          ))
+                          : (
+                            <section id={`${prefixe}-${formation.id}`} className="scroll-mt-24">
+                              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                {[...quizsFormation]
+                                  .sort((a, b) => prioriteType(a) - prioriteType(b) || a.titre.localeCompare(b.titre, "fr"))
+                                  .map((quiz) => <Carte key={quiz.id} q={quiz} />)}
+                              </div>
+                            </section>
+                          )}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <Header />
@@ -469,8 +585,8 @@ export default function QuestionnairesListPage() {
         reduit={sidebarReduite}
         onToggle={setSidebarReduite}
         onNaviguer={naviguerVersSection}
-        matieresClassiques={matieresSidebarClassiques}
-        matieresAvancees={matieresSidebarAvancees}
+        groupesClassiques={groupesSidebarClassiques}
+        groupesAvances={groupesSidebarAvances}
         estPro={estPro}
       />
 
@@ -480,7 +596,7 @@ export default function QuestionnairesListPage() {
             <div>
               <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-navy">Bibliothèque de révision</p>
               <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Questionnaires</h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-inkmuted">Choisis une matière ou avance notion par notion. Valide tes acquis à travers des questions de type QCM et QCU.</p>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-inkmuted">Parcours le catalogue par type de formation, formation et domaine, puis révise notion par notion.</p>
             </div>
             {estPro && (
               <button
@@ -494,7 +610,59 @@ export default function QuestionnairesListPage() {
             )}
           </div>
 
-          <aside aria-label="Informations sur les formations et contact" className="mb-8 flex flex-col gap-4 border border-line border-l-4 border-l-highlight bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <QuestionnaireFilters
+            valeur={filtre}
+            onChange={(valeur) => {
+              setFiltre(valeur);
+              setFiltreSidebarClassique(null);
+              setFiltreSidebarAvancee(null);
+            }}
+            recherche={recherche}
+            onRechercheChange={(valeur) => {
+              setRecherche(valeur);
+              if (valeur.trim()) {
+                setAnneeSelectionnee(null);
+                setAnneeAvanceeSelectionnee(null);
+              }
+            }}
+            typesFormation={typesFormationDisponibles}
+            typeFormationSelectionne={typeFormationFiltre}
+            onTypeFormationChange={(type) => {
+              setTypeFormationFiltre(type);
+              setFormationCatalogueFiltre("");
+              setMatiereFiltre("");
+              setFiltreSidebarClassique(null);
+              setFiltreSidebarAvancee(null);
+            }}
+            formations={formationsDisponibles}
+            formationSelectionnee={formationCatalogueFiltre}
+            onFormationChange={(formationId) => {
+              setFormationCatalogueFiltre(formationId);
+              setMatiereFiltre("");
+              setFiltreSidebarClassique(null);
+              setFiltreSidebarAvancee(null);
+            }}
+            matieres={matieresDisponibles}
+            matiereSelectionnee={matiereFiltre}
+            onMatiereChange={(matiere) => {
+              setMatiereFiltre(matiere);
+              setFiltreSidebarClassique(null);
+              setFiltreSidebarAvancee(null);
+            }}
+            onReinitialiser={() => {
+              setRecherche("");
+              setFiltre("tous");
+              setTypeFormationFiltre("");
+              setFormationCatalogueFiltre("");
+              setMatiereFiltre("");
+              setFiltreSidebarClassique(null);
+              setFiltreSidebarAvancee(null);
+            }}
+          />
+
+          {erreurGestion && <p role="alert" className="mt-4 text-sm text-red-700">{erreurGestion}</p>}
+
+          <aside aria-label="Informations sur les formations et contact" className="mt-8 flex flex-col gap-4 border border-line border-l-4 border-l-highlight bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <h2 className="font-display text-lg font-bold">La bibliothèque va s'agrandir.</h2>
               <p className="mt-1 max-w-3xl text-sm leading-6 text-inkmuted">
@@ -505,43 +673,13 @@ export default function QuestionnairesListPage() {
               Formulaire de contact
             </Link>
           </aside>
-
-          <div className="relative max-w-2xl">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
-              <circle cx="11" cy="11" r="6.5" />
-              <path d="m16 16 4 4" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Rechercher une matière, une notion..."
-              value={recherche}
-              onChange={(e) => {
-                setRecherche(e.target.value);
-                if (e.target.value.trim()) {
-                  setAnneeSelectionnee(null);
-                  setAnneeAvanceeSelectionnee(null);
-                }
-              }}
-              className="min-h-11 w-full rounded-md border border-line bg-white py-3 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-inkmuted/70 focus:border-navy focus:ring-2 focus:ring-highlight/50 focus:ring-offset-1"
-            />
-          </div>
-
-          <QuestionnaireFilters
-            valeur={filtre}
-            onChange={setFiltre}
-            matieres={matieresDisponibles}
-            matiereSelectionnee={matiereFiltre}
-            onMatiereChange={setMatiereFiltre}
-          />
-
-          {erreurGestion && <p role="alert" className="mt-4 text-sm text-red-700">{erreurGestion}</p>}
-
+          
           {chargement ? (
             <p className="mt-8 text-sm text-inkmuted">Chargement...</p>
           ) : (
             <>
               {estPro && (
-                <section id="mes-questionnaires" className="mt-12 scroll-mt-24">
+                <section id="mes-questionnaires" className="mt-10 scroll-mt-24">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-inkmuted ">Espace personnel</p>
                   <h2 className="mt-2 border-b border-line pb-5 font-display text-2xl font-extrabold">Mes questionnaires</h2>
                   {mesQuestionnaires.length === 0 ? (
@@ -564,7 +702,7 @@ export default function QuestionnairesListPage() {
                 </section>
               )}
 
-              {resultatsRecherche.length === 0 ? (
+              {publics.length + mesQuestionnaires.length === 0 ? (
                 <p className="mt-8 text-sm text-inkmuted">Aucun questionnaire ne correspond à tes critères.</p>
               ) : (
                 <>
@@ -618,21 +756,7 @@ export default function QuestionnairesListPage() {
                       <h2 className="mt-2 font-display text-2xl font-extrabold">
                         {domaineUtilisateur ? "Découvrez aussi" : "Tous les questionnaires"}
                       </h2>
-                      <div className="mt-6 space-y-10 border-t border-line pt-6">
-                        {sectionsDecouvrezAussi.map(({ matiere, quizs }) => (
-                          <div key={matiere} id={`matiere-${matiere}`}>
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                              <div>
-                                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-inkmuted">Matière</p>
-                                <h3 className="mt-1 font-display text-xl font-extrabold">{matiere}</h3>
-                              </div>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                              {quizs.map((q) => <Carte key={q.id} q={q} />)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      {rendreSectionsCatalogue(sectionsDecouvrezAussi, "matiere")}
                     </section>
                   )}
 
@@ -699,21 +823,7 @@ export default function QuestionnairesListPage() {
                             <h2 className="mt-2 font-display text-2xl font-extrabold">
                               {domaineUtilisateur ? "Découvrez aussi" : "Tous les questionnaires avancés"}
                             </h2>
-                            <div className="mt-6 space-y-10">
-                              {sectionsAvancesDecouvrezAussi.map(({ matiere, quizs }) => (
-                                <div key={matiere} id={`avance-matiere-${matiere}`}>
-                                  <div className="mb-4 flex items-center justify-between gap-3">
-                                    <div>
-                                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-inkmuted">Matière</p>
-                                      <h3 className="mt-1 font-display text-xl font-extrabold">{matiere}</h3>
-                                    </div>
-                                  </div>
-                                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                    {quizs.map((q) => <Carte key={q.id} q={q} />)}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                            {rendreSectionsCatalogue(sectionsAvancesDecouvrezAussi, "avance-matiere")}
                           </div>
                         )}
                       </div>

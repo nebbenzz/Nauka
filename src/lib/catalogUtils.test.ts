@@ -6,6 +6,7 @@ import {
   dedupliquerQuizParNotion,
   formatDureeQuiz,
   formatNiveauQuiz,
+  grouperQuizParFormation,
   getPreviewNotions,
   getScorePourcentage,
   uniformiserTitresQuestionnaires,
@@ -34,6 +35,25 @@ test("getPreviewNotions caps the preview to 3 items", () => {
     "Responsabilité civile",
     "Obligations",
   ]);
+});
+
+test("grouperQuizParFormation sépare Licence et Master et conserve les formations spécialisées", () => {
+  const groupes = grouperQuizParFormation([
+    { formation_cible: "L2 Droit", matiere_nom: "Droit", titre: "Introduction au droit" },
+    { formation_cible: "M1 Gestion", matiere_nom: "Gestion", titre: "Comptabilité avancée" },
+    { formation_cible: "BTS Comptabilité et Gestion", matiere_nom: "Gestion", titre: "Comptabilité générale" },
+    { formation_cible: "BUT Techniques de Commercialisation", matiere_nom: "Techniques de commercialisation", titre: "Marketing fondamental" },
+  ]);
+
+  assert.deepEqual(groupes.map((groupe) => groupe.type), ["Licence", "Master", "BTS", "BUT"]);
+  assert.equal(groupes[0].formations[0].nom, "Droit");
+  assert.equal(groupes[0].formations[0].quizs[0].titre, "Introduction au droit");
+  assert.equal(groupes[1].formations[0].nom, "Gestion");
+  assert.equal(groupes[1].formations[0].quizs[0].titre, "Comptabilité avancée");
+  assert.equal(groupes[2].formations[0].nom, "BTS Comptabilité et Gestion");
+  assert.equal(groupes[2].formations[0].domaines[0].formationCible, "BTS Comptabilité et Gestion");
+  assert.equal(groupes[3].formations[0].nom, "BUT Techniques de Commercialisation");
+  assert.equal(groupes[3].formations[0].domaines[0].nom, "Techniques de commercialisation");
 });
 
 test("estQuizCompatibleAvecNiveau filters out higher-year concepts for L1 students", () => {

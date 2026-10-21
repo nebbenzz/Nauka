@@ -5,6 +5,8 @@ import { droitMatiere, droitQuestions, droitQuizzes, quizzesAgregesDroit, quizze
 import { sciencesVieMatiere, sciencesVieQuestions, sciencesVieQuizzes } from "../src/data/seed/sciences-vie";
 import { btsGestionMatiere, btsGestionQuestions, btsGestionQuizzes } from "../src/data/seed/bts-gestion";
 import { btsInformatiqueQuestions, btsInformatiqueQuizzes } from "../src/data/seed/bts-informatique";
+import { butTcMatiere, butTcQuestions, butTcQuizzes } from "../src/data/seed/but-tc";
+import { psychologieMatiere, psychologieQuestions, psychologieQuizzes } from "../src/data/seed/psychologie";
 import { creerQuizMatiereParNiveau, creerQuizNotionParNiveau } from "../src/lib/quizSeedGroups";
 import type { QuestionSeed, QuizSeed } from "../src/data/seed/types";
 
@@ -20,7 +22,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 const MAX_QUESTIONS_PAR_QUIZ = 10;
-const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "bts-gestion", "regroupements"]);
+const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "bts-gestion", "psychologie", "but-tc", "regroupements"]);
 const matiereCible = process.argv[2]?.trim().toLowerCase();
 
 async function upsertMatiere(nom: string, description: string): Promise<string> {
@@ -99,8 +101,20 @@ async function seedMatiere(
     : {};
   const questionsACharger = seulementGroupes ? [] : questions;
   const notionsAgregees = quizzes.flatMap((quiz) => quiz.notionsIncluses ?? []);
-  const quizNotionsParNiveau = seulementGroupes ? [] : creerQuizNotionParNiveau(questions, notionsAgregees, quizzes);
-  const quizMatiereParNiveau = seulementGroupes ? [] : creerQuizMatiereParNiveau(matiere.nom, questions, quizzes);
+  const ciblesFormation = new Set(quizzes.map((quiz) => quiz.formationCible ?? null));
+  const formationCibleParDefaut = ciblesFormation.size === 1 ? quizzes[0]?.formationCible : undefined;
+  const quizNotionsParNiveau = seulementGroupes
+    ? []
+    : creerQuizNotionParNiveau(questions, notionsAgregees, quizzes).map((quiz) => ({
+      ...quiz,
+      formationCible: quiz.formationCible ?? formationCibleParDefaut,
+    }));
+  const quizMatiereParNiveau = seulementGroupes
+    ? []
+    : creerQuizMatiereParNiveau(matiere.nom, questions, quizzes).map((quiz) => ({
+      ...quiz,
+      formationCible: quiz.formationCible ?? formationCibleParDefaut,
+    }));
   const tousLesQuiz = [...quizzes, ...quizNotionsParNiveau, ...quizMatiereParNiveau];
 
   for (const q of questionsACharger) {
@@ -322,6 +336,8 @@ async function main() {
   if (!matiereCible || matiereCible === "droit") await seedMatiere(droitMatiere, droitQuestions, droitQuizzes);
   if (!matiereCible || matiereCible === "sciences-vie") await seedMatiere(sciencesVieMatiere, sciencesVieQuestions, sciencesVieQuizzes);
   if (!matiereCible || matiereCible === "bts-gestion") await seedMatiere(btsGestionMatiere, btsGestionQuestions, btsGestionQuizzes);
+  if (!matiereCible || matiereCible === "psychologie") await seedMatiere(psychologieMatiere, psychologieQuestions, psychologieQuizzes);
+  if (!matiereCible || matiereCible === "but-tc") await seedMatiere(butTcMatiere, butTcQuestions, butTcQuizzes);
   console.log("\nSeeding terminé.");
 }
 
