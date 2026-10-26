@@ -49,22 +49,12 @@ export default function ProfileBubble({ userId }: Props) {
         aria-expanded={ouvert}
         className="relative flex h-14 w-16 items-center justify-center text-ink transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2"
       >
-        <svg viewBox="-20 0 500 360" fill="none" aria-hidden="true" className="absolute inset-0 h-full w-full">
-          <path
-            d="M200.3,100.8 A65,65 0 1 1 330.0,95.0 A32,32 0 0 1 381.6,132.7 A48,48 0 1 1 380.6,227.1 A36,36 0 0 1 315.2,242.2 A38,38 0 0 1 242.9,219.6 A70,70 0 0 1 240.0,219.3 A40,40 0 0 1 165.7,240.6 A40,40 0 0 1 95.1,212.5 A52,52 0 0 1 147.2,123.0 A60,60 0 0 1 151.6,118.9 A25,25 0 1 1 198.8,102.3 A70,70 0 0 1 200.3,100.8 Z"
-            fill="#ffffff"
-            stroke="#000000"
-            strokeWidth="6"
-            strokeLinejoin="round"
-          />
-          <g fill="#ffffff" stroke="#000000" strokeWidth="6">
-            <path transform="translate(-20 -35)" d="M58 339c-9 0-16-7-16-16 0-8 5-14 13-16 3-10 12-17 23-17 11 0 20 7 22 17 9-1 17 6 17 15 0 9-7 17-17 17H58Z" />
-            <path transform="translate(-30 -50)" d="M30 389c-8 0-13-5-13-12 0-6 4-11 11-12 2-8 9-13 17-13 8 0 15 5 17 12 7-.5 13 5 13 12 0 7-6 13-13 13H30Z" />
-          </g>
-          <text x="252" y="167" fill="#000000" fontFamily="sans-serif" fontSize="86" fontWeight="800" textAnchor="middle" dominantBaseline="middle">
-            {initiales}
-          </text>
-        </svg>
+        <span className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <img src="/nuage.png?v=3" alt="" className="absolute left-[-17px] top-[-75px] h-[158px] w-[110px] max-w-none" />
+        </span>
+        <span className="absolute left-[57%] top-[42%] z-10 -translate-x-1/2 -translate-y-1/2 text-[11px] font-extrabold leading-none text-ink" aria-hidden="true">
+          {initiales}
+        </span>
       </button>
       {ouvert && (
         <div className="absolute right-0 z-20 mt-3 w-60 rounded-xl border border-navy/15 bg-[#FFFEFA] p-2 text-ink">

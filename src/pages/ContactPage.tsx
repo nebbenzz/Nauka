@@ -68,7 +68,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-paper">
       <Header />
       <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-        <section className="flex min-h-72 flex-col justify-center border-l-4 border-highlight bg-navy p-8 text-paper sm:p-10 lg:mt-4 lg:min-h-full lg:p-12">
+        <section className="flex min-h-72 flex-col justify-center border-l-4 border-highlight bg-navy p-8 text-paper sm:p-10 lg:min-h-full lg:p-12">
           <div>
             <p className="font-mono text-xs uppercase tracking-widest text-highlight">Formulaire d'aide</p>
             <h1 className="mt-6 max-w-sm font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{TITRES_SUJET[sujet]}</h1>
@@ -102,7 +102,7 @@ export default function ContactPage() {
                   required
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-sm text-ink shadow-sm outline-none transition-all duration-200 focus:border-navy focus:ring-2 focus:ring-navy/10"
+                                    className="mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-navy"
                 />
               </div>
               <div>
@@ -113,7 +113,7 @@ export default function ContactPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-sm text-ink shadow-sm outline-none transition-all duration-200 focus:border-navy focus:ring-2 focus:ring-navy/10"
+                                    className="mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-navy"
                 />
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function ContactPage() {
                   id="sujet"
                   value={sujet}
                   onChange={(e) => setSujet(e.target.value as any)}
-                  className="w-full appearance-none rounded-xl border border-line bg-paper px-3 py-2.5 pr-10 text-sm text-ink shadow-sm outline-none transition-all duration-200 focus:border-navy focus:ring-2 focus:ring-navy/10"
+                  className="w-full appearance-none border border-line bg-white px-3 py-2.5 pr-10 text-sm text-ink outline-none focus:border-navy"
                 >
                   <option value="probleme">Signaler un problème</option>
                   <option value="commentaire">Laisser un commentaire</option>
@@ -149,7 +149,7 @@ export default function ContactPage() {
                 rows={6}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-3 text-sm text-ink shadow-sm outline-none transition-all duration-200 focus:border-navy focus:ring-2 focus:ring-navy/10"
+                className="mt-1 w-full border border-line bg-white px-3 py-3 text-sm text-ink outline-none focus:border-navy"
               />
             </div>
 
@@ -168,7 +168,7 @@ export default function ContactPage() {
 
             {erreur && <p className="text-sm text-red-600">{erreur}</p>}
 
-            <button type="submit" disabled={envoi} className="w-full rounded-xl bg-navy px-6 py-3 text-sm font-bold text-paper shadow-sm transition-all duration-200 hover:bg-ink disabled:opacity-60">
+            <button type="submit" disabled={envoi} className="w-full bg-navy px-6 py-3 text-sm font-bold text-paper transition-colors hover:bg-ink disabled:opacity-60">
               {envoi ? "Envoi..." : "Envoyer le message"}
             </button>
           </form>
