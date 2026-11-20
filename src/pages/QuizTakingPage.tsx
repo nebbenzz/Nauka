@@ -444,9 +444,15 @@ export default function QuizTakingPage() {
         } else if (detail?.error && typeof detail.error === "object") {
           const erreurs = detail.error as { formErrors?: unknown; fieldErrors?: Record<string, unknown> };
           const messages = [
-            ...(Array.isArray(erreurs.formErrors) ? erreurs.formErrors : []),
-            ...Object.values(erreurs.fieldErrors ?? {}).flatMap((valeurs) => Array.isArray(valeurs) ? valeurs : []),
-          ].filter((message): message is string => typeof message === "string");
+            ...(Array.isArray(erreurs.formErrors)
+              ? erreurs.formErrors.filter((message): message is string => typeof message === "string")
+              : []),
+            ...Object.entries(erreurs.fieldErrors ?? {}).flatMap(([champ, valeurs]) =>
+              Array.isArray(valeurs)
+                ? valeurs.filter((message): message is string => typeof message === "string").map((message) => `${champ}: ${message}`)
+                : []
+            ),
+          ];
           if (messages.length > 0) messageErreur = messages.join(" ");
         }
       }
