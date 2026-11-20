@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
+import { biologieReproductionMatiere, biologieReproductionQuestions, biologieReproductionQuizzes } from "../src/data/seed/biologie-reproduction";
+import { biologiePhysiologieReproductionMatiere, biologiePhysiologieReproductionQuestions, biologiePhysiologieReproductionQuizzes } from "../src/data/seed/biologie-physiologie-reproduction";
 import { informatiqueMatiere, informatiqueQuestions, informatiqueQuizzes, quizzesAgregesInformatique, quizzesLicenceInformatiqueLaRochelle } from "../src/data/seed/informatique";
 import { droitMatiere, droitQuestions, droitQuizzes, quizzesAgregesDroit, quizzesLicenceDroitLaRochelle } from "../src/data/seed/droit";
 import { sciencesVieMatiere, sciencesVieQuestions, sciencesVieQuizzes } from "../src/data/seed/sciences-vie";
@@ -22,7 +24,7 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 const MAX_QUESTIONS_PAR_QUIZ = 10;
-const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "bts-gestion", "psychologie", "but-tc", "regroupements"]);
+const matieresDisponibles = new Set(["informatique", "licence-informatique", "droit", "licence-droit", "sciences-vie", "biologie-reproduction", "biologie-physiologie-reproduction", "bts-gestion", "psychologie", "but-tc", "regroupements"]);
 const matiereCible = process.argv[2]?.trim().toLowerCase();
 
 async function upsertMatiere(nom: string, description: string): Promise<string> {
@@ -335,6 +337,8 @@ async function main() {
   }
   if (!matiereCible || matiereCible === "droit") await seedMatiere(droitMatiere, droitQuestions, droitQuizzes);
   if (!matiereCible || matiereCible === "sciences-vie") await seedMatiere(sciencesVieMatiere, sciencesVieQuestions, sciencesVieQuizzes);
+  if (!matiereCible || matiereCible === "biologie-reproduction") await seedMatiere(biologieReproductionMatiere, biologieReproductionQuestions, biologieReproductionQuizzes);
+  if (!matiereCible || matiereCible === "biologie-physiologie-reproduction") await seedMatiere(biologiePhysiologieReproductionMatiere, biologiePhysiologieReproductionQuestions, biologiePhysiologieReproductionQuizzes);
   if (!matiereCible || matiereCible === "bts-gestion") await seedMatiere(btsGestionMatiere, btsGestionQuestions, btsGestionQuizzes);
   if (!matiereCible || matiereCible === "psychologie") await seedMatiere(psychologieMatiere, psychologieQuestions, psychologieQuizzes);
   if (!matiereCible || matiereCible === "but-tc") await seedMatiere(butTcMatiere, butTcQuestions, butTcQuizzes);
