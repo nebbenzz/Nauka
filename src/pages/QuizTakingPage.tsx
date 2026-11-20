@@ -436,7 +436,21 @@ export default function QuizTakingPage() {
     setEnvoi(false);
 
     if (error) {
-      setErreur("Une erreur est survenue lors de l'enregistrement du résultat.");
+      let messageErreur = "Une erreur est survenue lors de l'enregistrement du résultat.";
+      if ("context" in error && error.context instanceof Response) {
+        const detail = await error.context.clone().json().catch(() => null);
+        if (typeof detail?.error === "string") {
+          messageErreur = detail.error;
+        } else if (detail?.error && typeof detail.error === "object") {
+          const erreurs = detail.error as { formErrors?: unknown; fieldErrors?: Record<string, unknown> };
+          const messages = [
+            ...(Array.isArray(erreurs.formErrors) ? erreurs.formErrors : []),
+            ...Object.values(erreurs.fieldErrors ?? {}).flatMap((valeurs) => Array.isArray(valeurs) ? valeurs : []),
+          ].filter((message): message is string => typeof message === "string");
+          if (messages.length > 0) messageErreur = messages.join(" ");
+        }
+      }
+      setErreur(messageErreur);
       return;
     }
     if (data?.error) {
