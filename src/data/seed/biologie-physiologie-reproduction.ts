@@ -1,0 +1,137 @@
+import type { QuestionSeed, QuizSeed } from "./types";
+
+export const biologiePhysiologieReproductionMatiere = {
+  nom: "Biologie et physiologie de la reproduction",
+  description: "Physiologie hormonale et anatomie-histologie des appareils génitaux mâles et femelles — Licence 3 Biologie, semestre 5.",
+};
+
+const notions = {
+  axeEtAppareilMale: "Axe hormonal et appareil génital mâle (S5)",
+  testicule: "Testicule, spermatogenèse et barrière hémato-testiculaire (S5)",
+  appareilFemelle: "Appareil génital femelle et folliculogenèse (S5)",
+} as const;
+
+type NotionKey = keyof typeof notions;
+
+function creerQuestion(
+  id: string,
+  notion: NotionKey,
+  type: "qcm" | "qcu",
+  intitule: string,
+  explication: string,
+  reponsesCorrectes: string[],
+  distracteurs: string[],
+): QuestionSeed {
+  const reponsesInitiales = [
+    ...reponsesCorrectes.map((texte) => [texte, true] as const),
+    ...distracteurs.map((texte) => [texte, false] as const),
+  ];
+  const decalage = Number(id.slice(-2)) % reponsesInitiales.length;
+  const reponsesMelangees = [...reponsesInitiales.slice(decalage), ...reponsesInitiales.slice(0, decalage)];
+
+  return {
+    id,
+    notion: notions[notion],
+    niveau: 3,
+    type,
+    intitule,
+    explication,
+    reponses: reponsesMelangees.map(([texte, correcte]) => ({ texte, correcte })),
+  };
+}
+
+function qcu(
+  id: string,
+  notion: NotionKey,
+  intitule: string,
+  explication: string,
+  reponseCorrecte: string,
+  distracteurs: [string, string, string],
+): QuestionSeed {
+  return creerQuestion(id, notion, "qcu", intitule, explication, [reponseCorrecte], distracteurs);
+}
+
+function qcm(
+  id: string,
+  notion: NotionKey,
+  intitule: string,
+  explication: string,
+  reponsesCorrectes: [string, string],
+  distracteurs: [string, string],
+): QuestionSeed {
+  return creerQuestion(id, notion, "qcm", intitule, explication, reponsesCorrectes, distracteurs);
+}
+
+export const biologiePhysiologieReproductionQuestions: QuestionSeed[] = [
+  qcu("bpr-nia-01", "axeEtAppareilMale", "Quelle hormone est produite par l'hypothalamus dans l'axe de contrôle présenté ?", "L'hypothalamus produit la GnRH, qui intervient dans le contrôle de l'axe reproducteur.", "La GnRH", ["La FSH", "La LH", "La progestérone"]),
+  qcm("bpr-nia-02", "axeEtAppareilMale", "Quelles hormones sont produites par l'adénohypophyse ?", "L'adénohypophyse sécrète la FSH et la LH dans le schéma général de l'axe hormonal.", ["La FSH", "La LH"], ["La GnRH", "La testostérone"]),
+  qcu("bpr-nia-03", "axeEtAppareilMale", "Quel type d'hormones est notamment produit par les tissus gonadiques ?", "Les gonades produisent des hormones sexuelles, notamment des hormones stéroïdes.", "Des hormones stéroïdes", ["Des enzymes digestives", "Des anticorps", "Des hormones produites uniquement par l'hypothalamus"]),
+  qcm("bpr-nia-04", "axeEtAppareilMale", "Quels facteurs environnementaux ou socio-biologiques peuvent influencer la reproduction ?", "Les exemples incluent notamment le stress, la vision, l'olfaction, la lumière, la température et les polluants.", ["Le stress", "La température"], ["La couleur des globules polaires", "Le nombre de lobules pulmonaires"]),
+  qcu("bpr-nia-05", "axeEtAppareilMale", "Quel est le rôle général des glandes exocrines de l'appareil génital mâle ?", "Leurs sécrétions contribuent notamment à la survie des spermatozoïdes et à leur capacité fécondante.", "Produire des sécrétions utiles aux spermatozoïdes", ["Produire les ovocytes", "Réaliser la méiose dans l'urètre", "Former la barrière hémato-testiculaire"]),
+  qcu("bpr-nia-06", "axeEtAppareilMale", "Quel conduit reçoit les spermatozoïdes à la sortie du testicule ?", "L'épididyme est le conduit situé à la sortie du testicule où les spermatozoïdes peuvent séjourner et mûrir.", "L'épididyme", ["L'urètre", "Le col de l'utérus", "La vésicule séminale"]),
+  qcu("bpr-nia-07", "axeEtAppareilMale", "Combien de temps les spermatozoïdes peuvent-ils rester dans l'épididyme humain ?", "Un séjour pouvant atteindre environ 70 jours dans l'épididyme humain.", "Jusqu'à environ 70 jours", ["Quelques minutes", "Environ 4 à 6 jours", "Toute la vie de l'individu"]),
+  qcm("bpr-nia-08", "axeEtAppareilMale", "Quelles parties composent l'épididyme ?", "L'épididyme est décrit en trois parties : la tête, le corps et la queue.", ["La tête", "La queue"], ["Le col", "L'antrum"]),
+  qcu("bpr-nia-09", "axeEtAppareilMale", "Quelle structure se forme à la jonction du canal déférent et d'un conduit issu des vésicules séminales ?", "Le canal déférent rejoint un conduit issu des vésicules séminales pour former le canal éjaculateur.", "Le canal éjaculateur", ["Le canal épididymaire", "Le canal cervical", "La rete testis"]),
+  qcm("bpr-nia-10", "axeEtAppareilMale", "Quelles glandes sont citées parmi les glandes mineures de l'appareil génital mâle ?", "Les ?l?ments comprennent les glandes de Cowper, de Littré et de Tyson parmi les glandes mineures.", ["Les glandes de Cowper", "Les glandes de Littré"], ["Les cellules de Leydig", "Les cellules de la granulosa"]),
+  qcu("bpr-nia-31", "axeEtAppareilMale", "Quelle stratégie de reproduction décrit la viviparité ?", "En viviparité, l'embryon se développe dans une cavité interne et dépend complètement des apports maternels.", "L'embryon se développe dans une cavité interne et dépend de la mère", ["Les gamètes sont déposés dans l'eau", "L'embryon se développe dans un œuf sans apport maternel", "Un individu produit un clone par bourgeonnement"]),
+  qcu("bpr-nia-32", "axeEtAppareilMale", "Combien de testicules les mammifères possèdent-ils ?", "Tous les mammifères possèdent des testicules jumelés.", "Deux testicules jumelés", ["Un seul testicule fonctionnel", "Quatre testicules", "Un testicule uniquement pendant la puberté"]),
+  qcu("bpr-nia-33", "axeEtAppareilMale", "Quelle est la position des testicules chez la plupart des mammifères ?", "Chez la plupart des espèces, les testicules migrent vers l'extérieur; certaines espèces de mammifères marins font exception.", "Ils migrent vers l'extérieur, sauf chez certaines espèces comme des mammifères marins", ["Ils restent toujours dans la cavité thoracique", "Ils migrent vers l'ovaire", "Ils sont externes chez toutes les espèces sans exception"]),
+  qcu("bpr-nia-34", "axeEtAppareilMale", "Quel système nerveux contrôle le diamètre des vaisseaux sanguins testiculaires ?", "Le système nerveux sympathique, via l'adrénaline, contrôle le diamètre des vaisseaux qui irriguent les testicules.", "Le système nerveux sympathique", ["Le système parasympathique uniquement", "Le système lymphatique", "Le système nerveux entérique"]),
+  qcm("bpr-nia-35", "axeEtAppareilMale", "Quelles caractéristiques de la vascularisation testiculaire sont mentionnées ?", "Décrit deux artères apportant le sang et un réseau veineux pampiniforme qui entoure le système artériel.", ["Deux artères apportent le sang", "Un réseau veineux entoure le système artériel"], ["Une seule veine apporte le sang aux testicules", "Le réseau pampiniforme se trouve dans l'utérus"]),
+  qcu("bpr-nia-36", "axeEtAppareilMale", "Quel conduit constitue le canal terminal de l'appareil génital mâle ?", "Le canal éjaculateur rejoint l'urètre, qui constitue le canal terminal de l'appareil génital mâle.", "L'urètre", ["Le canal cervical", "La rete testis", "L'oviducte"]),
+  qcu("bpr-nia-37", "axeEtAppareilMale", "Quel trajet général suit le spermatozoïde depuis le testicule jusqu'à l'extérieur ?", "Le trajet passe par l'épididyme, le canal déférent, le canal éjaculateur puis l'urètre.", "Épididyme, canal déférent, canal éjaculateur, urètre", ["Ovaire, pavillon, utérus, urètre", "Rete testis, col de l'utérus, prostate, vagin", "Vésicule séminale, tube séminifère, épididyme, urètre"]),
+  qcu("bpr-nia-38", "axeEtAppareilMale", "Quelle catégorie de glandes représentent les vésicules séminales ?", "Les vésicules séminales font partie des glandes majeures de l'appareil reproducteur mâle.", "Des glandes majeures", ["Des glandes mineures de l'urètre", "Des gonades femelles", "Des structures du réseau lymphatique"]),
+  qcu("bpr-nia-39", "axeEtAppareilMale", "Que se passe-t-il lorsque le canal éjaculateur traverse la prostate ?", "Le canal éjaculateur récupère au passage les sécrétions produites par la prostate.", "Il récupère les sécrétions prostatiques", ["Il se transforme en tube séminifère", "Il reçoit les ovocytes", "Il se ferme définitivement à la puberté"]),
+  qcm("bpr-nia-40", "axeEtAppareilMale", "Quels changements des glandes sont associés à la puberté ?", "À la puberté, certaines glandes augmentent de taille et deviennent réceptives aux hormones en exprimant des récepteurs.", ["Elles augmentent de taille", "Elles expriment des récepteurs hormonaux"], ["Elles perdent tous leurs conduits", "Elles deviennent des gamètes"]),
+
+  qcu("bpr-nia-11", "testicule", "Quelle enveloppe fibreuse interne du testicule envoie des cloisons délimitant les lobules ?", "L'albuginée est l'enveloppe fibreuse qui envoie des septa délimitant les lobules testiculaires.", "L'albuginée", ["La zone pellucide", "L'endomètre", "Le chorion"]),
+  qcu("bpr-nia-12", "testicule", "Dans quelle structure testiculaire se déroule la spermatogenèse ?", "La spermatogenèse se déroule dans la paroi des tubes séminifères.", "Les tubes séminifères", ["Les canaux déférents", "Les vésicules séminales", "L'urètre"]),
+  qcu("bpr-nia-13", "testicule", "Quel trajet relie les tubes séminifères à l'épididyme ?", "Les tubes débouchent dans la rete testis, puis dans les canaux efférents et le canal épididymaire.", "Rete testis, canaux efférents, canal épididymaire", ["Canal déférent, prostate, rete testis", "Urètre, vésicules séminales, épididyme", "Tubes séminifères, col, pavillon"]),
+  qcu("bpr-nia-14", "testicule", "Quel est le rôle du réseau pampiniforme autour des artères testiculaires ?", "Le réseau veineux pampiniforme refroidit le sang artériel qui arrive aux testicules.", "Refroidir le sang artériel", ["Produire la GnRH", "Transporter les spermatozoïdes dans l'urètre", "Former les globules polaires"]),
+  qcu("bpr-nia-15", "testicule", "Quelle température testiculaire est observée chez l'humain ?", "Chez l'humain, elle est d'environ 35 °C, inférieure à la température corporelle générale.", "Environ 35 °C", ["Environ 20 °C", "Environ 37 °C", "Environ 42 °C"]),
+  qcu("bpr-nia-16", "testicule", "Quelle cellule occupe toute la largeur du tube séminifère et participe au soutien de la lignée germinale ?", "Les cellules de Sertoli occupent toute la largeur du tube séminifère et agissent sur la lignée germinale.", "La cellule de Sertoli", ["La cellule de Leydig", "La cellule de la thèque", "La cellule de la granulosa"]),
+  qcu("bpr-nia-17", "testicule", "Où se trouvent les cellules de Leydig et quelle hormone produisent-elles ?", "Les cellules de Leydig sont dans le tissu interstitiel et produisent des androgènes.", "Dans le tissu interstitiel, où elles produisent des androgènes", ["Dans l'endomètre, où elles produisent la GnRH", "Dans l'épididyme, où elles produisent des ovules", "Dans l'urètre, où elles produisent la FSH"]),
+  qcu("bpr-nia-18", "testicule", "À partir de quelle période la spermatogenèse se met-elle en place chez l'humain ?", "La mise en place de la spermatogenèse à la puberté.", "À la puberté", ["Pendant la fécondation", "À la naissance uniquement", "Après la ménopause"]),
+  qcm("bpr-nia-19", "testicule", "Quelles étapes de la lignée germinale sont citées ?", "Les ?l?ments comprennent les spermatogonies, les spermatocytes, les spermatides et les spermatozoïdes.", ["Les spermatogonies", "Les spermatides"], ["Les ovules", "Les globules polaires"]),
+  qcu("bpr-nia-20", "testicule", "Quel est le rôle de la barrière hémato-testiculaire décrit ?", "Les jonctions serrées de la barrière hémato-testiculaire protègent les cellules haploïdes de l'exposition au système immunitaire.", "Protéger les cellules haploïdes du système immunitaire", ["Déclencher l'ovulation", "Refroidir le sang artériel", "Transporter le sperme jusqu'à l'urètre"]),
+  qcu("bpr-nia-41", "testicule", "Quel rôle les cellules musculaires lisses de l'albuginée jouent-elles dans le testicule ?", "Leur contraction contribue à faire circuler le liquide contenant les spermatozoïdes non mobiles dans le testicule.", "Elles aident à faire circuler le liquide testiculaire", ["Elles produisent les ovocytes", "Elles sécrètent la GnRH", "Elles forment l'antrum"]),
+  qcm("bpr-nia-42", "testicule", "Quels éléments sont présents dans le tissu interstitiel entre les tubes séminifères ?", "Décrit un tissu interstitiel vascularisé qui comprend notamment des vaisseaux sanguins et des macrophages.", ["Des vaisseaux sanguins", "Des macrophages"], ["Des follicules ovariens", "Des cellules de la granulosa"]),
+  qcu("bpr-nia-43", "testicule", "Pourquoi les spermatozoïdes présents dans les testicules ont-ils besoin du déplacement du liquide testiculaire ?", "Dans les testicules, les spermatozoïdes ne sont pas encore mobiles; la circulation du liquide contribue à leur évacuation.", "Ils ne sont pas mobiles dans le testicule", ["Ils sont trop grands pour entrer dans l'épididyme", "Ils se déplacent uniquement par battement de cils", "Ils doivent être fécondés dans un tube séminifère"]),
+  qcu("bpr-nia-44", "testicule", "Quelle conséquence d'une ligature des conduits testiculaires est décrite ?", "La pression qui s'exerce dans les conduits peut détruire la barrière hémato-testiculaire et exposer les cellules haploïdes au système immunitaire.", "Une altération de la barrière hémato-testiculaire", ["La formation immédiate de nouveaux testicules", "La transformation des cellules de Leydig en ovules", "La disparition du réseau veineux pampiniforme"]),
+  qcu("bpr-nia-45", "testicule", "Pourquoi les cellules haploïdes de la lignée germinale peuvent-elles être considérées comme étrangères par le système immunitaire ?", "La spermatogenèse commence à la puberté, alors que le système immunitaire a appris à reconnaître le soi pendant la période fœtale.", "Elles apparaissent après la période fœtale de reconnaissance du soi", ["Elles sont produites par les cellules de la granulosa", "Elles ne contiennent aucun matériel génétique", "Elles sont présentes uniquement dans le sang maternel"]),
+  qcu("bpr-nia-46", "testicule", "Comment les cellules de Sertoli agissent-elles sur la lignée germinale ?", "Réceptives aux hormones mâles, les cellules de Sertoli exercent ensuite une action paracrine sur la lignée germinale.", "Par une action paracrine après réception des hormones mâles", ["En produisant des ovocytes dans l'épididyme", "En remplaçant les chromosomes sexuels", "En sécrétant la glaire cervicale"]),
+  qcu("bpr-nia-47", "testicule", "Quel problème de fertilité peut être associé au dysfonctionnement des cellules de Sertoli ?", "Que le dysfonctionnement des cellules de Sertoli peut être à l'origine de certaines stérilités.", "Une stérilité", ["Une viviparité", "Une sémelparité", "Une production de méduses"]),
+  qcu("bpr-nia-48", "testicule", "Quel ordre correspond aux principales étapes de la lignée germinale mâle énumérées ?", "Énumère les spermatogonies, les spermatocytes, les spermatides puis les spermatozoïdes.", "Spermatogonies, spermatocytes, spermatides, spermatozoïdes", ["Spermatozoïdes, spermatides, spermatocytes, spermatogonies", "Ovocytes, follicules, spermatides, zygotes", "Cellules de Leydig, ovules, spermatozoïdes, globules polaires"]),
+  qcu("bpr-nia-49", "testicule", "Jusqu'à quelle période la spermatogenèse humaine se poursuit-elle ?", "Après sa mise en place à la puberté, la spermatogenèse humaine se poursuit jusqu'à la mort.", "Jusqu'à la mort", ["Jusqu'à la fin de la croissance uniquement", "Jusqu'à la première éjaculation", "Jusqu'à la fécondation d'un ovocyte"]),
+  qcu("bpr-nia-50", "testicule", "Quel autre réseau, en plus des systèmes sanguin et nerveux, est signalé dans le testicule ?", "Également la présence d'un système lymphatique dans le testicule.", "Le système lymphatique", ["Le réseau de cils de l'oviducte", "Le réseau de villosités intestinales", "Le réseau de chromatides sœurs"]),
+
+  qcu("bpr-nia-21", "appareilFemelle", "Quelles sont les deux fonctions principales attribuées aux ovaires ?", "Les ovaires sont le site de la gamétogenèse et de la folliculogenèse, et produisent aussi des hormones.", "La gamétogenèse et la folliculogenèse", ["La spermatogenèse et la nidation", "La digestion et la respiration", "La production de GnRH et de FSH"]),
+  qcm("bpr-nia-22", "appareilFemelle", "Quelles structures cellulaires sont associées au follicule ovarien ?", "Décrit notamment les cellules de la granulosa et celles de la thèque interne autour de l'ovocyte.", ["Les cellules de la granulosa", "Les cellules de la thèque interne"], ["Les cellules de Sertoli", "Les cellules de Leydig"]),
+  qcu("bpr-nia-23", "appareilFemelle", "Comment appelle-t-on l'évolution des follicules ovariens ?", "La folliculogenèse désigne l'évolution des follicules; l'évolution de la lignée germinale est l'ovogenèse.", "La folliculogenèse", ["La spermatogenèse", "La nidation", "La somatogamie"]),
+  qcu("bpr-nia-24", "appareilFemelle", "Où a lieu la fécondation dans l'oviducte humain ?", "Chez l'humain, l'ampoule de l'oviducte est le lieu de la fécondation.", "Dans l'ampoule", ["Dans le col de l'utérus", "Dans l'endomètre", "Dans l'ovaire"]),
+  qcm("bpr-nia-25", "appareilFemelle", "Quelles propriétés de l'oviducte contribuent à la progression et à la survie de l'embryon ?", "L'épithélium cilié, les contractions des cellules musculaires lisses et les échanges via les microvillosités contribuent au transport et au soutien de l'embryon.", ["Un épithélium cilié", "Des cellules musculaires lisses"], ["Des tubes séminifères", "Une barrière hémato-testiculaire"]),
+  qcu("bpr-nia-26", "appareilFemelle", "Combien de temps dure la progression de l'embryon dans l'oviducte humain ?", "Cette progression à quatre à six jours et parle de vie libre de l'œuf.", "Environ 4 à 6 jours", ["Environ 70 jours", "Quelques minutes", "Neuf mois"]),
+  qcu("bpr-nia-27", "appareilFemelle", "Quel est le rôle principal de l'utérus présenté ?", "L'utérus est l'organe dans lequel l'embryon se fixe lors de la nidation.", "Le lieu de la nidation", ["Le lieu de production des spermatozoïdes", "Le lieu de formation de la GnRH", "Le lieu de la spermatogenèse"]),
+  qcu("bpr-nia-28", "appareilFemelle", "Quelle partie de l'endomètre subit les modifications liées aux hormones au cours du cycle ?", "La couche fonctionnelle de l'endomètre subit des modifications hormonales; la couche basale est décrite comme ne subissant pas ces modifications.", "La couche fonctionnelle", ["La couche basale", "Le chorion uniquement", "Le réseau pampiniforme"]),
+  qcm("bpr-nia-29", "appareilFemelle", "Quelles affirmations décrivent le myomètre ?", "Le myomètre est constitué de cellules musculaires lisses, organisées en couches et impliquées notamment dans l'accouchement et l'expulsion menstruelle.", ["Il contient des cellules musculaires lisses", "Il participe à l'accouchement et aux menstruations"], ["Il constitue l'épithélium cilié de l'oviducte", "Il produit les spermatozoïdes"]),
+  qcm("bpr-nia-30", "appareilFemelle", "Quelles affirmations sur le col et le vagin correspondent au cours ?", "Le col produit une glaire cervicale sensible aux hormones; les bactéries vaginales utilisent le glycogène et contribuent à un milieu acide défavorable aux spermatozoïdes.", ["La glaire cervicale varie sous l'influence hormonale", "Le métabolisme bactérien contribue à l'acidité vaginale"], ["Le col est le lieu normal de la fécondation", "Le vagin produit des spermatozoïdes"]),
+  qcu("bpr-nia-51", "appareilFemelle", "Quelle structure entoure l'ovocyte dans le follicule ovarien décrit ?", "Le follicule contient un ovocyte entouré d'une zone pellucide, avec des cellules folliculaires autour.", "La zone pellucide", ["La barrière hémato-testiculaire", "L'albuginée testiculaire", "Le réseau pampiniforme"]),
+  qcu("bpr-nia-52", "appareilFemelle", "Comment appelle-t-on la cavité qui apparaît au cours du développement d'un follicule ?", "La cavité folliculaire est appelée antrum ou cavité antrale.", "L'antrum", ["La rete testis", "Le chorion", "Le canal éjaculateur"]),
+  qcm("bpr-nia-53", "appareilFemelle", "Quels changements des cellules folliculaires accompagnent le développement du follicule ?", "Les cellules de la granulosa et de la thèque interne prolifèrent et deviennent progressivement plus sensibles aux hormones.", ["Les cellules de la granulosa prolifèrent", "Les cellules de la thèque interne prolifèrent"], ["Les cellules de Sertoli se transforment en ovocytes", "Les cellules de Leydig forment la zone pellucide"]),
+  qcu("bpr-nia-54", "appareilFemelle", "Quelles hormones les cellules folliculaires produisent-elles au cours de leur évolution ?", "Une production d'œstrogènes puis de progestagènes au cours du développement folliculaire.", "D'abord des œstrogènes puis des progestagènes", ["D'abord de la GnRH puis de la FSH", "Uniquement de l'adrénaline", "De la testostérone puis de la GnRH exclusivement"]),
+  qcu("bpr-nia-55", "appareilFemelle", "Pourquoi le tissu ovarien est-il décrit comme très vascularisé ?", "Le tissu ovarien récupère notamment les hormones produites au niveau des follicules.", "Pour récupérer les hormones produites par les follicules", ["Pour refroidir les spermatozoïdes", "Pour former la barrière hémato-testiculaire", "Pour transporter les spermatozoïdes jusqu'à l'urètre"]),
+  qcu("bpr-nia-56", "appareilFemelle", "Quelle structure de l'oviducte recueille l'ovocyte d'ordre II ?", "Le pavillon de l'oviducte recueille l'ovocyte d'ordre II après son émission par l'ovaire.", "Le pavillon", ["Le myomètre", "Le col de l'utérus", "La vésicule séminale"]),
+  qcu("bpr-nia-57", "appareilFemelle", "Quel est le rôle des microvillosités de l'oviducte ?", "Les microvillosités augmentent la surface d'échange et contribuent à apporter des éléments nutritifs à l'œuf en développement.", "Augmenter la surface d'échange et les apports nutritifs", ["Produire les spermatozoïdes", "Déclencher la contraction des testicules", "Empêcher la progression de l'embryon"]),
+  qcu("bpr-nia-58", "appareilFemelle", "Quelle couche de l'utérus se trouve au contact de la lumière utérine ?", "L'endomètre est la paroi du côté de la lumière; il comprend une couche basale et une couche fonctionnelle.", "L'endomètre", ["Le myomètre", "Le réseau pampiniforme", "L'albuginée"]),
+  qcu("bpr-nia-59", "appareilFemelle", "Dans quel ordre les deux couches musculaires du myomètre sont-elles décrites ?", "Décrit une couche circulaire plus interne et une couche longitudinale plus externe.", "Circulaire à l'intérieur, longitudinale à l'extérieur", ["Longitudinale à l'intérieur, circulaire à l'extérieur", "Granulosa à l'intérieur, thèque à l'extérieur", "Basale à l'intérieur, fonctionnelle à l'extérieur"]),
+  qcu("bpr-nia-60", "appareilFemelle", "Quel autre organe est inclus dans l'appareil reproducteur femelle ?", "Précise que les glandes mammaires appartiennent également à l'appareil reproducteur femelle.", "Les glandes mammaires", ["Les cellules de Leydig", "Les glandes de Cowper", "La prostate"]),
+];
+
+export const biologiePhysiologieReproductionQuizzes: QuizSeed[] = [
+  {
+    titre: "Biologie et physiologie de la reproduction — L3 (S5)",
+    type: "global",
+    formationCible: "L3 Biologie",
+    questionIds: biologiePhysiologieReproductionQuestions.map((question) => question.id),
+  },
+];
