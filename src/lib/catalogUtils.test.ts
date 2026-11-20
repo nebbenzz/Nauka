@@ -56,6 +56,23 @@ test("grouperQuizParFormation sépare Licence et Master et conserve les formatio
   assert.equal(groupes[3].formations[0].domaines[0].nom, "Techniques de commercialisation");
 });
 
+test("les matières de biologie de la reproduction sont regroupées sous Sciences de la Vie", () => {
+  const groupes = grouperQuizParFormation([
+    { formation_cible: "L3 Biologie", matiere_nom: "Biologie de la reproduction", titre: "Quiz de reproduction" },
+    { formation_cible: "L3 Biologie", matiere_nom: "Biologie et physiologie de la reproduction", titre: "Quiz de physiologie" },
+    { formation_cible: null, matiere_nom: "Sciences de la Vie", titre: "Quiz général" },
+  ]);
+  const licence = groupes.find((groupe) => groupe.type === "Licence");
+
+  assert.ok(licence);
+  assert.equal(licence.formations.length, 1);
+  assert.equal(licence.formations[0].nom, "Sciences de la Vie");
+  assert.deepEqual(
+    licence.formations[0].quizs.map((quiz) => quiz.matiere_nom).sort(),
+    ["Biologie de la reproduction", "Biologie et physiologie de la reproduction", "Sciences de la Vie"].sort(),
+  );
+});
+
 test("estQuizCompatibleAvecNiveau filters out higher-year concepts for L1 students", () => {
   assert.equal(estQuizCompatibleAvecNiveau({ type: "notion", notion_niveau: 1 }, 1), true);
   assert.equal(estQuizCompatibleAvecNiveau({ type: "notion", notion_niveau: 2 }, 1), false);

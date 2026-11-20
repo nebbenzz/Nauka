@@ -29,6 +29,10 @@ interface QuizCatalogue {
 }
 
 const ordreTypesFormation = ["Licence", "Master", "BTS", "BUT", "Prépa", "Autres formations"];
+const formationParMatiereUniversitaire: Record<string, string> = {
+  "Biologie de la reproduction": "Sciences de la Vie",
+  "Biologie et physiologie de la reproduction": "Sciences de la Vie",
+};
 
 function slugifier(valeur: string): string {
   return valeur
@@ -77,7 +81,9 @@ export function grouperQuizParFormation<T extends QuizCatalogue>(quizs: T[]): Gr
     const type = determinerTypeFormation(quiz);
     const matiere = quiz.matiere_nom || "Autres";
     const formationUniversitaire = type === "Licence" || type === "Master";
-    const nomFormation = formationUniversitaire ? matiere : quiz.formation_cible ?? matiere;
+    const nomFormation = formationUniversitaire
+      ? formationParMatiereUniversitaire[matiere] ?? matiere
+      : quiz.formation_cible ?? matiere;
     const groupeType = groupes.get(type) ?? { type, formations: new Map() };
     const groupeFormation = groupeType.formations.get(nomFormation) ?? {
       id: [type, nomFormation].map(slugifier).join("--"),
