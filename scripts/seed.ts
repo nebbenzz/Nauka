@@ -9,7 +9,7 @@ import { btsGestionMatiere, btsGestionQuestions, btsGestionQuizzes } from "../sr
 import { btsInformatiqueQuestions, btsInformatiqueQuizzes } from "../src/data/seed/bts-informatique";
 import { butTcMatiere, butTcQuestions, butTcQuizzes } from "../src/data/seed/but-tc";
 import { psychologieMatiere, psychologieQuestions, psychologieQuizzes } from "../src/data/seed/psychologie";
-import { creerQuizMatiereParNiveau, creerQuizNotionParNiveau } from "../src/lib/quizSeedGroups";
+import { creerQuizMatiereParNiveau, creerQuizNotionParNiveau, retirerSuffixeSemestre } from "../src/lib/quizSeedGroups";
 import type { QuestionSeed, QuizSeed } from "../src/data/seed/types";
 
 dotenv.config();
@@ -231,6 +231,18 @@ async function seedMatiere(
         .maybeSingle();
       if (erreurAncienTitre) throw erreurAncienTitre;
       quizAActualiser = quizAvecAncienTitre;
+    }
+    if (!quizAActualiser) {
+      const { data: questionnairesExistants, error: erreurQuestionnaires } = await supabase
+        .from("quiz")
+        .select("id, titre")
+        .eq("matiere_id", matiereId)
+        .is("created_by", null);
+      if (erreurQuestionnaires) throw erreurQuestionnaires;
+      quizAActualiser = questionnairesExistants?.find((questionnaire) =>
+        questionnaire.titre !== quiz.titre
+        && retirerSuffixeSemestre(questionnaire.titre) === retirerSuffixeSemestre(quiz.titre),
+      ) ?? null;
     }
 
     if (quizAActualiser) {

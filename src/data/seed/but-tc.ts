@@ -1,4 +1,5 @@
 import type { QuestionSeed, QuizSeed } from "./types";
+import { retirerSuffixeSemestre } from "../../lib/quizSeedGroups";
 
 export const butTcMatiere = {
   nom: "Techniques de commercialisation",
@@ -151,7 +152,7 @@ export const butTcQuizzes: QuizSeed[] = [
     const niveau = niveauParNotion[cle as NotionKey];
     const questions = butTcQuestions.filter((question) => question.notion === notion);
     return {
-      titre: `${notion} [L${niveau}]`,
+      titre: `${retirerSuffixeSemestre(notion)} [L${niveau}]`,
       type: "notion" as const,
       notionFiltre: notion,
       niveauNotion: niveau,

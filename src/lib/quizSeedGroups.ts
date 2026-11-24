@@ -5,6 +5,10 @@ export interface GroupeQuizNotion {
   notionsIncluses: string[];
 }
 
+export function retirerSuffixeSemestre(titre: string): string {
+  return titre.replace(/\s*\(S[56]\)/g, "").replace(/\s{2,}/g, " ").trim();
+}
+
 export function creerQuizAgreges(
   questions: QuestionSeed[],
   groupes: GroupeQuizNotion[],
@@ -33,7 +37,7 @@ export function creerQuizAgreges(
     const niveaux = [...new Set(questionsIncluses.map((question) => question.niveau))].sort((a, b) => a - b);
     const niveauPremiereDecouverte = niveaux[0];
     return niveaux.flatMap((niveauCible) => {
-      const titre = `${groupe.titre} [L${niveauCible}]`;
+      const titre = `${retirerSuffixeSemestre(groupe.titre)} [L${niveauCible}]`;
       if (titresExistants.has(titre)) return [];
       return [{
         titre,
@@ -65,7 +69,7 @@ export function creerQuizNotionParNiveau(
     const niveaux = [...new Set(questionsNotion.map((question) => question.niveau))].sort((a, b) => a - b);
     const niveauPremiereDecouverte = niveaux[0];
     return niveaux.flatMap((niveauCible) => {
-      const titre = `${notion} [L${niveauCible}]`;
+      const titre = `${retirerSuffixeSemestre(notion)} [L${niveauCible}]`;
       if (titresExistants.has(titre)) return [];
       return [{
         titre,

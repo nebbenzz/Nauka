@@ -196,7 +196,7 @@ export const biologieReproductionQuestions: QuestionSeed[] = [
 
 export const biologieReproductionQuizzes: QuizSeed[] = [
   {
-    titre: "Biologie de la reproduction — L3 (S5)",
+    titre: "Biologie de la reproduction — L3",
     type: "global",
     formationCible: "L3 Biologie",
     questionIds: biologieReproductionQuestions.map((question) => question.id),

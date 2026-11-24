@@ -51,7 +51,11 @@ test("le seed crée un questionnaire par notion et un questionnaire global par a
   assert.equal(quizzesNotion.length, 6);
   assert.equal(quizzesGlobaux.length, 3);
   assert.ok(butTcQuizzes.every((quiz) => quiz.formationCible === "BUT Techniques de Commercialisation"));
+  assert.ok(butTcQuizzes.every((quiz) => !/\(S[56]\)/.test(quiz.titre)));
   assert.ok(quizzesNotion.every((quiz) => quiz.questionIds.length === 10));
+  assert.ok(quizzesNotion.some((quiz) => quiz.titre === "Marketing digital et acquisition [L3]"));
+  assert.ok(quizzesNotion.some((quiz) => quiz.titre === "Stratégie commerciale et développement d'activité [L3]"));
+  assert.ok(quizzesNotion.some((quiz) => quiz.notionFiltre === "Marketing digital et acquisition (S5)"));
   assert.deepEqual(quizzesGlobaux.map((quiz) => [quiz.niveauCible, quiz.questionIds.length]), [
     [1, 20],
     [2, 20],

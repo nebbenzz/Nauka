@@ -58,6 +58,17 @@ test("creerQuizNotionParNiveau crée des cartes distinctes et conserve l'année 
   ]);
 });
 
+test("les titres de questionnaires par notion omettent S5 et S6 sans modifier les filtres", () => {
+  const notions = ["Marketing digital et acquisition (S5)", "Stratégie commerciale (S6)"];
+  const quizzes = creerQuizNotionParNiveau(notions.map((notion, index) => question(`question-${index}`, notion, 3)), []);
+
+  assert.deepEqual(quizzes.map((quiz) => quiz.titre), [
+    "Marketing digital et acquisition [L3]",
+    "Stratégie commerciale [L3]",
+  ]);
+  assert.deepEqual(quizzes.map((quiz) => quiz.notionFiltre), notions);
+});
+
 test("creerQuizMatiereParNiveau sépare les années et ne crée l'avancé que si le pool le permet", () => {
   const quizzes = creerQuizMatiereParNiveau("Droit", [
     question("l1-a", "Introduction au droit", 1),

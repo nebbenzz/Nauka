@@ -174,7 +174,7 @@ export const biologiePhysiologieReproductionQuestions: QuestionSeed[] = [
 
 export const biologiePhysiologieReproductionQuizzes: QuizSeed[] = [
   {
-    titre: "Biologie et physiologie de la reproduction — L3 (S5)",
+    titre: "Biologie et physiologie de la reproduction — L3",
     type: "global",
     formationCible: "L3 Biologie",
     questionIds: biologiePhysiologieReproductionQuestions.map((question) => question.id),
