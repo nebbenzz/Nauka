@@ -182,7 +182,11 @@ function descripteurProgression(premiereDecouverte: number | null, niveauCible: 
 
 function normaliserBaseTitreQuiz(quiz: QuizTitreLike): string {
   const source = quiz.notion_nom || quiz.matiere_nom || quiz.titre;
-  const sansNiveau = source
+  const sansSemestre = source
+    .trim()
+    .replace(/\s*\(S[56]\)/g, "")
+    .trim();
+  const sansNiveau = sansSemestre
     .trim()
     .replace(/\s+[—–-]\s+(?:L[1-5]|Licence|initiation|novice|débutant|intermédiaire(?:\s+\d+)?|compétent(?:e)?(?:\s+\d+)?|avancé(?:e)?|avancée)(?:\s+\d+)?$/iu, "")
     .trim();

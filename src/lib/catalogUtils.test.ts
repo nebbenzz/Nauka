@@ -104,6 +104,18 @@ test("uniformiserTitresQuestionnaires distingue deux années du même parcours p
   assert.deepEqual(resultats.map((quiz) => quiz.titreAffiche), ["Droit pénal - fondamentaux", "Droit pénal - approfondissement"]);
 });
 
+test("uniformiserTitresQuestionnaires retire S5 et S6 du nom de notion affiché", () => {
+  const resultats = uniformiserTitresQuestionnaires([
+    { id: "reproduction-s5", titre: "Biologie de la reproduction (S5) [L3]", type: "notion", est_avance: false, matiere_nom: "Biologie de la reproduction", notion_nom: "Biologie de la reproduction (S5)", notion_niveau: 3, niveau_cible: 3, niveau_premiere_decouverte: 3 },
+    { id: "physiologie-s6", titre: "Physiologie de la reproduction (S6) [L3]", type: "notion", est_avance: false, matiere_nom: "Biologie et physiologie de la reproduction", notion_nom: "Physiologie de la reproduction (S6)", notion_niveau: 3, niveau_cible: 3, niveau_premiere_decouverte: 3 },
+  ], 3);
+
+  assert.deepEqual(resultats.map((quiz) => quiz.titreAffiche), [
+    "Biologie de la reproduction - fondamentaux",
+    "Physiologie de la reproduction - fondamentaux",
+  ]);
+});
+
 test("uniformiserTitresQuestionnaires classe les anciennes fiches de notion selon leur niveau, pas celui du profil", () => {
   const resultats = uniformiserTitresQuestionnaires([
     { id: "prog-l1", titre: "Programmation impérative - initiation", type: "notion", est_avance: false, matiere_nom: "Informatique", notion_nom: "Programmation impérative - initiation", notion_niveau: 1, niveau_cible: null, niveau_premiere_decouverte: null },
