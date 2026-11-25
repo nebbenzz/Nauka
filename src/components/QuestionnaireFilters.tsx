@@ -59,7 +59,7 @@ export default function QuestionnaireFilters({
   return (
     <section className="mt-0" aria-label="Recherche et filtres des questionnaires">
       <div className="mt-5 space-y-4">
-        <div className={`grid items-end gap-4 ${filtresActifs ? "sm:grid-cols-[minmax(0,1fr)_auto_minmax(15rem,0.65fr)]" : "sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.65fr)]"}`}>
+        <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
           <div>
             <label htmlFor="recherche-questionnaires" className={classeLabel}>Recherche</label>
             <div className="relative">
@@ -91,6 +91,9 @@ export default function QuestionnaireFilters({
             </button>
           )}
 
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <span className={classeLabel}>Format du questionnaire</span>
             <div role="group" aria-label="Format des questionnaires" className="flex min-h-12 rounded-md border border-line bg-paper p-1">
@@ -101,95 +104,93 @@ export default function QuestionnaireFilters({
                   aria-pressed={valeur === filtre.valeur}
                   onClick={() => onChange(filtre.valeur)}
                   className={valeur === filtre.valeur
-                    ? "min-w-0 flex-1 rounded bg-navy px-2 text-xs font-bold text-paper shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-1"
-                    : "min-w-0 flex-1 rounded px-2 text-xs font-semibold text-inkmuted transition-colors hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-1"}
+                    ? "min-h-10 min-w-0 flex-1 rounded bg-navy px-2 text-xs font-bold text-paper shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 focus-visible:ring-offset-1"
+                    : "min-h-10 min-w-0 flex-1 rounded px-2 text-xs font-semibold text-inkmuted transition-colors hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 focus-visible:ring-offset-1"}
                 >
                   {filtre.label}
                 </button>
               ))}
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end">
-          <details className="group relative ml-auto w-full sm:w-auto">
-            <summary className="flex min-h-12 w-full cursor-pointer list-none items-center gap-3 rounded-md border border-line bg-white px-3.5 py-2 text-left transition-colors hover:border-navy/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/25 sm:min-w-[18rem] sm:w-auto [&::-webkit-details-marker]:hidden">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-paper text-navy">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4">
-                  <path d="M4 6h16M7 12h10m-7 6h4" />
-                </svg>
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-ink">Formation et matière</span>
-                <span className="block truncate text-xs text-inkmuted">{parcoursResume}</span>
-              </span>
-              {filtresParcoursActifs > 0 && (
-                <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-navy px-2 text-xs font-bold text-white" aria-label={`${filtresParcoursActifs} filtres actifs`}>
-                  {filtresParcoursActifs}
+          <div>
+            <span className={classeLabel}>Formation et matière</span>
+            <details className="group relative">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-md border border-line bg-paper p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/25 [&::-webkit-details-marker]:hidden">
+                <span className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded bg-white px-2.5 text-xs font-semibold text-ink shadow-sm transition-colors group-hover:bg-white">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-navy">
+                    <path d="M4 6h16M7 12h10m-7 6h4" />
+                  </svg>
+                  <span className="min-w-0 flex-1 truncate">{parcoursResume}</span>
+                  {filtresParcoursActifs > 0 && (
+                    <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-navy px-1.5 text-[11px] font-bold text-white" aria-label={`${filtresParcoursActifs} filtres actifs`}>
+                      {filtresParcoursActifs}
+                    </span>
+                  )}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-inkmuted transition-transform group-open:rotate-180">
+                    <path d="m7 10 5 5 5-5" />
+                  </svg>
                 </span>
-              )}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-inkmuted transition-transform group-open:rotate-180">
-                <path d="m7 10 5 5 5-5" />
-              </svg>
-            </summary>
+              </summary>
 
-            <div className="absolute right-0 top-full z-30 mt-2 w-full rounded-md border border-line bg-white p-4 shadow-lg sm:w-96">
-              <div>
-                <label htmlFor="filtre-type-formation" className={classeLabel}>Type de formation</label>
-                <div className="relative">
-                  <select
-                    id="filtre-type-formation"
-                    value={typeFormationSelectionne}
-                    onChange={(event) => onTypeFormationChange(event.target.value)}
-                    className={classeSelect}
-                  >
-                    <option value="">Tous les types</option>
-                    {typesFormation.map((type) => <option key={type} value={type}>{type}</option>)}
-                  </select>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
-                    <path d="m7 10 5 5 5-5" />
-                  </svg>
+              <div className="absolute right-0 top-full z-30 mt-2 w-full rounded-md border border-line bg-white p-4 shadow-lg sm:w-96">
+                <div>
+                  <label htmlFor="filtre-type-formation" className={classeLabel}>Type de formation</label>
+                  <div className="relative">
+                    <select
+                      id="filtre-type-formation"
+                      value={typeFormationSelectionne}
+                      onChange={(event) => onTypeFormationChange(event.target.value)}
+                      className={classeSelect}
+                    >
+                      <option value="">Tous les types</option>
+                      {typesFormation.map((type) => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
+                      <path d="m7 10 5 5 5-5" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label htmlFor="filtre-formation" className={classeLabel}>Formation précise</label>
+                  <div className="relative">
+                    <select
+                      id="filtre-formation"
+                      value={formationSelectionnee}
+                      onChange={(event) => onFormationChange(event.target.value)}
+                      disabled={!typeFormationSelectionne}
+                      className={classeSelect}
+                    >
+                      <option value="">{typeFormationSelectionne ? "Toutes les formations" : "Choisir un type d'abord"}</option>
+                      {formations.map((formation) => <option key={formation.id} value={formation.id}>{formation.nom}</option>)}
+                    </select>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
+                      <path d="m7 10 5 5 5-5" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label htmlFor="filtre-matiere" className={classeLabel}>Matière</label>
+                  <div className="relative">
+                    <select
+                      id="filtre-matiere"
+                      value={matiereSelectionnee}
+                      onChange={(event) => onMatiereChange(event.target.value)}
+                      className={classeSelect}
+                    >
+                      <option value="">Toutes les matières</option>
+                      {matieres.map((matiere) => <option key={matiere} value={matiere}>{matiere}</option>)}
+                    </select>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
+                      <path d="m7 10 5 5 5-5" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-
-              <div className="mt-4">
-                <label htmlFor="filtre-formation" className={classeLabel}>Formation précise</label>
-                <div className="relative">
-                  <select
-                    id="filtre-formation"
-                    value={formationSelectionnee}
-                    onChange={(event) => onFormationChange(event.target.value)}
-                    disabled={!typeFormationSelectionne}
-                    className={classeSelect}
-                  >
-                    <option value="">{typeFormationSelectionne ? "Toutes les formations" : "Choisir un type d'abord"}</option>
-                    {formations.map((formation) => <option key={formation.id} value={formation.id}>{formation.nom}</option>)}
-                  </select>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
-                    <path d="m7 10 5 5 5-5" />
-                  </svg>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <label htmlFor="filtre-matiere" className={classeLabel}>Matière</label>
-                <div className="relative">
-                  <select
-                    id="filtre-matiere"
-                    value={matiereSelectionnee}
-                    onChange={(event) => onMatiereChange(event.target.value)}
-                    className={classeSelect}
-                  >
-                    <option value="">Toutes les matières</option>
-                    {matieres.map((matiere) => <option key={matiere} value={matiere}>{matiere}</option>)}
-                  </select>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkmuted">
-                    <path d="m7 10 5 5 5-5" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </details>
+            </details>
+          </div>
         </div>
       </div>
     </section>
