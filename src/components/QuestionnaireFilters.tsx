@@ -116,7 +116,7 @@ export default function QuestionnaireFilters({
             <span className={classeLabel}>Formation et matière</span>
             <details className="group relative">
               <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-md transition-colors hover:bg-paper/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/25 [&::-webkit-details-marker]:hidden">
-                <span className="flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-md px-3 text-xs font-semibold text-ink">
+                <span className="flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-md bg-white px-3 text-xs font-semibold text-ink">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-navy">
                     <path d="M4 6h16M7 12h10m-7 6h4" />
                   </svg>
