@@ -23,7 +23,7 @@ const filtres: { valeur: FiltreQuestionnaire; label: string }[] = [
   { valeur: "avances", label: "Avancés" },
 ];
 
-const classeSelect = "min-h-12 w-full appearance-none rounded-md border border-line bg-white px-3.5 pr-10 text-sm text-ink outline-none transition-colors hover:border-navy/40 focus:border-navy focus:ring-2 focus:ring-highlight/40 disabled:cursor-not-allowed disabled:bg-paper disabled:text-inkmuted";
+const classeSelect = "min-h-12 w-full appearance-none rounded-md border border-line bg-white px-3.5 pr-10 text-sm text-ink outline-none transition-colors hover:border-navy/40 focus:border-navy focus:ring-0 focus-visible:ring-2 focus-visible:ring-navy/25 disabled:cursor-not-allowed disabled:bg-paper disabled:text-inkmuted";
 const classeLabel = "mb-2 block text-xs font-semibold text-ink";
 
 export default function QuestionnaireFilters({
@@ -111,29 +111,29 @@ export default function QuestionnaireFilters({
           </div>
         </div>
 
-        <details className="group rounded-md border border-line bg-white">
-          <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 rounded-md px-4 py-3 transition-colors hover:bg-paper/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-highlight [&::-webkit-details-marker]:hidden">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-highlight/25 text-navy">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4">
-                <path d="M4 6h16M7 12h10m-7 6h4" />
-              </svg>
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-bold text-ink">Formation et matière</span>
-              <span className="block truncate text-xs text-inkmuted">{parcoursResume}</span>
-            </span>
-            {filtresParcoursActifs > 0 && (
-              <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-navy px-2 text-xs font-bold text-white" aria-label={`${filtresParcoursActifs} filtres actifs`}>
-                {filtresParcoursActifs}
+        <div className="flex justify-end">
+          <details className="group relative ml-auto w-full sm:w-auto">
+            <summary className="flex min-h-12 w-full cursor-pointer list-none items-center gap-3 rounded-md border border-line bg-white px-3.5 py-2 text-left transition-colors hover:border-navy/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/25 sm:min-w-[18rem] sm:w-auto [&::-webkit-details-marker]:hidden">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-paper text-navy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4">
+                  <path d="M4 6h16M7 12h10m-7 6h4" />
+                </svg>
               </span>
-            )}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-inkmuted transition-transform group-open:rotate-180">
-              <path d="m7 10 5 5 5-5" />
-            </svg>
-          </summary>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-ink">Formation et matière</span>
+                <span className="block truncate text-xs text-inkmuted">{parcoursResume}</span>
+              </span>
+              {filtresParcoursActifs > 0 && (
+                <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-navy px-2 text-xs font-bold text-white" aria-label={`${filtresParcoursActifs} filtres actifs`}>
+                  {filtresParcoursActifs}
+                </span>
+              )}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-inkmuted transition-transform group-open:rotate-180">
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+            </summary>
 
-          <div className="border-t border-line bg-paper/50 p-4 sm:p-5">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="absolute right-0 top-full z-30 mt-2 w-full rounded-md border border-line bg-white p-4 shadow-lg sm:w-96">
               <div>
                 <label htmlFor="filtre-type-formation" className={classeLabel}>Type de formation</label>
                 <div className="relative">
@@ -152,7 +152,7 @@ export default function QuestionnaireFilters({
                 </div>
               </div>
 
-              <div>
+              <div className="mt-4">
                 <label htmlFor="filtre-formation" className={classeLabel}>Formation précise</label>
                 <div className="relative">
                   <select
@@ -171,7 +171,7 @@ export default function QuestionnaireFilters({
                 </div>
               </div>
 
-              <div>
+              <div className="mt-4">
                 <label htmlFor="filtre-matiere" className={classeLabel}>Matière</label>
                 <div className="relative">
                   <select
@@ -189,8 +189,8 @@ export default function QuestionnaireFilters({
                 </div>
               </div>
             </div>
-          </div>
-        </details>
+          </details>
+        </div>
       </div>
     </section>
   );
