@@ -59,7 +59,7 @@ export default function QuestionnaireFilters({
   return (
     <section className="mt-0" aria-label="Recherche et filtres des questionnaires">
       <div className="mt-5 space-y-4">
-        <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className={`grid items-end gap-4 ${filtresActifs ? "sm:grid-cols-[minmax(0,1fr)_auto_minmax(15rem,0.65fr)]" : "sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.65fr)]"}`}>
           <div>
             <label htmlFor="recherche-questionnaires" className={classeLabel}>Recherche</label>
             <div className="relative">
@@ -91,9 +91,6 @@ export default function QuestionnaireFilters({
             </button>
           )}
 
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <span className={classeLabel}>Format du questionnaire</span>
             <div role="group" aria-label="Format des questionnaires" className="flex min-h-12 rounded-md border border-line bg-paper p-1">
@@ -112,12 +109,14 @@ export default function QuestionnaireFilters({
               ))}
             </div>
           </div>
+        </div>
 
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <span className={classeLabel}>Formation et matière</span>
             <details className="group relative">
-              <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-md border border-line bg-paper p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/25 [&::-webkit-details-marker]:hidden">
-                <span className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded bg-white px-2.5 text-xs font-semibold text-ink shadow-sm transition-colors group-hover:bg-white">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-md transition-colors hover:bg-paper/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/25 [&::-webkit-details-marker]:hidden">
+                <span className="flex min-h-12 min-w-0 flex-1 items-center gap-2 rounded-md px-3 text-xs font-semibold text-ink">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4 shrink-0 text-navy">
                     <path d="M4 6h16M7 12h10m-7 6h4" />
                   </svg>
